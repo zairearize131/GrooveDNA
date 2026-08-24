@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GrooveDNA - discover Rock, Funk and Soul sounds and turn inspiration into new beats.">
+  <title>GrooveDNA | Find the Sound. Flip the Groove.</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="GrooveDNA home">
+      <span class="brand-mark">GD</span>
+      <span>Groove<span>DNA</span></span>
+    </a>
+
+    <button class="menu-toggle" id="menuToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+
+    <nav id="mainNav">
+      <a href="#home">Home</a>
+      <a href="#discover">Discover</a>
+      <a href="#beatlab">Beat Lab</a>
+      <a href="#community">Community</a>
+      <a href="#profile">Profile</a>
+    </nav>
+
+    <button class="header-action" id="uploadBtn">＋ Upload Audio</button>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-copy">
+        <p class="eyebrow">ROCK • FUNK • SOUL</p>
+        <h1>Find the sound.<br><span>Flip the groove.</span></h1>
+        <p class="hero-text">
+          Discover riffs, drum breaks, basslines, melodies and samples, then turn
+          your inspiration into a new instrumental.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#discover">Explore Sounds</a>
+          <a class="btn secondary" href="#beatlab">Open Beat Lab</a>
+        </div>
+      </div>
+
+      <div class="hero-console">
+        <div class="record"></div>
+        <div class="console-card">
+          <p>NOW EXPLORING</p>
+          <h3>Funky Guitar Break</h3>
+          <div class="waveform" aria-label="Audio waveform">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="track-meta">
+            <span>96 BPM</span><span>E Minor</span><span>Funk</span>
+          </div>
+          <button class="play-btn" data-demo-play>▶ Play Preview</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="search-panel" id="discover">
+      <div>
+        <p class="eyebrow">SAMPLE FINDER</p>
+        <h2>What sound are you looking for?</h2>
+      </div>
+      <div class="search-row">
+        <label class="search-box">
+          <span>⌕</span>
+          <input id="searchInput" type="search" placeholder="Search artists, songs, riffs, drums, bass..." autocomplete="off">
+        </label>
+        <button class="btn primary" id="searchBtn">Search</button>
+        <button class="btn upload" id="uploadBtn2">🎙 Upload Audio</button>
+      </div>
+      <div class="filter-row" id="genreFilters">
+        <button class="filter active" data-genre="All">All</button>
+        <button class="filter" data-genre="Rock">🎸 Rock & Roll</button>
+        <button class="filter" data-genre="Funk">🕺 Funk</button>
+        <button class="filter" data-genre="Soul">💜 Soul</button>
+      </div>
+      <p class="demo-note">Demo mode: sample identification below uses example catalog data. Connect an audio-recognition API/backend for real identification.</p>
+    </section>
+
+    <section class="content-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">DISCOVER</p>
+          <h2>Trending sounds</h2>
+        </div>
+        <span id="resultCount" class="result-count"></span>
+      </div>
+      <div class="sample-grid" id="sampleGrid"></div>
+    </section>
+
+    <section class="beatlab-section" id="beatlab">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">CREATE</p>
+          <h2>Beat Lab</h2>
+          <p>Drop discovered sounds into your idea and experiment.</p>
+        </div>
+        <button class="btn secondary" id="clearLab">Clear Lab</button>
+      </div>
+
+      <div class="beatlab">
+        <div class="lab-toolbar">
+          <button class="play-large" id="labPlay">▶</button>
+          <label>BPM <input id="bpm" type="range" min="60" max="160" value="96"><strong id="bpmValue">96</strong></label>
+          <label>Pitch <input id="pitch" type="range" min="-12" max="12" value="0"><strong id="pitchValue">0</strong></label>
+          <button class="btn primary" id="saveBeat">Save Idea</button>
+        </div>
+
+        <div class="timeline" id="timeline">
+          <div class="timeline-label">TRACKS</div>
+          <div class="track"><span>DRUMS</span><div class="clip drum"></div></div>
+          <div class="track"><span>BASS</span><div class="clip bass"></div></div>
+          <div class="track"><span>MELODY</span><div class="clip melody"></div></div>
+          <div class="empty-state" id="labEmpty">Add a sample with “Add to Beat Lab”</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="community-section" id="community">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">CONNECT</p>
+          <h2>Community grooves</h2>
+          <p>Follow creators, share ideas, remix beats and join challenges.</p>
+        </div>
+        <button class="btn secondary" id="challengeBtn">View Challenge</button>
+      </div>
+
+      <div class="community-grid">
+        <article class="post-card">
+          <div class="avatar">JG</div>
+          <div class="post-body">
+            <strong>@JayGrooves</strong>
+            <span class="muted">2h ago • Funk</span>
+            <h3>“Found a bass groove that changed the whole beat.”</h3>
+            <div class="post-player"><button class="mini-play" data-demo-play>▶</button><span>Funky Bass Experiment</span><span>01:12</span></div>
+            <div class="post-actions">
+              <button data-like>♡ <span>124</span></button>
+              <button>💬 31</button>
+              <button data-remix>↻ Remix</button>
+              <button>＋ Follow</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="challenge-card">
+          <p class="eyebrow">WEEKLY CHALLENGE</p>
+          <h3>Flip the Funk</h3>
+          <p>Build an original instrumental around this week's approved source material.</p>
+          <div class="challenge-stats"><span>🔥 438 entries</span><span>⏱ 5 days left</span></div>
+          <button class="btn primary" id="joinChallenge">Join Challenge</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="copyright-section">
+      <div>
+        <p class="eyebrow">SAMPLE SAFETY</p>
+        <h2>Know what you can use.</h2>
+        <p>Every sample can display a rights status so creators can distinguish discovery-only material from licensed or cleared sounds.</p>
+      </div>
+      <div class="rights-legend">
+        <span class="rights cleared">✓ Cleared / Licensed</span>
+        <span class="rights caution">! Check Rights</span>
+        <span class="rights restricted">× Restricted</span>
+      </div>
+    </section>
+
+    <section class="profile-section" id="profile">
+      <div class="profile-card">
+        <div class="profile-avatar">YOU</div>
+        <div>
+          <p class="eyebrow">YOUR GROOVEDNA</p>
+          <h2>Creator Profile</h2>
+          <p>Save samples, beats, collections, collaborations and challenge entries here.</p>
+        </div>
+        <button class="btn secondary" id="profileBtn">Edit Profile</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <strong>GrooveDNA</strong>
+    <span>Find the Sound. Flip the Groove. Create Something New.</span>
+  </footer>
+
+  <input id="audioUpload" type="file" accept="audio/*" hidden>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>
