@@ -1,8 +1,3 @@
-// ==========================================
-// GrooveDNA - JavaScript
-// ==========================================
-
-// Sample catalog
 const samples = [
   {
     id: 1,
@@ -69,24 +64,56 @@ const samples = [
     key: "G Major",
     rights: "Restricted",
     icon: "🎻"
+  },
+  {
+    id: 7,
+    title: "Neon Pocket",
+    artist: "Afterdark Audio",
+    genre: "R&B",
+    type: "Drum & Percussion",
+    bpm: 91,
+    key: "F Minor",
+    rights: "Cleared / Licensed",
+    icon: "🌃"
+  },
+  {
+    id: 8,
+    title: "Blue Room Horns",
+    artist: "Midnight Sessions",
+    genre: "Jazz",
+    type: "Horn Phrase",
+    bpm: 88,
+    key: "B♭ Major",
+    rights: "Check Rights",
+    icon: "🎷"
+  },
+  {
+    id: 9,
+    title: "Golden Chords",
+    artist: "Analog House",
+    genre: "Soul",
+    type: "Guitar Chords",
+    bpm: 82,
+    key: "A Major",
+    rights: "Cleared / Licensed",
+    icon: "✨"
   }
 ];
 
-
-// ==========================================
-// VARIABLES
-// ==========================================
-
 let selectedGenre = "All";
 let searchTerm = "";
+let currentTrack = null;
+let isPlaying = false;
 
-const sampleGrid = document.getElementById("sampleGrid");
-const resultCount = document.getElementById("resultCount");
-const toast = document.getElementById("toast");
+const $ = selector => document.querySelector(selector);
+const $$ = selector => document.querySelectorAll(selector);
+
+const sampleGrid = $("#sampleGrid");
+const toast = $("#toast");
 
 
 // ==========================================
-// TOAST MESSAGE
+// TOAST SYSTEM
 // ==========================================
 
 function showToast(message) {
@@ -106,7 +133,7 @@ function showToast(message) {
 
 
 // ==========================================
-// FILTER SAMPLES
+// SAMPLE FILTERING
 // ==========================================
 
 function filteredSamples() {
@@ -117,16 +144,17 @@ function filteredSamples() {
       selectedGenre === "All" ||
       sample.genre === selectedGenre;
 
-    const text =
-      `${sample.title}
-       ${sample.artist}
-       ${sample.genre}
-       ${sample.type}
-       ${sample.key}`.toLowerCase();
+    const searchableText = `
+      ${sample.title}
+      ${sample.artist}
+      ${sample.genre}
+      ${sample.type}
+      ${sample.key}
+    `.toLowerCase();
 
     return (
       genreMatch &&
-      text.includes(searchTerm.toLowerCase())
+      searchableText.includes(searchTerm.toLowerCase())
     );
   });
 }
@@ -151,7 +179,7 @@ function rightsClass(rights) {
 
 
 // ==========================================
-// DISPLAY SAMPLES
+// RENDER SAMPLE CARDS
 // ==========================================
 
 function renderSamples() {
@@ -160,121 +188,174 @@ function renderSamples() {
 
   const list = filteredSamples();
 
+  const resultCount = $("#resultCount");
+
   if (resultCount) {
 
     resultCount.textContent =
       `${list.length} sound${list.length === 1 ? "" : "s"} found`;
   }
 
-
   if (list.length === 0) {
 
     sampleGrid.innerHTML = `
-      <div class="empty-state"
-           style="grid-column:1/-1">
-
+      <div
+        class="empty-state"
+        style="grid-column:1/-1"
+      >
         No sounds matched your search.
-
         Try another artist, instrument, or genre.
-
       </div>
     `;
 
     return;
   }
 
+  sampleGrid.innerHTML = list.map(sample => `
 
-  sampleGrid.innerHTML = list.map(sample => {
+    <article
+      class="sample-card"
+      data-genre="${sample.genre}"
+    >
 
-    return `
+      <div class="sample-art">
 
-      <article
-        class="sample-card"
-        data-genre="${sample.genre}">
+        <span class="genre-tag">
+          ${sample.genre}
+        </span>
 
-        <div class="sample-art">
+        <span class="sample-icon">
+          ${sample.icon}
+        </span>
 
-          <span class="genre-tag">
-            ${sample.genre}
-          </span>
+      </div>
 
-          <span class="sample-icon">
-            ${sample.icon}
-          </span>
+      <div class="sample-info">
 
-        </div>
+        <h3>
+          ${sample.title}
+        </h3>
 
+        <p>
+          ${sample.type}
+          •
+          ${sample.artist}
+          <br>
+          ${sample.bpm} BPM
+          •
+          ${sample.key}
+        </p>
 
-        <div class="sample-info">
+        <span
+          class="rights ${rightsClass(sample.rights)}"
+        >
 
-          <h3>
-            ${sample.title}
-          </h3>
+          ${
+            sample.rights === "Restricted"
+              ? "×"
+              : sample.rights.startsWith("Cleared")
+              ? "✓"
+              : "!"
+          }
 
-          <p>
-            ${sample.type}
-            •
-            ${sample.artist}
-            <br>
+          ${sample.rights}
 
-            ${sample.bpm} BPM
-            •
-            ${sample.key}
-          </p>
+        </span>
 
+        <div class="sample-actions">
 
-          <span
-            class="rights ${rightsClass(sample.rights)}">
+          <button data-preview="${sample.id}">
+            ▶ Preview
+          </button>
 
-            ${
-              sample.rights === "Restricted"
-                ? "×"
-                : sample.rights.startsWith("Cleared")
-                ? "✓"
-                : "!"
-            }
+          <button data-save="${sample.id}">
+            ♡ Save
+          </button>
 
-            ${sample.rights}
-
-          </span>
-
-
-          <div
-            class="sample-actions"
-            style="margin-top:14px">
-
-            <button
-              data-preview="${sample.id}">
-
-              ▶ Preview
-
-            </button>
-
-
-            <button
-              data-save="${sample.id}">
-
-              ♡ Save
-
-            </button>
-
-
-            <button
-              data-add="${sample.id}">
-
-              ＋ Beat Lab
-
-            </button>
-
-          </div>
+          <button data-add="${sample.id}">
+            ＋ Beat Lab
+          </button>
 
         </div>
 
-      </article>
+      </div>
 
-    `;
+    </article>
 
-  }).join("");
+  `).join("");
+}
+
+
+// ==========================================
+// MUSIC PLAYER
+// ==========================================
+
+function playTrack(
+  title,
+  icon = "🎵",
+  artist = "GrooveDNA Library"
+) {
+
+  currentTrack = {
+    title,
+    icon,
+    artist
+  };
+
+  const playerTitle = $("#playerTitle");
+  const playerArtist = $("#playerArtist");
+  const playerCover = $("#playerCover");
+  const playerPlay = $("#playerPlay");
+
+  if (playerTitle) {
+    playerTitle.textContent = title;
+  }
+
+  if (playerArtist) {
+    playerArtist.textContent = artist;
+  }
+
+  if (playerCover) {
+    playerCover.textContent = icon;
+  }
+
+  if (playerPlay) {
+    playerPlay.textContent = "⏸";
+  }
+
+  isPlaying = true;
+
+  showToast(`▶ Playing "${title}"`);
+}
+
+
+function togglePlayer() {
+
+  if (!currentTrack) {
+
+    playTrack(
+      "Funky Guitar Break",
+      "🎸",
+      "Demo Vault"
+    );
+
+    return;
+  }
+
+  isPlaying = !isPlaying;
+
+  const playerPlay = $("#playerPlay");
+
+  if (playerPlay) {
+    playerPlay.textContent =
+      isPlaying ? "⏸" : "▶";
+  }
+
+  showToast(
+    isPlaying
+      ? `▶ Playing "${currentTrack.title}"`
+      : "⏸ Playback paused"
+  );
 }
 
 
@@ -282,28 +363,20 @@ function renderSamples() {
 // GENRE FILTERS
 // ==========================================
 
-document.querySelectorAll(".filter").forEach(button => {
+$$(".filter").forEach(button => {
 
   button.addEventListener("click", () => {
 
-    document
-      .querySelectorAll(".filter")
-      .forEach(btn => {
-
-        btn.classList.remove("active");
-
-      });
-
+    $$(".filter").forEach(btn => {
+      btn.classList.remove("active");
+    });
 
     button.classList.add("active");
-
 
     selectedGenre =
       button.dataset.genre;
 
-
     renderSamples();
-
   });
 
 });
@@ -315,63 +388,45 @@ document.querySelectorAll(".filter").forEach(button => {
 
 function runSearch() {
 
-  const input =
-    document.getElementById("searchInput");
+  const input = $("#searchInput");
 
   if (!input) return;
-
 
   searchTerm =
     input.value.trim();
 
-
   renderSamples();
 
-
   const section =
-    document.querySelector(".content-section");
-
+    $(".content-section");
 
   if (section) {
 
     section.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
+      behavior: "smooth"
     });
 
   }
-
 }
 
 
-const searchButton =
-  document.getElementById("searchBtn");
+if ($("#searchBtn")) {
 
-
-if (searchButton) {
-
-  searchButton.addEventListener(
+  $("#searchBtn").addEventListener(
     "click",
     runSearch
   );
-
 }
 
 
-const searchInput =
-  document.getElementById("searchInput");
+if ($("#searchInput")) {
 
-
-if (searchInput) {
-
-  searchInput.addEventListener(
+  $("#searchInput").addEventListener(
     "keydown",
     event => {
 
       if (event.key === "Enter") {
-
         runSearch();
-
       }
 
     }
@@ -381,7 +436,7 @@ if (searchInput) {
 
 
 // ==========================================
-// SAMPLE BUTTONS
+// SAMPLE CARD ACTIONS
 // ==========================================
 
 if (sampleGrid) {
@@ -395,12 +450,10 @@ if (sampleGrid) {
           "[data-preview]"
         );
 
-
       const save =
         event.target.closest(
           "[data-save]"
         );
-
 
       const add =
         event.target.closest(
@@ -408,22 +461,23 @@ if (sampleGrid) {
         );
 
 
-      // Preview
+      // PREVIEW
 
       if (preview) {
 
         const sample =
           samples.find(
             item =>
-              item.id ===
-              Number(preview.dataset.preview)
+              item.id ==
+              preview.dataset.preview
           );
-
 
         if (sample) {
 
-          showToast(
-            `▶ Previewing "${sample.title}" — ${sample.bpm} BPM`
+          playTrack(
+            sample.title,
+            sample.icon,
+            sample.artist
           );
 
         }
@@ -431,20 +485,18 @@ if (sampleGrid) {
       }
 
 
-      // Save
+      // SAVE
 
       if (save) {
 
         const sample =
           samples.find(
             item =>
-              item.id ===
-              Number(save.dataset.save)
+              item.id ==
+              save.dataset.save
           );
 
-
         if (!sample) return;
-
 
         let saved =
           JSON.parse(
@@ -453,19 +505,16 @@ if (sampleGrid) {
             ) || "[]"
           );
 
-
         if (!saved.includes(sample.id)) {
 
           saved.push(sample.id);
 
         }
 
-
         localStorage.setItem(
           "grooveDNA_saved",
           JSON.stringify(saved)
         );
-
 
         showToast(
           `♡ "${sample.title}" saved to your collection.`
@@ -474,63 +523,51 @@ if (sampleGrid) {
       }
 
 
-      // Add to Beat Lab
+      // ADD TO BEAT LAB
 
       if (add) {
 
         const sample =
           samples.find(
             item =>
-              item.id ===
-              Number(add.dataset.add)
+              item.id ==
+              add.dataset.add
           );
-
 
         if (!sample) return;
 
+        const lanes =
+          $$(".track-lane");
 
-        const labEmpty =
-          document.getElementById(
-            "labEmpty"
-          );
+        const lane =
+          lanes.length
+            ? lanes[3]
+            : $(".track.melody");
 
-
-        if (labEmpty) {
-
-          labEmpty.style.display =
-            "none";
-
-        }
-
-
-        const track =
-          document.querySelector(
-            ".track.melody"
-          );
-
-
-        if (track) {
+        if (lane) {
 
           const clip =
             document.createElement("div");
 
-
           clip.className =
             "clip melody";
 
-
           clip.style.width =
-            `${35 + Math.random() * 40}%`;
-
+            `${25 + Math.random() * 55}%`;
 
           clip.title =
             sample.title;
 
-
-          track.appendChild(clip);
+          lane.appendChild(clip);
 
         }
 
+        const labEmpty =
+          $("#labEmpty");
+
+        if (labEmpty) {
+          labEmpty.style.display = "none";
+        }
 
         showToast(
           `＋ "${sample.title}" added to Beat Lab.`
@@ -545,225 +582,103 @@ if (sampleGrid) {
 
 
 // ==========================================
-// DEMO AUDIO BUTTONS
+// DEMO PLAY BUTTONS
 // ==========================================
 
-document
-  .querySelectorAll("[data-demo-play]")
-  .forEach(button => {
+$$("[data-demo-play]").forEach(button => {
 
-    button.addEventListener(
-      "click",
-      () => {
-
-        if (
-          button.textContent.includes(
-            "Play"
-          )
-        ) {
-
-          button.textContent =
-            "⏸ Playing...";
-
-        } else {
-
-          button.textContent =
-            "▶ Play Preview";
-
-        }
-
-
-        showToast(
-          "Demo audio control activated."
-        );
-
-      }
-    );
-
-  });
-
-
-// ==========================================
-// BEAT LAB PLAY
-// ==========================================
-
-const labPlay =
-  document.getElementById(
-    "labPlay"
-  );
-
-
-if (labPlay) {
-
-  labPlay.addEventListener(
+  button.addEventListener(
     "click",
     () => {
 
-      if (
-        labPlay.textContent === "▶"
-      ) {
+      playTrack(
+        button.dataset.title ||
+        "Funky Guitar Break",
 
-        labPlay.textContent =
-          "⏸";
+        "🎵",
 
-        showToast(
-          "Beat Lab is playing."
-        );
-
-      } else {
-
-        labPlay.textContent =
-          "▶";
-
-        showToast(
-          "Beat Lab stopped."
-        );
-
-      }
-
-    }
-  );
-
-}
-
-
-// ==========================================
-// BPM CONTROL
-// ==========================================
-
-const bpm =
-  document.getElementById("bpm");
-
-const bpmValue =
-  document.getElementById(
-    "bpmValue"
-  );
-
-
-if (bpm && bpmValue) {
-
-  bpm.addEventListener(
-    "input",
-    event => {
-
-      bpmValue.textContent =
-        event.target.value;
-
-    }
-  );
-
-}
-
-
-// ==========================================
-// PITCH CONTROL
-// ==========================================
-
-const pitch =
-  document.getElementById(
-    "pitch"
-  );
-
-const pitchValue =
-  document.getElementById(
-    "pitchValue"
-  );
-
-
-if (pitch && pitchValue) {
-
-  pitch.addEventListener(
-    "input",
-    event => {
-
-      const value =
-        Number(event.target.value);
-
-
-      pitchValue.textContent =
-        value > 0
-          ? `+${value}`
-          : value;
-
-    }
-  );
-
-}
-
-
-// ==========================================
-// SAVE BEAT
-// ==========================================
-
-const saveBeat =
-  document.getElementById(
-    "saveBeat"
-  );
-
-
-if (saveBeat) {
-
-  saveBeat.addEventListener(
-    "click",
-    () => {
-
-      localStorage.setItem(
-        "grooveDNA_beatSaved",
-        "true"
-      );
-
-
-      showToast(
-        "✓ Beat idea saved!"
+        "GrooveDNA Demo"
       );
 
     }
   );
 
-}
+});
 
 
 // ==========================================
-// CLEAR BEAT LAB
+// PLAYER CONTROLS
 // ==========================================
 
-const clearLab =
-  document.getElementById(
-    "clearLab"
+if ($("#playerPlay")) {
+
+  $("#playerPlay").addEventListener(
+    "click",
+    togglePlayer
   );
 
+}
 
-if (clearLab) {
+if ($("#prevBtn")) {
 
-  clearLab.addEventListener(
+  $("#prevBtn").addEventListener(
+    "click",
+    () => {
+      showToast("Previous track");
+    }
+  );
+
+}
+
+if ($("#nextBtn")) {
+
+  $("#nextBtn").addEventListener(
+    "click",
+    () => {
+      showToast("Next track");
+    }
+  );
+
+}
+
+if ($("#shuffleBtn")) {
+
+  $("#shuffleBtn").addEventListener(
+    "click",
+    () => {
+      showToast("Shuffle enabled");
+    }
+  );
+
+}
+
+if ($("#queueBtn")) {
+
+  $("#queueBtn").addEventListener(
     "click",
     () => {
 
-      document
-        .querySelectorAll(
-          "#timeline .clip"
-        )
-        .forEach(
-          clip => clip.remove()
-        );
+      openModal(
+        "Queue",
+        `
+          <h2>Up next</h2>
 
+          <div class="modal-content-grid">
 
-      const labEmpty =
-        document.getElementById(
-          "labEmpty"
-        );
+            <button class="modal-option">
+              Bassline 74 — Funk Foundry
+            </button>
 
+            <button class="modal-option">
+              Velvet Keys — Soul Library
+            </button>
 
-      if (labEmpty) {
+            <button class="modal-option">
+              Neon Pocket — Afterdark Audio
+            </button>
 
-        labEmpty.style.display =
-          "block";
-
-      }
-
-
-      showToast(
-        "Beat Lab cleared."
+          </div>
+        `
       );
 
     }
@@ -777,53 +692,33 @@ if (clearLab) {
 // ==========================================
 
 const uploadInput =
-  document.getElementById(
-    "audioUpload"
-  );
-
+  $("#audioUpload");
 
 function openUpload() {
 
   if (uploadInput) {
-
     uploadInput.click();
-
   }
 
 }
 
+if ($("#uploadBtn")) {
 
-const uploadButton =
-  document.getElementById(
-    "uploadBtn"
-  );
-
-
-const uploadButton2 =
-  document.getElementById(
-    "uploadBtn2"
-  );
-
-
-if (uploadButton) {
-
-  uploadButton.addEventListener(
+  $("#uploadBtn").addEventListener(
     "click",
     openUpload
   );
 
 }
 
+if ($("#uploadBtn2")) {
 
-if (uploadButton2) {
-
-  uploadButton2.addEventListener(
+  $("#uploadBtn2").addEventListener(
     "click",
     openUpload
   );
 
 }
-
 
 if (uploadInput) {
 
@@ -834,11 +729,10 @@ if (uploadInput) {
       const file =
         uploadInput.files[0];
 
-
       if (file) {
 
         showToast(
-          `🎙 "${file.name}" selected.`
+          `🎙 "${file.name}" selected. Audio analysis ready for backend integration.`
         );
 
       }
@@ -850,95 +744,63 @@ if (uploadInput) {
 
 
 // ==========================================
-// COMMUNITY LIKES
+// BEAT LAB
 // ==========================================
 
-document
-  .querySelectorAll("[data-like]")
-  .forEach(button => {
+if ($("#bpm")) {
 
-    button.addEventListener(
-      "click",
-      () => {
+  $("#bpm").addEventListener(
+    "input",
+    event => {
 
-        const number =
-          button.querySelector(
-            "span"
-          );
+      $("#bpmValue").textContent =
+        event.target.value;
 
-
-        if (number) {
-
-          number.textContent =
-            Number(number.textContent) + 1;
-
-        }
-
-
-        button.firstChild.textContent =
-          "♥ ";
-
-      }
-    );
-
-  });
-
-
-// ==========================================
-// REMIX
-// ==========================================
-
-document
-  .querySelectorAll("[data-remix]")
-  .forEach(button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        showToast(
-          "↻ Remix workspace opened."
-        );
-
-      }
-    );
-
-  });
-
-
-// ==========================================
-// CHALLENGE
-// ==========================================
-
-const challengeButton =
-  document.getElementById(
-    "challengeBtn"
+    }
   );
 
+}
 
-if (challengeButton) {
 
-  challengeButton.addEventListener(
+if ($("#pitch")) {
+
+  $("#pitch").addEventListener(
+    "input",
+    event => {
+
+      const value =
+        Number(event.target.value);
+
+      $("#pitchValue").textContent =
+        value > 0
+          ? `+${value}`
+          : value;
+
+    }
+  );
+
+}
+
+
+if ($("#labPlay")) {
+
+  $("#labPlay").addEventListener(
     "click",
     () => {
 
-      const community =
-        document.getElementById(
-          "community"
-        );
+      const button =
+        $("#labPlay");
 
+      const playing =
+        button.textContent === "▶";
 
-      if (community) {
-
-        community.scrollIntoView({
-          behavior: "smooth"
-        });
-
-      }
-
+      button.textContent =
+        playing ? "⏸" : "▶";
 
       showToast(
-        "🔥 Weekly challenge: Flip the Funk!"
+        playing
+          ? "Beat Lab is playing."
+          : "Beat Lab stopped."
       );
 
     }
@@ -947,15 +809,544 @@ if (challengeButton) {
 }
 
 
-const joinChallenge =
-  document.getElementById(
-    "joinChallenge"
+if ($("#saveBeat")) {
+
+  $("#saveBeat").addEventListener(
+    "click",
+    () => {
+
+      localStorage.setItem(
+        "grooveDNA_beatSaved",
+        "true"
+      );
+
+      showToast(
+        "✓ Beat idea saved to your library!"
+      );
+
+    }
   );
 
+}
 
-if (joinChallenge) {
 
-  joinChallenge.addEventListener(
+if ($("#clearLab")) {
+
+  $("#clearLab").addEventListener(
+    "click",
+    () => {
+
+      $$(".timeline .clip")
+        .forEach(
+          clip => clip.remove()
+        );
+
+      const empty =
+        $("#labEmpty");
+
+      if (empty) {
+        empty.style.display = "block";
+      }
+
+      showToast(
+        "Beat Lab cleared."
+      );
+
+    }
+  );
+
+}
+
+
+if ($("#generateBeat")) {
+
+  $("#generateBeat").addEventListener(
+    "click",
+    () => {
+
+      const lanes =
+        $$(".track-lane");
+
+      const lane =
+        lanes.length
+          ? lanes[3]
+          : $(".track.melody");
+
+      if (!lane) return;
+
+      const clip =
+        document.createElement("div");
+
+      clip.className =
+        "clip melody";
+
+      clip.style.width =
+        "68%";
+
+      lane.appendChild(clip);
+
+      const empty =
+        $("#labEmpty");
+
+      if (empty) {
+        empty.style.display = "none";
+      }
+
+      showToast(
+        "✦ GrooveDNA generated a starting groove."
+      );
+
+    }
+  );
+
+}
+
+
+// ==========================================
+// MOOD DISCOVERY
+// ==========================================
+
+$$(".mood-card").forEach(button => {
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      searchTerm = "";
+
+      selectedGenre = "All";
+
+      if ($("#searchInput")) {
+        $("#searchInput").value = "";
+      }
+
+      showToast(
+        `🎧 Building a ${button.dataset.mood} mix for you...`
+      );
+
+      setTimeout(() => {
+
+        if ($("#discover")) {
+
+          $("#discover").scrollIntoView({
+            behavior: "smooth"
+          });
+
+        }
+
+      }, 200);
+
+    }
+  );
+
+});
+
+
+// ==========================================
+// MORE DISCOVERIES
+// ==========================================
+
+if ($("#discoverMore")) {
+
+  $("#discoverMore").addEventListener(
+    "click",
+    () => {
+
+      samples.push({
+        id: Date.now(),
+        title: "Fresh DNA Discovery",
+        artist: "GrooveDNA Picks",
+        genre: "Funk",
+        type: "Percussion Loop",
+        bpm: 103,
+        key: "D Minor",
+        rights: "Cleared / Licensed",
+        icon: "✦"
+      });
+
+      renderSamples();
+
+      showToast(
+        "↻ Fresh recommendations added."
+      );
+
+    }
+  );
+
+}
+
+
+// ==========================================
+// STRETCH YOUR DNA
+// ==========================================
+
+function renderStretch() {
+
+  const container =
+    $("#stretchGrid");
+
+  if (!container) return;
+
+  const picks = [
+    samples[7],
+    samples[6],
+    samples[4]
+  ];
+
+  container.innerHTML =
+    picks.map(sample => `
+
+      <article class="stretch-card">
+
+        <span class="big-icon">
+          ${sample.icon}
+        </span>
+
+        <div>
+
+          <strong>
+            ${sample.title}
+          </strong>
+
+          <p>
+            ${sample.artist}
+          </p>
+
+          <small>
+            ${sample.genre}
+            •
+            ${sample.bpm} BPM
+          </small>
+
+        </div>
+
+        <button
+          class="icon-btn"
+          data-preview="${sample.id}"
+        >
+          ▶
+        </button>
+
+      </article>
+
+    `).join("");
+
+}
+
+
+// ==========================================
+// PLAYLISTS
+// ==========================================
+
+const playlists = [
+
+  ["Late Night Soul", "24 tracks", "🌙"],
+  ["Funk Essentials", "31 tracks", "🕺"],
+  ["Guitar After Dark", "18 tracks", "🎸"],
+  ["New DNA Discoveries", "16 tracks", "🧬"],
+  ["Sunday Morning", "22 tracks", "☀️"],
+  ["Deep Focus", "42 tracks", "◌"],
+  ["Analog Heat", "27 tracks", "🔥"],
+  ["Saved Samples", "38 sounds", "＋"]
+
+];
+
+
+function renderPlaylists() {
+
+  const grid =
+    $("#playlistGrid");
+
+  if (!grid) return;
+
+  const saved =
+    JSON.parse(
+      localStorage.getItem(
+        "grooveDNA_saved"
+      ) || "[]"
+    );
+
+  grid.innerHTML =
+    playlists.map(
+      (playlist, index) => `
+
+        <article class="playlist-card">
+
+          <div class="playlist-art">
+            ${playlist[2]}
+          </div>
+
+          <strong>
+            ${playlist[0]}
+          </strong>
+
+          <small>
+            ${playlist[1]}
+
+            ${
+              index === 7 &&
+              saved.length
+                ? ` • ${saved.length} saved`
+                : ""
+            }
+
+          </small>
+
+        </article>
+
+      `
+    ).join("");
+
+}
+
+
+// ==========================================
+// LIBRARY TABS
+// ==========================================
+
+$$(".library-tab").forEach(button => {
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      $$(".library-tab")
+        .forEach(
+          item =>
+            item.classList.remove("active")
+        );
+
+      button.classList.add("active");
+
+      showToast(
+        `Library: ${button.textContent}`
+      );
+
+    }
+  );
+
+});
+
+
+// ==========================================
+// CREATE PLAYLIST
+// ==========================================
+
+if ($("#newPlaylist")) {
+
+  $("#newPlaylist").addEventListener(
+    "click",
+    () => {
+
+      openModal(
+        "Create playlist",
+
+        `
+          <h2>
+            Build a new playlist
+          </h2>
+
+          <p class="muted">
+            Give your playlist a name and
+            GrooveDNA will help fill it.
+          </p>
+
+          <label class="search-box">
+
+            <input
+              id="playlistName"
+              placeholder="Playlist name"
+            >
+
+          </label>
+
+          <br>
+
+          <button
+            class="btn primary"
+            id="createPlaylist"
+          >
+            Create Playlist
+          </button>
+        `
+      );
+
+    }
+  );
+
+}
+
+
+// ==========================================
+// ARTISTS
+// ==========================================
+
+const artists = [
+
+  ["Anderson .Paak", "🎙"],
+  ["Khruangbin", "🪩"],
+  ["Stevie Wonder", "🎹"],
+  ["Curtis Mayfield", "🎸"],
+  ["Hiatus Kaiyote", "🌿"],
+  ["Sade", "💜"]
+
+];
+
+
+if ($("#artistGrid")) {
+
+  $("#artistGrid").innerHTML =
+    artists.map(
+      artist => `
+
+        <div class="artist-card">
+
+          <div class="artist-photo">
+            ${artist[1]}
+          </div>
+
+          <strong>
+            ${artist[0]}
+          </strong>
+
+          <span>
+            Followed
+          </span>
+
+        </div>
+
+      `
+    ).join("");
+
+}
+
+
+if ($("#viewArtists")) {
+
+  $("#viewArtists").addEventListener(
+    "click",
+    () => {
+
+      openModal(
+        "Artists in your orbit",
+
+        `
+          <h2>
+            Your artist network
+          </h2>
+
+          <div class="modal-content-grid">
+
+            ${artists.map(
+              artist => `
+
+                <button class="modal-option">
+
+                  ${artist[1]}
+                  ${artist[0]}
+
+                  <span class="muted">
+                    • 89% match
+                  </span>
+
+                </button>
+
+              `
+            ).join("")}
+
+          </div>
+        `
+      );
+
+    }
+  );
+
+}
+
+
+// ==========================================
+// COMMUNITY
+// ==========================================
+
+$$("[data-like]").forEach(button => {
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      const number =
+        button.querySelector("span");
+
+      if (number) {
+
+        number.textContent =
+          Number(number.textContent) + 1;
+
+      }
+
+      button.firstChild.textContent =
+        "♥ ";
+
+      showToast(
+        "♥ Added to your liked activity."
+      );
+
+    }
+  );
+
+});
+
+
+$$("[data-remix]").forEach(button => {
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      if ($("#beatlab")) {
+
+        $("#beatlab").scrollIntoView({
+          behavior: "smooth"
+        });
+
+      }
+
+      showToast(
+        "↻ Remix workspace ready."
+      );
+
+    }
+  );
+
+});
+
+
+$$("[data-follow]").forEach(button => {
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      button.textContent =
+        "✓ Following";
+
+      showToast(
+        "Following @JayGrooves."
+      );
+
+    }
+  );
+
+});
+
+
+// ==========================================
+// CHALLENGES
+// ==========================================
+
+if ($("#joinChallenge")) {
+
+  $("#joinChallenge").addEventListener(
     "click",
     () => {
 
@@ -969,24 +1360,119 @@ if (joinChallenge) {
 }
 
 
-// ==========================================
-// PROFILE
-// ==========================================
+if ($("#challengeBtn")) {
 
-const profileButton =
-  document.getElementById(
-    "profileBtn"
+  $("#challengeBtn").addEventListener(
+    "click",
+    () => {
+
+      openModal(
+        "Weekly Challenge",
+
+        `
+          <p class="eyebrow">
+            5 DAYS LEFT
+          </p>
+
+          <h2>
+            Flip the Funk
+          </h2>
+
+          <p>
+            Build an original instrumental
+            around approved source material.
+            Entries are judged on groove,
+            creativity, and transformation.
+          </p>
+
+          <button
+            class="btn primary"
+            id="modalJoin"
+          >
+            Join Challenge
+          </button>
+        `
+      );
+
+    }
   );
 
+}
 
-if (profileButton) {
 
-  profileButton.addEventListener(
+// ==========================================
+// DNA MATCH
+// ==========================================
+
+if ($("#dnaMatch")) {
+
+  $("#dnaMatch").addEventListener(
+    "click",
+    () => {
+
+      openModal(
+        "DNA Match",
+
+        `
+          <p class="eyebrow">
+            89% COMPATIBILITY
+          </p>
+
+          <h2>
+            You + Maya
+          </h2>
+
+          <p>
+            You share a strong love of
+            rhythmic soul, analog textures,
+            and groove-heavy production.
+          </p>
+
+          <div class="dna-tags">
+
+            <span>
+              7 shared artists
+            </span>
+
+            <span>
+              4 shared genres
+            </span>
+
+            <span>
+              12 shared songs
+            </span>
+
+          </div>
+
+          <br>
+
+          <button
+            class="btn primary"
+            id="matchPlaylist"
+          >
+            Make a Match Playlist
+          </button>
+        `
+      );
+
+    }
+  );
+
+}
+
+
+// ==========================================
+// SHARE DNA
+// ==========================================
+
+if ($("#shareDNA")) {
+
+  $("#shareDNA").addEventListener(
     "click",
     () => {
 
       showToast(
-        "Profile editor opened."
+        "🧬 GrooveDNA profile link copied!"
       );
 
     }
@@ -996,68 +1482,619 @@ if (profileButton) {
 
 
 // ==========================================
-// MOBILE MENU
+// PROFILE
 // ==========================================
 
-const menuToggle =
-  document.getElementById(
-    "menuToggle"
-  );
+if ($("#profileBtn")) {
 
-
-const mainNav =
-  document.getElementById(
-    "mainNav"
-  );
-
-
-if (menuToggle && mainNav) {
-
-  menuToggle.addEventListener(
+  $("#profileBtn").addEventListener(
     "click",
     () => {
 
-      const isOpen =
-        mainNav.classList.toggle(
-          "open"
-        );
+      openModal(
+        "Edit Profile",
 
+        `
+          <h2>
+            Edit your profile
+          </h2>
 
-      menuToggle.setAttribute(
-        "aria-expanded",
-        String(isOpen)
+          <label class="search-box">
+
+            <input
+              value="Zaire's Groove"
+              id="profileName"
+            >
+
+          </label>
+
+          <br>
+
+          <label class="search-box">
+
+            <input
+              value="Creator • Funk, Soul & Rock"
+              id="profileBio"
+            >
+
+          </label>
+
+          <br>
+
+          <button
+            class="btn primary"
+            id="saveProfile"
+          >
+            Save Changes
+          </button>
+        `
       );
 
     }
   );
 
+}
 
-  mainNav
-    .querySelectorAll("a")
-    .forEach(link => {
 
-      link.addEventListener(
-        "click",
-        () => {
+// ==========================================
+// MODALS
+// ==========================================
 
-          mainNav.classList.remove(
-            "open"
-          );
+function openModal(title, content) {
 
-        }
-      );
+  const modalContent =
+    $("#modalContent");
 
-    });
+  const modalBackdrop =
+    $("#modalBackdrop");
+
+  if (!modalContent ||
+      !modalBackdrop) {
+    return;
+  }
+
+  modalContent.innerHTML = `
+
+    <p class="eyebrow">
+      GROOVEDNA
+    </p>
+
+    ${content}
+
+  `;
+
+  modalBackdrop.classList.add("open");
+
+  modalBackdrop.dataset.title =
+    title;
+}
+
+
+function closeModal() {
+
+  const backdrop =
+    $("#modalBackdrop");
+
+  if (backdrop) {
+    backdrop.classList.remove("open");
+  }
+
+}
+
+
+if ($("#modalClose")) {
+
+  $("#modalClose").addEventListener(
+    "click",
+    closeModal
+  );
+
+}
+
+
+if ($("#modalBackdrop")) {
+
+  $("#modalBackdrop").addEventListener(
+    "click",
+    event => {
+
+      if (
+        event.target ===
+        $("#modalBackdrop")
+      ) {
+
+        closeModal();
+
+      }
+
+    }
+  );
 
 }
 
 
 // ==========================================
-// START APP
+// MODAL ACTIONS
+// ==========================================
+
+if ($("#modalBackdrop")) {
+
+  $("#modalBackdrop").addEventListener(
+    "click",
+    event => {
+
+      if (
+        event.target.id ===
+        "createPlaylist"
+      ) {
+
+        const name =
+          $("#playlistName").value.trim()
+          || "New Groove";
+
+        playlists.unshift([
+          name,
+          "0 tracks",
+          "✦"
+        ]);
+
+        renderPlaylists();
+
+        closeModal();
+
+        showToast(
+          `✓ "${name}" created.`
+        );
+
+      }
+
+
+      if (
+        event.target.id ===
+        "saveProfile"
+      ) {
+
+        closeModal();
+
+        showToast(
+          "✓ Profile updated."
+        );
+
+      }
+
+
+      if (
+        event.target.id ===
+        "modalJoin"
+      ) {
+
+        closeModal();
+
+        showToast(
+          "🔥 Challenge joined."
+        );
+
+      }
+
+
+      if (
+        event.target.id ===
+        "matchPlaylist"
+      ) {
+
+        closeModal();
+
+        showToast(
+          "✦ Match playlist created."
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+// ==========================================
+// NOTIFICATIONS DRAWER
+// ==========================================
+
+if ($("#notificationsBtn")) {
+
+  $("#notificationsBtn").addEventListener(
+    "click",
+    () => {
+
+      $("#notificationDrawer")
+        .classList.add("open");
+
+      $("#drawerBackdrop")
+        .classList.add("open");
+
+      $("#notificationDrawer")
+        .setAttribute(
+          "aria-hidden",
+          "false"
+        );
+
+    }
+  );
+
+}
+
+
+function closeDrawer() {
+
+  if ($("#notificationDrawer")) {
+
+    $("#notificationDrawer")
+      .classList.remove("open");
+
+  }
+
+  if ($("#drawerBackdrop")) {
+
+    $("#drawerBackdrop")
+      .classList.remove("open");
+
+  }
+
+  if ($("#notificationDrawer")) {
+
+    $("#notificationDrawer")
+      .setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+  }
+
+  if ($("#notificationBadge")) {
+
+    $("#notificationBadge")
+      .style.display = "none";
+
+  }
+
+}
+
+
+if ($(".close-drawer")) {
+
+  $(".close-drawer")
+    .addEventListener(
+      "click",
+      closeDrawer
+    );
+
+}
+
+
+if ($("#drawerBackdrop")) {
+
+  $("#drawerBackdrop")
+    .addEventListener(
+      "click",
+      closeDrawer
+    );
+
+}
+
+
+// ==========================================
+// SCROLL BUTTONS
+// ==========================================
+
+$$("[data-scroll]").forEach(button => {
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      const target =
+        $(button.dataset.scroll);
+
+      if (target) {
+
+        target.scrollIntoView({
+          behavior: "smooth"
+        });
+
+      }
+
+    }
+  );
+
+});
+
+
+// ==========================================
+// SETTINGS
+// ==========================================
+
+const settingsData = {
+
+  account: [
+    [
+      "Display name",
+      "Zaire's Groove",
+      "Edit your public creator identity"
+    ],
+    [
+      "Public profile",
+      "Visible",
+      "Let other creators discover your profile"
+    ],
+    [
+      "Email updates",
+      "On",
+      "Occasional product updates"
+    ]
+  ],
+
+  playback: [
+    [
+      "Autoplay",
+      "On",
+      "Continue with similar music"
+    ],
+    [
+      "Crossfade",
+      "On",
+      "Blend tracks smoothly"
+    ],
+    [
+      "High quality audio",
+      "On",
+      "Use higher-quality streaming when available"
+    ]
+  ],
+
+  notifications: [
+    [
+      "New releases",
+      "On",
+      "Artists you follow"
+    ],
+    [
+      "Recommendations",
+      "On",
+      "Weekly GrooveDNA picks"
+    ],
+    [
+      "Community activity",
+      "On",
+      "Likes, follows and remixes"
+    ]
+  ],
+
+  privacy: [
+    [
+      "Private listening",
+      "Off",
+      "Hide listening activity from followers"
+    ],
+    [
+      "Public playlists",
+      "On",
+      "Allow others to view your public playlists"
+    ],
+    [
+      "Personalized recommendations",
+      "On",
+      "Use activity to improve recommendations"
+    ]
+  ],
+
+  appearance: [
+    [
+      "Dark theme",
+      "On",
+      "GrooveDNA's signature theme"
+    ],
+    [
+      "Motion effects",
+      "On",
+      "Animated transitions and visualizations"
+    ],
+    [
+      "Compact player",
+      "Off",
+      "Use a smaller persistent player"
+    ]
+  ]
+
+};
+
+
+function renderSettings(
+  key = "account"
+) {
+
+  const title =
+    $("#settingsTitle");
+
+  const list =
+    $("#settingsList");
+
+  if (!title || !list) return;
+
+  title.textContent =
+    key[0].toUpperCase() +
+    key.slice(1) +
+    " settings";
+
+  list.innerHTML =
+    settingsData[key]
+      .map(setting => `
+
+        <div class="setting-row">
+
+          <div>
+
+            <strong>
+              ${setting[0]}
+            </strong>
+
+            <small>
+              ${setting[2]}
+            </small>
+
+          </div>
+
+          <label class="switch">
+
+            <input
+              type="checkbox"
+              ${
+                setting[1] === "On" ||
+                setting[1] === "Visible"
+                  ? "checked"
+                  : ""
+              }
+            >
+
+            <span></span>
+
+          </label>
+
+        </div>
+
+      `)
+      .join("");
+
+}
+
+
+$$(".settings-tab").forEach(button => {
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      $$(".settings-tab")
+        .forEach(
+          item =>
+            item.classList.remove("active")
+        );
+
+      button.classList.add("active");
+
+      renderSettings(
+        button.dataset.settings
+      );
+
+    }
+  );
+
+});
+
+
+// ==========================================
+// TOP PROFILE BUTTON
+// ==========================================
+
+if ($("#profileTop")) {
+
+  $("#profileTop").addEventListener(
+    "click",
+    () => {
+
+      if ($("#profile")) {
+
+        $("#profile").scrollIntoView({
+          behavior: "smooth"
+        });
+
+      }
+
+    }
+  );
+
+}
+
+
+// ==========================================
+// MOBILE NAVIGATION
+// ==========================================
+
+if ($("#menuToggle")) {
+
+  $("#menuToggle").addEventListener(
+    "click",
+    () => {
+
+      const nav =
+        $("#mainNav");
+
+      if (!nav) return;
+
+      const open =
+        nav.classList.toggle("open");
+
+      $("#menuToggle")
+        .setAttribute(
+          "aria-expanded",
+          open
+        );
+
+    }
+  );
+
+}
+
+
+$$("nav a").forEach(link => {
+
+  link.addEventListener(
+    "click",
+    () => {
+
+      if ($("#mainNav")) {
+
+        $("#mainNav")
+          .classList.remove("open");
+
+      }
+
+    }
+  );
+
+});
+
+
+// ==========================================
+// ESCAPE KEY
+// ==========================================
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if (event.key === "Escape") {
+
+      closeModal();
+      closeDrawer();
+
+    }
+
+  }
+);
+
+
+// ==========================================
+// START APPLICATION
 // ==========================================
 
 renderSamples();
 
+renderStretch();
+
+renderPlaylists();
+
+renderSettings();
+
 console.log(
-  "GrooveDNA JavaScript loaded successfully!"
+  "GrooveDNA complete frontend loaded."
 );
