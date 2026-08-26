@@ -54,6 +54,14 @@ async function loadDatabaseTracksUI() {
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  const authForm = document.querySelector("#authForm");
+  if (authForm) {
+    authForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      window.location.href = "home.html";
+    });
+  }
+
   /* =========================================================
      HELPERS
      ========================================================= */
@@ -64,11 +72,17 @@ document.addEventListener("DOMContentLoaded", () => {
      INITIALIZE
      ========================================================= */
 
-  updateResultCount(sampleCards.length);
-  updatePlayer();
+  if (typeof updateResultCount === "function" && typeof sampleCards !== "undefined") {
+    updateResultCount(sampleCards.length);
+  }
+  if (typeof updatePlayer === "function") {
+    updatePlayer();
+  }
 
   // --- ADD SUPABASE UI LOAD CALL HERE ---
-  loadDatabaseTracksUI();
+  if (document.querySelector("#sampleGrid")) {
+    loadDatabaseTracksUI();
+  }
 
   console.log(
     "%cGrooveDNA loaded successfully.",
