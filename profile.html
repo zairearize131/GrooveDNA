@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Manage your GrooveDNA profile and listening preferences.">
+  <title>GrooveDNA | Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="home.html" aria-label="GrooveDNA home"><span class="brand-mark">GD</span><span>Groove<span>DNA</span></span></a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+      <nav id="mainNav"><a href="home.html">Home</a><a href="discover.html">Discover</a><a href="groovedna.html">GrooveDNA</a><a href="beatlab.html">Beat Lab</a><a href="community.html">Community</a><a href="library.html">Library</a><a class="active" href="profile.html">Profile</a></nav>
+      <div class="top-actions"><a class="header-action" href="index.html">Sign out</a></div>
+    </header>
+
+    <main>
+      <section class="profile-section" id="profile">
+        <div class="section-heading"><div><p class="eyebrow">YOUR ACCOUNT</p><h1>Profile</h1><p>Shape how creators and recommendations experience your groove.</p></div><button class="btn secondary" id="profileBtn">Edit Profile</button></div>
+        <div class="profile-card panel"><div class="profile-avatar">ZC</div><div class="profile-main"><p class="eyebrow">CREATOR</p><h2>Zaire's Groove</h2><p>Creator • 24 playlists • 186 followers</p><div class="profile-tags"><span>Funk</span><span>Soul</span><span>Rock</span></div></div></div>
+      </section>
+
+      <section class="content-section">
+        <div class="section-heading"><div><p class="eyebrow">YOUR ACTIVITY</p><h2>Listening snapshot</h2><p>A quick view of what has been moving through your headphones.</p></div></div>
+        <div class="stats-grid"><div class="stat-card"><span>Listening time</span><strong>42h 18m</strong><small>+18% this month</small></div><div class="stat-card"><span>Artists discovered</span><strong>38</strong><small>12 outside your usual genres</small></div><div class="stat-card"><span>Top artist</span><strong>Anderson .Paak</strong><small>17 plays this week</small></div><div class="stat-card"><span>Discovery streak</span><strong>12 days 🔥</strong><small>Personal best: 19 days</small></div></div>
+      </section>
+
+      <section class="settings-section panel" id="settings">
+        <div class="settings-nav"><p class="eyebrow">ACCOUNT</p><button class="settings-tab active" data-settings="account">Profile</button><button class="settings-tab" data-settings="playback">Playback</button><button class="settings-tab" data-settings="notifications">Notifications</button><button class="settings-tab" data-settings="privacy">Privacy</button><button class="settings-tab" data-settings="appearance">Appearance</button></div>
+        <div class="settings-content"><p class="eyebrow">SETTINGS</p><h2 id="settingsTitle">Profile settings</h2><div class="settings-list" id="settingsList"></div></div>
+      </section>
+    </main>
+
+    <footer><strong>GrooveDNA</strong><span>Find the Sound. Flip the Groove. Create Something New.</span><div><a href="library.html">Library</a><a href="index.html">Sign out</a></div></footer>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+</body>
+</html>
