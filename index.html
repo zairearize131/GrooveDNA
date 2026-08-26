@@ -159,5 +159,29 @@
   <!-- Supabase JS Client CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
+  <!-- Auth Modal -->
+<div class="modal-backdrop" id="authModalBackdrop" style="display: none;">
+  <div class="modal" id="authModal">
+    <button class="modal-close" id="authModalClose">×</button>
+    <div class="auth-container">
+      <h2 id="authTitle">Sign In to GrooveDNA</h2>
+      <form id="authForm">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="authEmail" style="display: block; margin-bottom: 0.5rem;">Email</label>
+          <input type="email" id="authEmail" required placeholder="you@example.com" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #333; background: #111; color: #fff;">
+        </div>
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label for="authPassword" style="display: block; margin-bottom: 0.5rem;">Password</label>
+          <input type="password" id="authPassword" required placeholder="••••••••" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #333; background: #111; color: #fff;">
+        </div>
+        <button type="submit" class="btn primary" id="authSubmitBtn" style="width: 100%; margin-bottom: 1rem;">Sign In</button>
+      </form>
+      <p style="text-align: center; color: #888;">
+        <span id="authToggleText">Don't have an account?</span>
+        <button id="authToggleBtn" class="btn ghost" style="padding: 0 0.25rem; text-decoration: underline;">Sign Up</button>
+      </p>
+    </div>
+  </div>
+</div>
 </body>
 </html>
