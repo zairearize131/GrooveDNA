@@ -1499,6 +1499,8 @@ h3 {
 
 .beatlab {
   overflow: hidden;
+  background: #111217;
+  border-color: #343640;
 }
 
 .lab-toolbar {
@@ -1511,7 +1513,52 @@ h3 {
   border-bottom: 1px solid var(--line);
 
   flex-wrap: wrap;
+  background: #171920;
 }
+
+.transport-readout { color: var(--muted); font-variant-numeric: tabular-nums; }
+.export-btn { margin-left: auto; border-color: var(--green); color: var(--green); background: transparent; }
+.export-btn:disabled { opacity: .4; cursor: not-allowed; }
+.editor-status { padding: 11px 24px; color: var(--muted); font-size: .78rem; border-bottom: 1px solid var(--line); }
+.timeline:not(.is-ready) { display: none; }
+.timeline .track { grid-template-columns: 130px minmax(280px, 1fr) 190px; gap: 12px; }
+.track-name { color: #d8d3ca !important; font-size: .68rem !important; letter-spacing: .08em; }
+.track-name small { display: block; color: #6e707a; font-size: .52rem; margin-top: 2px; }
+.track-volume { width: 90px; accent-color: var(--accent); }
+.clip { display: flex; align-items: center; justify-content: space-between; padding: 0 12px; color: #15151a; font-size: .68rem; font-weight: 700; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }
+.clip i { width: 35%; height: 20px; opacity: .35; background: repeating-linear-gradient(90deg, currentColor 0 2px, transparent 2px 5px); }
+.clip.sample { width: 67%; background: #5ab7a4; }
+.clip.muted { opacity: .25; filter: grayscale(1); }
+.timeline.is-ready .clip { animation: clipIn .5s ease both; }
+@keyframes clipIn { from { transform: translateX(-12px); opacity: 0; } to { transform: translateX(0); opacity: .85; } }
+.sample-chooser { display: flex; align-items: center; gap: 8px; padding: 14px 24px; border-bottom: 1px solid var(--line); background: #15161c; }
+.sample-chooser strong { color: #77747a; font-size: .62rem; letter-spacing: .1em; margin-right: 8px; }
+.sample-chooser button { border: 1px solid #3b3d48; color: var(--text); background: #20222a; padding: 7px 12px; border-radius: 5px; font-size: .72rem; }
+.sample-chooser button:hover { border-color: var(--accent); color: var(--accent); }
+.track-edits { display: flex; align-items: center; gap: 5px; }
+.track-edits label { display: grid; gap: 2px; color: #77747a; font-size: .48rem; letter-spacing: .07em; }
+.track-edits input { width: 54px; accent-color: var(--accent); }
+.track-edits .track-volume { width: 68px; }
+.sample-modal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; background: rgba(5, 6, 9, .78); }
+.sample-modal-inner { width: min(760px, 100%); max-height: min(650px, 90vh); overflow: auto; padding: 24px; background: #171920; border: 1px solid #40434e; box-shadow: var(--shadow); }
+.modal-heading { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.modal-heading h2 { margin: 4px 0 0; }
+.modal-close { border: 0; background: transparent; color: var(--muted); font-size: 1.8rem; line-height: 1; }
+.sample-table { border-top: 1px solid var(--line); }
+.sample-row { display: grid; grid-template-columns: 1.4fr 1fr auto; gap: 16px; align-items: center; min-height: 64px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.sample-row strong { font-size: .8rem; }
+.sample-row audio { width: 100%; height: 32px; }
+.sample-head { min-height: 36px; color: #77747a; font-size: .58rem; letter-spacing: .09em; }
+.sample-empty { display: grid; gap: 8px; padding: 42px 10px; text-align: center; color: var(--muted); }
+.sample-empty strong { color: var(--text); }
+.add-none { margin-top: 16px; color: var(--muted); border-color: #4a4d59; }
+.clip.unavailable { background: repeating-linear-gradient(135deg, #343640 0 8px, #272932 8px 16px); color: #aaa6a0; }
+.playhead { position: absolute; top: 24px; bottom: 24px; left: 24px; z-index: 5; width: 2px; background: #f06b52; pointer-events: none; box-shadow: 0 0 12px rgba(240, 107, 82, .65); transition: left .08s linear; }
+.playhead span { position: absolute; top: -7px; left: -5px; width: 12px; height: 12px; background: #f06b52; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.clip-handle { width: 8px; height: 100%; padding: 0; border: 0; border-left: 2px solid rgba(255,255,255,.75); border-radius: 0; background: transparent; cursor: ew-resize; flex: 0 0 8px; }
+.clip-start { order: -1; }
+.clip:hover .clip-handle { background: rgba(255,255,255,.22); }
+.clip { user-select: none; touch-action: none; }
 
 .play-large {
   width: 45px;
@@ -1552,10 +1599,21 @@ h3 {
   position: relative;
 
   min-height: 300px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #0d0e12;
+  scrollbar-color: #5b5e6b #1a1c23;
+  scrollbar-width: auto;
 }
+
+.timeline::-webkit-scrollbar { height: 14px; }
+.timeline::-webkit-scrollbar-track { background: #1a1c23; border-top: 1px solid #2c2f39; }
+.timeline::-webkit-scrollbar-thumb { background: #5b5e6b; border: 3px solid #1a1c23; border-radius: 6px; }
+.timeline::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 .timeline-ruler {
   margin-left: 90px;
+  min-width: 1310px;
 
   display: grid;
   grid-template-columns: repeat(8, 1fr);
@@ -1574,8 +1632,10 @@ h3 {
   align-items: center;
 
   min-height: 55px;
+  min-width: 1310px;
 
   border-top: 1px solid #202027;
+  background: linear-gradient(90deg, rgba(255,255,255,.018), transparent 42%);
 }
 
 .track > span {
@@ -1587,6 +1647,7 @@ h3 {
   height: 38px;
 
   position: relative;
+  background: repeating-linear-gradient(90deg, transparent 0 72px, rgba(255,255,255,.035) 73px 74px);
 }
 
 .clip {
@@ -2767,17 +2828,36 @@ footer a:hover {
     flex-direction: column;
   }
 
+  .sample-chooser {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .sample-chooser strong {
+    width: 100%;
+  }
+
+  .sample-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .sample-row audio,
+  .sample-row .btn {
+    width: 100%;
+  }
+
   .timeline {
     padding: 15px;
     overflow-x: auto;
   }
 
   .timeline-ruler {
-    min-width: 500px;
+    min-width: 1310px;
   }
 
   .track {
-    min-width: 500px;
+    min-width: 1310px;
   }
 
   .post-card {
