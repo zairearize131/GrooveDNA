@@ -15,7 +15,7 @@
     <header class="topbar landing-topbar">
       <a class="brand" href="index.html" aria-label="GrooveDNA home"><span class="brand-mark">GD</span><span>Groove<span>DNA</span></span></a>
       <nav id="mainNav"><a href="discover.html">Discover</a><a href="groovedna.html">GrooveDNA</a><a href="beatlab.html">Beat Lab</a><a href="community.html">Community</a></nav>
-      <div class="top-actions"><a class="btn secondary" href="#auth">Sign In</a><a class="header-action" href="#auth">Create Account</a></div>
+      <div class="top-actions"><a class="btn secondary" id="signInLink" href="#auth">Sign In</a><a class="header-action" id="createAccountLink" href="#auth">Create Account</a></div>
     </header>
 
     <main>
@@ -50,13 +50,14 @@
       <a class="modal-close" href="#">×</a>
       <div class="auth-container">
         <p class="eyebrow">WELCOME BACK</p>
-        <h2>Enter your groove.</h2>
+        <h2 id="authTitle">Enter your groove.</h2>
         <form id="authForm">
+          <div class="form-group auth-name-group" id="authNameGroup" style="display:none;"><label for="authName">Display name</label><input type="text" id="authName" placeholder="Your name (optional)"></div>
           <div class="form-group auth-email-group"><label for="authEmail">Email</label><input type="email" id="authEmail" required placeholder="you@example.com"></div>
           <div class="form-group auth-password-group"><label for="authPassword">Password</label><input type="password" id="authPassword" required placeholder="Your password"></div>
-          <button type="submit" class="btn primary auth-submit">Sign In</button>
+          <button type="submit" id="authSubmit" class="btn primary auth-submit">Sign In</button>
         </form>
-        <p class="auth-toggle-copy">New to GrooveDNA? <a href="home.html">Create an account</a></p>
+        <p class="auth-toggle-copy" id="authToggleCopy">New to GrooveDNA? <a href="#" id="authModeToggle">Create an account</a></p>
       </div>
     </div>
   </div>
