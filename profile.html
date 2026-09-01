@@ -47,6 +47,7 @@
         </span>
       </a>
 
+
       <button
         class="menu-toggle"
         id="menuToggle"
@@ -56,6 +57,7 @@
       >
         ☰
       </button>
+
 
       <nav id="mainNav">
 
@@ -80,9 +82,9 @@
 
       </nav>
 
+
       <div class="top-actions">
 
-        <!-- REAL SIGN OUT BUTTON -->
         <button
           class="header-action"
           id="signOutBtn"
@@ -129,6 +131,7 @@
 
           </div>
 
+
           <button
             class="btn secondary"
             id="profileBtn"
@@ -146,7 +149,7 @@
             class="profile-avatar"
             id="profileAvatar"
           >
-            ZC
+            GD
           </div>
 
 
@@ -157,7 +160,7 @@
             </p>
 
             <h2 id="profileName">
-              Zaire's Groove
+              Loading...
             </h2>
 
             <p id="profileEmail">
@@ -167,7 +170,9 @@
             <div class="profile-tags">
 
               <span>Funk</span>
+
               <span>Soul</span>
+
               <span>Rock</span>
 
             </div>
@@ -295,6 +300,7 @@
             ACCOUNT
           </p>
 
+
           <button
             class="settings-tab active"
             type="button"
@@ -302,6 +308,7 @@
           >
             Profile
           </button>
+
 
           <button
             class="settings-tab"
@@ -311,6 +318,7 @@
             Playback
           </button>
 
+
           <button
             class="settings-tab"
             type="button"
@@ -319,6 +327,7 @@
             Notifications
           </button>
 
+
           <button
             class="settings-tab"
             type="button"
@@ -326,6 +335,7 @@
           >
             Privacy
           </button>
+
 
           <button
             class="settings-tab"
@@ -396,7 +406,7 @@
 
 
   <!-- =======================================================
-       SUPABASE
+       SUPABASE LIBRARY
        ======================================================= -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -410,36 +420,20 @@
 
 
   <!-- =======================================================
-       AUTHENTICATION FOR THIS PAGE
+       PROFILE AUTHENTICATION
        ======================================================= -->
 
   <script>
 
-    /*
-     * IMPORTANT:
-     *
-     * Your main script.js should create the Supabase client:
-     *
-     * const supabase = window.supabase.createClient(
-     *   SUPABASE_URL,
-     *   SUPABASE_ANON_KEY
-     * );
-     *
-     * This page uses that client.
-     */
-
-
-    document.addEventListener("DOMContentLoaded", async () => {
+    document.addEventListener("DOMContentLoaded", async function () {
 
       /*
-       * Make sure Supabase was loaded.
+       * Make sure the Supabase library exists.
        */
 
       if (!window.supabase) {
 
-        console.error(
-          "Supabase library failed to load."
-        );
+        console.error("Supabase library failed to load.");
 
         return;
 
@@ -447,16 +441,28 @@
 
 
       /*
-       * Check whether script.js already created
-       * the Supabase client.
+       * GrooveDNA's authenticated Supabase client
+       *
+       * IMPORTANT:
+       *
+       * script.js must create:
+       *
+       * window.grooveSupabase
+       *
+       * using your real Supabase URL and anon/publishable key.
        */
 
-      if (
-        typeof supabase === "undefined"
-      ) {
+      const client = window.grooveSupabase;
+
+
+      /*
+       * Stop if script.js did not create the client.
+       */
+
+      if (!client) {
 
         console.error(
-          "Supabase client was not created in script.js."
+          "GrooveDNA Supabase client was not created."
         );
 
         return;
@@ -465,27 +471,27 @@
 
 
       /*
-       * Get the currently logged-in user.
+       * Check the current login session.
        */
 
       const {
         data,
         error
-      } = await supabase.auth.getSession();
+      } = await client.auth.getSession();
 
 
       /*
-       * Handle Supabase session errors.
+       * Session lookup failed.
        */
 
       if (error) {
 
         console.error(
-          "Unable to retrieve login session:",
+          "Unable to retrieve GrooveDNA login session:",
           error
         );
 
-        window.location.href = "index.html";
+        window.location.replace("index.html");
 
         return;
 
@@ -493,17 +499,16 @@
 
 
       /*
-       * If there is no session, the user
-       * is NOT logged in.
+       * No logged-in user.
        */
 
-      if (!data.session) {
+      if (!data || !data.session) {
 
         console.warn(
           "No active GrooveDNA session found."
         );
 
-        window.location.href = "index.html";
+        window.location.replace("index.html");
 
         return;
 
@@ -511,24 +516,19 @@
 
 
       /*
-       * Logged-in user.
+       * Current authenticated user.
        */
 
       const user = data.session.user;
 
 
       /*
-       * Get useful account information.
+       * Get account information.
        */
 
       const email =
         user.email || "No email available";
 
-
-      /*
-       * Try to get a name from Supabase
-       * user metadata.
-       */
 
       const metadata =
         user.user_metadata || {};
@@ -537,6 +537,7 @@
       const fullName =
         metadata.full_name ||
         metadata.name ||
+        metadata.display_name ||
         "GrooveDNA Creator";
 
 
@@ -546,6 +547,7 @@
 
       const profileName =
         document.getElementById("profileName");
+
 
       if (profileName) {
 
@@ -562,6 +564,7 @@
       const profileEmail =
         document.getElementById("profileEmail");
 
+
       if (profileEmail) {
 
         profileEmail.textContent =
@@ -571,11 +574,12 @@
 
 
       /*
-       * Generate avatar initials.
+       * Generate initials.
        */
 
       const profileAvatar =
         document.getElementById("profileAvatar");
+
 
       if (profileAvatar) {
 
@@ -584,9 +588,12 @@
             .split(" ")
             .filter(Boolean)
             .slice(0, 2)
-            .map(word => word.charAt(0))
+            .map(function (word) {
+              return word.charAt(0);
+            })
             .join("")
             .toUpperCase();
+
 
         profileAvatar.textContent =
           initials || "GD";
@@ -595,55 +602,37 @@
 
 
       /*
-       * REAL SIGN OUT FUNCTION
+       * Sign out.
        */
 
       async function signOut() {
 
-        try {
-
-          const {
-            error
-          } = await supabase.auth.signOut();
+        const {
+          error
+        } = await client.auth.signOut();
 
 
-          if (error) {
-
-            console.error(
-              "Sign out error:",
-              error
-            );
-
-            alert(
-              "Unable to sign out. Please try again."
-            );
-
-            return;
-
-          }
-
-
-          /*
-           * Send the user back to
-           * the login page.
-           */
-
-          window.location.replace(
-            "index.html"
-          );
-
-        } catch (err) {
+        if (error) {
 
           console.error(
-            "Unexpected sign out error:",
-            err
+            "GrooveDNA sign-out error:",
+            error
           );
 
           alert(
-            "Something went wrong while signing out."
+            "Unable to sign out. Please try again."
           );
 
+          return;
+
         }
+
+
+        /*
+         * Return to the login page.
+         */
+
+        window.location.replace("index.html");
 
       }
 
@@ -654,6 +643,7 @@
 
       const signOutBtn =
         document.getElementById("signOutBtn");
+
 
       if (signOutBtn) {
 
@@ -674,11 +664,36 @@
           "footerSignOutBtn"
         );
 
+
       if (footerSignOutBtn) {
 
         footerSignOutBtn.addEventListener(
           "click",
           signOut
+        );
+
+      }
+
+
+      /*
+       * Edit Profile button.
+       */
+
+      const profileBtn =
+        document.getElementById("profileBtn");
+
+
+      if (profileBtn) {
+
+        profileBtn.addEventListener(
+          "click",
+          function () {
+
+            alert(
+              "Profile editing will be available here."
+            );
+
+          }
         );
 
       }
