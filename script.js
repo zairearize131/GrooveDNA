@@ -1,22 +1,94 @@
+
+        ```javascript
 /* =========================================================
-   GROOVEDNA — SUPABASE CONFIGURATION
+   GROOVEDNA — MASTER SCRIPT
+   =========================================================
+
+   This file controls:
+
+   1. Supabase authentication
+      - Create Account
+      - Sign In
+      - Sign Out
+      - Session checking
+      - User profile creation
+
+   2. Navigation
+      - Page-to-page navigation
+      - Mobile navigation
+
+   3. Discover
+      - Search
+      - Genre filters
+      - Play / Pause
+      - Upload audio
+      - Crop/sample workflow
+
+   4. Beat Lab
+      - Instrument browser
+      - Sound browser
+      - Play / Pause
+      - Music Mixer
+      - Drum Pad
+      - Music Maker
+      - Record
+      - Save beat
+      - Collaboration
+
+   5. GrooveDNA
+      - Mood buttons
+      - Share DNA
+
+   6. Library
+      - Saved songs
+      - Playlists
+      - Artists
+
+   7. Community
+      - Likes
+      - Comments
+      - Follow
+      - Remix
+      - Challenges
+      - Sharing
+
+   8. Profile
+      - User profile
+      - Followers
+      - Following
+      - Settings
+      - Sign out confirmation
+
+   9. Messaging / Notifications
+      - Notifications
+      - Chat
+      - Group chat
+      - Voice/video call placeholders
+      - Beat Lab collaboration invitations
+
    ========================================================= */
 
-const SUPABASE_URL =
-  "https://nzfzcnusmjboykledznh.supabase.co";
 
-const SUPABASE_ANON_KEY =
-  "sb_publishable_qsskdrsPBxg1dECb1HY8Jg_x0rL7wR3";
+/* =========================================================
+   1. SUPABASE CONFIGURATION
+   ========================================================= */
 
-const GROOVEDNA_LOGIN = "index.html";
-const GROOVEDNA_HOME = "home.html";
+const SUPABASE_URL = "PASTE_YOUR_SUPABASE_PROJECT_URL_HERE";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "PASTE_YOUR_SB_PUBLISHABLE_KEY_HERE";
+
 
 let supabaseClient = null;
 
-if (window.supabase) {
+if (
+  window.supabase &&
+  SUPABASE_URL !== "PASTE_YOUR_SUPABASE_PROJECT_URL_HERE" &&
+  SUPABASE_PUBLISHABLE_KEY !== "PASTE_YOUR_SB_PUBLISHABLE_KEY_HERE"
+) {
   supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_ANON_KEY,
+    SUPABASE_PUBLISHABLE_KEY,
     {
       auth: {
         persistSession: true,
@@ -29,11 +101,78 @@ if (window.supabase) {
 
 
 /* =========================================================
-   TOAST
+   2. GLOBAL APP STATE
    ========================================================= */
 
+const GrooveDNA = {
+  user: null,
+  session: null,
+
+  authMode: "signin",
+
+  currentPage:
+    window.location.pathname.split("/").pop() || "index.html",
+
+  currentAudio: null,
+  currentAudioUrl: null,
+
+  cropStart: 0,
+  cropEnd: 0,
+
+  selectedGenre: "All",
+  searchTerm: "",
+
+  selectedInstrument: null,
+  selectedSound: null,
+
+  beatMode: "mixer",
+
+  isRecording: false,
+  mediaRecorder: null,
+  recordedChunks: [],
+
+  currentBeat: {
+    bpm: 96,
+    pitch: 0,
+    loop: true,
+    clips: [],
+    instruments: []
+  }
+};
+
+
+/* =========================================================
+   3. BASIC HELPERS
+   ========================================================= */
+
+function $(selector) {
+  return document.querySelector(selector);
+}
+
+function $$(selector) {
+  return Array.from(document.querySelectorAll(selector));
+}
+
+function escapeHTML(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function getPage() {
+  return (
+    window.location.pathname
+      .split("/")
+      .pop()
+      .toLowerCase() || "index.html"
+  );
+}
+
 function showToast(message) {
-  let toast = document.getElementById("toast");
+  let toast = $("#toast");
 
   if (!toast) {
     toast = document.createElement("div");
@@ -48,435 +187,40 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
 
-  clearTimeout(window.grooveDNAToastTimer);
+  clearTimeout(window.__grooveToastTimer);
 
-  window.grooveDNAToastTimer = setTimeout(() => {
+  window.__grooveToastTimer = setTimeout(() => {
     toast.classList.remove("show");
   }, 3000);
 }
 
-
-/* =========================================================
-   AUTH MODAL
-   ========================================================= */
-
-let authMode = "signin";
-
-function openAuthModal(mode = "signin") {
-  const modal = document.getElementById("auth");
-
-  if (!modal) return;
-
-  const title = document.getElementById("authTitle");
-  const submit = document.getElementById("authSubmit");
-  const nameGroup = document.getElementById("authNameGroup");
-  const toggleCopy = document.getElementById("authToggleCopy");
-
-  authMode = mode;
-
-  if (authMode === "signup") {
-    if (title) {
-      title.textContent = "Create your groove.";
-    }
-
-    if (submit) {
-      submit.textContent = "Create Account";
-    }
-
-    if (nameGroup) {
-      nameGroup.style.display = "block";
-    }
-
-    if (toggleCopy) {
-      toggleCopy.innerHTML =
-        'Already have an account? <a href="#" id="authModeToggle">Sign in</a>';
-    }
-  } else {
-    if (title) {
-      title.textContent = "Enter your groove.";
-    }
-
-    if (submit) {
-      submit.textContent = "Sign In";
-    }
-
-    if (nameGroup) {
-      nameGroup.style.display = "none";
-    }
-
-    if (toggleCopy) {
-      toggleCopy.innerHTML =
-        'New to GrooveDNA? <a href="#" id="authModeToggle">Create an account</a>';
-    }
-  }
-
-  modal.classList.add("open");
-
-  attachAuthToggle();
-
-  const emailInput = document.getElementById("authEmail");
-
-  if (emailInput) {
-    setTimeout(() => {
-      emailInput.focus();
-    }, 100);
-  }
-}
-
-
-function closeAuthModal() {
-  const modal = document.getElementById("auth");
-
-  if (modal) {
-    modal.classList.remove("open");
-  }
-}
-
-
-function attachAuthToggle() {
-  const toggle =
-    document.getElementById("authModeToggle");
-
-  if (!toggle) return;
-
-  toggle.onclick = function (event) {
-    event.preventDefault();
-
-    openAuthModal(
-      authMode === "signin"
-        ? "signup"
-        : "signin"
-    );
-  };
+function navigate(page) {
+  window.location.href = page;
 }
 
 
 /* =========================================================
-   CREATE ACCOUNT
+   4. SUPABASE AUTHENTICATION
    ========================================================= */
 
-async function createGrooveDNAAccount(
-  email,
-  password,
-  displayName
-) {
-  if (!supabaseClient) {
-    showToast(
-      "Supabase could not be initialized."
-    );
-    return false;
-  }
+/*
+   Supabase Authentication is implemented here.
 
-  const { data, error } =
-    await supabaseClient.auth.signUp({
-      email: email,
-      password: password,
-      options: {
-        data: {
-          display_name: displayName || ""
-        }
-      }
-    });
+   Create Account:
+   supabase.auth.signUp()
 
-  if (error) {
-    console.error(
-      "GrooveDNA sign-up error:",
-      error
-    );
+   Sign In:
+   supabase.auth.signInWithPassword()
 
-    showToast(error.message);
+   Sign Out:
+   supabase.auth.signOut()
 
-    return false;
-  }
+   Session:
+   supabase.auth.getSession()
+*/
 
-  /*
-    If email confirmation is enabled,
-    Supabase creates the account but does not
-    immediately create an active session.
-  */
 
-  if (data.user && !data.session) {
-    closeAuthModal();
-
-    showToast(
-      "Account created! Check your email to confirm your account."
-    );
-
-    return true;
-  }
-
-  if (data.session) {
-    showToast(
-      "Your GrooveDNA account has been created!"
-    );
-
-    window.location.href = GROOVEDNA_HOME;
-
-    return true;
-  }
-
-  showToast(
-    "Account created. Please sign in."
-  );
-
-  return true;
-}
-
-
-/* =========================================================
-   SIGN IN
-   ========================================================= */
-
-async function signIntoGrooveDNA(
-  email,
-  password
-) {
-  if (!supabaseClient) {
-    showToast(
-      "Supabase could not be initialized."
-    );
-    return false;
-  }
-
-  const { data, error } =
-    await supabaseClient.auth.signInWithPassword({
-      email: email,
-      password: password
-    });
-
-  if (error) {
-    console.error(
-      "GrooveDNA sign-in error:",
-      error
-    );
-
-    showToast(error.message);
-
-    return false;
-  }
-
-  if (!data.session) {
-    showToast(
-      "No active session was created."
-    );
-
-    return false;
-  }
-
-  showToast(
-    "Welcome back to GrooveDNA!"
-  );
-
-  window.location.href = GROOVEDNA_HOME;
-
-  return true;
-}
-
-
-/* =========================================================
-   SIGN OUT
-   ========================================================= */
-
-async function signOutOfGrooveDNA(event) {
-  if (event) {
-    event.preventDefault();
-  }
-
-  if (!supabaseClient) {
-    window.location.href = GROOVEDNA_LOGIN;
-    return;
-  }
-
-  const { error } =
-    await supabaseClient.auth.signOut();
-
-  if (error) {
-    console.error(
-      "GrooveDNA sign-out error:",
-      error
-    );
-
-    showToast(error.message);
-
-    return;
-  }
-
-  window.location.href =
-    GROOVEDNA_LOGIN;
-}
-
-
-/* =========================================================
-   AUTH FORM
-   ========================================================= */
-
-function setupAuthForm() {
-  const form =
-    document.getElementById("authForm");
-
-  if (!form) return;
-
-  form.addEventListener(
-    "submit",
-    async function (event) {
-      event.preventDefault();
-
-      const emailInput =
-        document.getElementById("authEmail");
-
-      const passwordInput =
-        document.getElementById("authPassword");
-
-      const nameInput =
-        document.getElementById("authName");
-
-      const submitButton =
-        document.getElementById("authSubmit");
-
-      const email =
-        emailInput
-          ? emailInput.value.trim()
-          : "";
-
-      const password =
-        passwordInput
-          ? passwordInput.value
-          : "";
-
-      const displayName =
-        nameInput
-          ? nameInput.value.trim()
-          : "";
-
-      if (!email || !password) {
-        showToast(
-          "Please enter your email and password."
-        );
-
-        return;
-      }
-
-      if (password.length < 6) {
-        showToast(
-          "Password must be at least 6 characters."
-        );
-
-        return;
-      }
-
-      if (submitButton) {
-        submitButton.disabled = true;
-
-        submitButton.textContent =
-          authMode === "signup"
-            ? "Creating Account..."
-            : "Signing In...";
-      }
-
-      try {
-        if (authMode === "signup") {
-          await createGrooveDNAAccount(
-            email,
-            password,
-            displayName
-          );
-        } else {
-          await signIntoGrooveDNA(
-            email,
-            password
-          );
-        }
-      } finally {
-        if (submitButton) {
-          submitButton.disabled = false;
-
-          submitButton.textContent =
-            authMode === "signup"
-              ? "Create Account"
-              : "Sign In";
-        }
-      }
-    }
-  );
-}
-
-
-/* =========================================================
-   LANDING PAGE AUTH BUTTONS
-   ========================================================= */
-
-function setupLandingAuthButtons() {
-  const signInLink =
-    document.getElementById("signInLink");
-
-  const createAccountLink =
-    document.getElementById(
-      "createAccountLink"
-    );
-
-  if (signInLink) {
-    signInLink.addEventListener(
-      "click",
-      function (event) {
-        event.preventDefault();
-
-        openAuthModal("signin");
-      }
-    );
-  }
-
-  if (createAccountLink) {
-    createAccountLink.addEventListener(
-      "click",
-      function (event) {
-        event.preventDefault();
-
-        openAuthModal("signup");
-      }
-    );
-  }
-
-  const authModal =
-    document.getElementById("auth");
-
-  if (authModal) {
-    authModal.addEventListener(
-      "click",
-      function (event) {
-        if (
-          event.target === authModal
-        ) {
-          closeAuthModal();
-        }
-      }
-    );
-  }
-
-  const closeButton =
-    document.querySelector(
-      ".auth-modal-backdrop .modal-close"
-    );
-
-  if (closeButton) {
-    closeButton.addEventListener(
-      "click",
-      function (event) {
-        event.preventDefault();
-
-        closeAuthModal();
-      }
-    );
-  }
-
-  attachAuthToggle();
-}
-
-
-/* =========================================================
-   GET CURRENT SESSION
-   ========================================================= */
-
-async function getGrooveDNASession() {
+async function getCurrentSession() {
   if (!supabaseClient) {
     return null;
   }
@@ -484,187 +228,632 @@ async function getGrooveDNASession() {
   const {
     data,
     error
-  } =
-    await supabaseClient.auth.getSession();
+  } = await supabaseClient.auth.getSession();
 
   if (error) {
-    console.error(
-      "GrooveDNA session error:",
-      error
-    );
-
+    console.error("Session error:", error);
     return null;
   }
+
+  GrooveDNA.session = data.session;
+  GrooveDNA.user = data.session?.user || null;
 
   return data.session;
 }
 
 
-/* =========================================================
-   PROTECT APP PAGES
-   ========================================================= */
-
-async function protectGrooveDNAPage() {
+async function createAccount(email, password, displayName) {
   if (!supabaseClient) {
+    showToast("Supabase is not configured yet.");
+    return false;
+  }
+
+  try {
+    const {
+      data,
+      error
+    } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          display_name: displayName || email.split("@")[0]
+        },
+        emailRedirectTo: window.location.origin + "/index.html"
+      }
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    GrooveDNA.user = data.user;
+    GrooveDNA.session = data.session;
+
+    /*
+      If email confirmation is enabled in Supabase,
+      session can initially be null.
+    */
+
+    if (!data.session) {
+      showToast(
+        "Account created. Check your email to confirm your account."
+      );
+
+      return true;
+    }
+
+    await createUserProfile(data.user, displayName);
+
+    showToast("Account created successfully!");
+
+    navigate("home.html");
+
+    return true;
+
+  } catch (error) {
+    console.error("Create account error:", error);
+
+    showToast(
+      error.message || "Unable to create your account."
+    );
+
+    return false;
+  }
+}
+
+
+async function signIn(email, password) {
+  if (!supabaseClient) {
+    showToast("Supabase is not configured yet.");
+    return false;
+  }
+
+  try {
+    const {
+      data,
+      error
+    } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    GrooveDNA.user = data.user;
+    GrooveDNA.session = data.session;
+
+    await createUserProfile(
+      data.user,
+      data.user.user_metadata?.display_name
+    );
+
+    showToast("Welcome back!");
+
+    navigate("home.html");
+
+    return true;
+
+  } catch (error) {
+    console.error("Sign in error:", error);
+
+    showToast(
+      error.message || "Unable to sign in."
+    );
+
+    return false;
+  }
+}
+
+
+async function signOut() {
+  if (!supabaseClient) {
+    navigate("index.html");
     return;
   }
 
-  const currentPage =
-    window.location.pathname
-      .split("/")
-      .pop()
-      .toLowerCase();
+  try {
+    const {
+      error
+    } = await supabaseClient.auth.signOut();
 
-  const publicPages = [
-    "",
-    "index.html"
-  ];
+    if (error) {
+      throw error;
+    }
 
-  if (
-    publicPages.includes(currentPage)
-  ) {
-    return;
-  }
+    GrooveDNA.user = null;
+    GrooveDNA.session = null;
 
-  const session =
-    await getGrooveDNASession();
+    showToast("Signed out.");
 
-  if (!session) {
-    window.location.href =
-      GROOVEDNA_LOGIN;
+    setTimeout(() => {
+      navigate("index.html");
+    }, 400);
+
+  } catch (error) {
+    console.error("Sign out error:", error);
+
+    showToast(
+      error.message || "Unable to sign out."
+    );
   }
 }
 
 
 /* =========================================================
-   SIGN-OUT LINKS
+   5. USER PROFILE CREATION
    ========================================================= */
 
-function setupSignOutButtons() {
-  const signOutButtons =
-    document.querySelectorAll(
-      'a[href="index.html"], [data-signout]'
-    );
+async function createUserProfile(user, displayName = "") {
+  if (!supabaseClient || !user) {
+    return;
+  }
 
-  signOutButtons.forEach(
-    (button) => {
-      const text =
-        button.textContent
-          .trim()
-          .toLowerCase();
+  /*
+    This expects a Supabase table named:
 
-      if (
-        text.includes("sign out") ||
-        button.hasAttribute("data-signout")
-      ) {
-        button.addEventListener(
-          "click",
-          signOutOfGrooveDNA
+    profiles
+
+    Recommended columns:
+
+    id UUID PRIMARY KEY
+    username TEXT
+    display_name TEXT
+    avatar_url TEXT
+    bio TEXT
+    created_at TIMESTAMP
+  */
+
+  try {
+    const {
+      data: existing,
+      error: lookupError
+    } = await supabaseClient
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (lookupError) {
+      console.warn(
+        "Profile lookup:",
+        lookupError.message
+      );
+      return;
+    }
+
+    if (!existing) {
+      const username =
+        displayName ||
+        user.user_metadata?.display_name ||
+        user.email?.split("@")[0] ||
+        `creator_${user.id.slice(0, 6)}`;
+
+      const {
+        error
+      } = await supabaseClient
+        .from("profiles")
+        .insert({
+          id: user.id,
+          username,
+          display_name: username
+        });
+
+      if (error) {
+        console.warn(
+          "Profile creation:",
+          error.message
         );
       }
+    }
+
+  } catch (error) {
+    console.warn(
+      "Profile setup error:",
+      error
+    );
+  }
+}
+
+
+/* =========================================================
+   6. AUTH FORM
+   ========================================================= */
+
+function setupAuthForm() {
+  const form = $("#authForm");
+
+  if (!form) {
+    return;
+  }
+
+  const toggle = $("#authModeToggle");
+  const title = $("#authTitle");
+  const submit = $("#authSubmit");
+  const nameGroup = $("#authNameGroup");
+  const toggleCopy = $("#authToggleCopy");
+
+  function updateAuthUI() {
+    const signup =
+      GrooveDNA.authMode === "signup";
+
+    if (title) {
+      title.textContent = signup
+        ? "Create your groove."
+        : "Enter your groove.";
+    }
+
+    if (submit) {
+      submit.textContent = signup
+        ? "Create Account"
+        : "Sign In";
+    }
+
+    if (nameGroup) {
+      nameGroup.style.display =
+        signup ? "block" : "none";
+    }
+
+    if (toggleCopy) {
+      toggleCopy.innerHTML = signup
+        ? `Already have an account?
+           <a href="#" id="authModeToggle">
+             Sign in
+           </a>`
+        : `New to GrooveDNA?
+           <a href="#" id="authModeToggle">
+             Create an account
+           </a>`;
+
+      const newToggle =
+        $("#authModeToggle");
+
+      if (newToggle) {
+        newToggle.addEventListener(
+          "click",
+          event => {
+            event.preventDefault();
+
+            GrooveDNA.authMode =
+              signup ? "signin" : "signup";
+
+            updateAuthUI();
+          }
+        );
+      }
+    }
+  }
+
+  updateAuthUI();
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const email =
+      $("#authEmail")?.value.trim();
+
+    const password =
+      $("#authPassword")?.value;
+
+    const displayName =
+      $("#authName")?.value.trim() || "";
+
+    if (!email || !password) {
+      showToast(
+        "Enter your email and password."
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      showToast(
+        "Password must be at least 6 characters."
+      );
+      return;
+    }
+
+    submit.disabled = true;
+
+    if (GrooveDNA.authMode === "signup") {
+      await createAccount(
+        email,
+        password,
+        displayName
+      );
+    } else {
+      await signIn(
+        email,
+        password
+      );
+    }
+
+    submit.disabled = false;
+  });
+
+
+  /*
+    Sign In button on landing page
+  */
+
+  $("#signInLink")?.addEventListener(
+    "click",
+    event => {
+      event.preventDefault();
+
+      GrooveDNA.authMode = "signin";
+
+      updateAuthUI();
+
+      window.location.hash = "auth";
+    }
+  );
+
+
+  /*
+    Create Account button
+  */
+
+  $("#createAccountLink")?.addEventListener(
+    "click",
+    event => {
+      event.preventDefault();
+
+      GrooveDNA.authMode = "signup";
+
+      updateAuthUI();
+
+      window.location.hash = "auth";
     }
   );
 }
 
 
 /* =========================================================
-   AUTH STATE LISTENER
+   7. SESSION PROTECTION
    ========================================================= */
 
-function setupAuthStateListener() {
+async function protectPrivatePages() {
+  const publicPages = [
+    "index.html",
+    ""
+  ];
+
+  const page = getPage();
+
+  if (
+    !supabaseClient ||
+    publicPages.includes(page)
+  ) {
+    return;
+  }
+
+  const session =
+    await getCurrentSession();
+
+  if (!session) {
+    showToast(
+      "Please sign in to use GrooveDNA."
+    );
+
+    setTimeout(() => {
+      navigate("index.html");
+    }, 500);
+  }
+}
+
+
+function watchAuthentication() {
   if (!supabaseClient) {
     return;
   }
 
   supabaseClient.auth.onAuthStateChange(
     (event, session) => {
+
+      GrooveDNA.session = session;
+      GrooveDNA.user =
+        session?.user || null;
+
       console.log(
-        "GrooveDNA auth event:",
+        "GrooveDNA auth:",
         event
       );
-
-      const currentPage =
-        window.location.pathname
-          .split("/")
-          .pop()
-          .toLowerCase();
-
-      if (
-        event === "SIGNED_OUT" &&
-        currentPage !== "index.html"
-      ) {
-        window.location.href =
-          GROOVEDNA_LOGIN;
-      }
-
-      if (
-        event === "SIGNED_IN" &&
-        session &&
-        currentPage === "index.html"
-      ) {
-        window.location.href =
-          GROOVEDNA_HOME;
-      }
     }
   );
 }
 
 
 /* =========================================================
-   MOBILE NAVIGATION
+   8. GLOBAL SIGN OUT BUTTONS
    ========================================================= */
 
-function setupMobileNavigation() {
-  const menuToggle =
-    document.getElementById(
-      "menuToggle"
+function setupSignOutButtons() {
+  const buttons =
+    $$(
+      '[href="index.html"]'
+    ).filter(element =>
+      /sign\s*out/i.test(
+        element.textContent
+      )
     );
+
+  buttons.forEach(button => {
+    button.addEventListener(
+      "click",
+      async event => {
+        event.preventDefault();
+
+        const confirmed =
+          await showConfirmation(
+            "Sign out?",
+            "Are you sure you want to sign out?"
+          );
+
+        if (confirmed) {
+          await signOut();
+        }
+      }
+    );
+  });
+
+  /*
+    Profile-specific sign-out buttons
+  */
+
+  $$(
+    "[data-signout]"
+  ).forEach(button => {
+    button.addEventListener(
+      "click",
+      async () => {
+
+        const confirmed =
+          await showConfirmation(
+            "Sign out?",
+            "Are you sure you want to sign out?"
+          );
+
+        if (confirmed) {
+          await signOut();
+        }
+      }
+    );
+  });
+}
+
+
+/* =========================================================
+   9. CONFIRMATION DIALOG
+   ========================================================= */
+
+function showConfirmation(title, message) {
+  return new Promise(resolve => {
+
+    const existing =
+      $("#grooveConfirmation");
+
+    if (existing) {
+      existing.remove();
+    }
+
+    const modal =
+      document.createElement("div");
+
+    modal.id =
+      "grooveConfirmation";
+
+    modal.className =
+      "modal-backdrop";
+
+    modal.innerHTML = `
+      <div class="modal confirmation-modal">
+        <p class="eyebrow">GROOVEDNA</p>
+        <h2>${escapeHTML(title)}</h2>
+        <p>${escapeHTML(message)}</p>
+
+        <div class="modal-actions">
+          <button
+            class="btn secondary"
+            id="confirmNo">
+            No
+          </button>
+
+          <button
+            class="btn primary"
+            id="confirmYes">
+            Yes
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    $("#confirmNo").onclick = () => {
+      modal.remove();
+      resolve(false);
+    };
+
+    $("#confirmYes").onclick = () => {
+      modal.remove();
+      resolve(true);
+    };
+  });
+}
+
+
+/* =========================================================
+   10. PAGE NAVIGATION
+   ========================================================= */
+
+function setupNavigation() {
+
+  const pageMap = {
+    home: "home.html",
+    discover: "discover.html",
+    groovedna: "groovedna.html",
+    beatlab: "beatlab.html",
+    community: "community.html",
+    library: "library.html",
+    profile: "profile.html"
+  };
+
+  $$("[data-page]").forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        const page =
+          button.dataset.page;
+
+        if (pageMap[page]) {
+          navigate(pageMap[page]);
+        }
+      }
+    );
+  });
+
+
+  /*
+    Mobile navigation
+  */
+
+  const menuToggle =
+    $("#menuToggle");
 
   const mainNav =
-    document.getElementById(
-      "mainNav"
-    );
+    $("#mainNav");
 
-  if (!menuToggle || !mainNav) {
-    return;
-  }
+  if (menuToggle && mainNav) {
 
-  menuToggle.addEventListener(
-    "click",
-    function () {
-      const isOpen =
-        mainNav.classList.toggle("open");
+    menuToggle.addEventListener(
+      "click",
+      () => {
 
-      menuToggle.setAttribute(
-        "aria-expanded",
-        String(isOpen)
-      );
-    }
-  );
-
-  mainNav
-    .querySelectorAll("a")
-    .forEach((link) => {
-      link.addEventListener(
-        "click",
-        () => {
-          mainNav.classList.remove("open");
-
-          menuToggle.setAttribute(
-            "aria-expanded",
-            "false"
+        const open =
+          mainNav.classList.toggle(
+            "open"
           );
-        }
-      );
-    });
+
+        menuToggle.setAttribute(
+          "aria-expanded",
+          String(open)
+        );
+      }
+    );
+  }
 }
 
 
 /* =========================================================
-   DISCOVER SAMPLE DATA
+   11. DISCOVER — MUSIC CATALOG
    ========================================================= */
 
-const samples = [
+const sampleCatalog = [
+
   {
     id: 1,
     title: "Midnight Guitar Break",
@@ -674,8 +863,10 @@ const samples = [
     bpm: 112,
     key: "A Minor",
     rights: "Check Rights",
-    icon: "🎸"
+    icon: "🎸",
+    audio: ""
   },
+
   {
     id: 2,
     title: "Pocket Drums",
@@ -685,8 +876,10 @@ const samples = [
     bpm: 98,
     key: "C Minor",
     rights: "Cleared / Licensed",
-    icon: "🥁"
+    icon: "🥁",
+    audio: ""
   },
+
   {
     id: 3,
     title: "Velvet Keys",
@@ -696,8 +889,10 @@ const samples = [
     bpm: 84,
     key: "E♭ Major",
     rights: "Cleared / Licensed",
-    icon: "🎹"
+    icon: "🎹",
+    audio: ""
   },
+
   {
     id: 4,
     title: "Bassline 74",
@@ -707,8 +902,10 @@ const samples = [
     bpm: 96,
     key: "E Minor",
     rights: "Cleared / Licensed",
-    icon: "🎸"
+    icon: "🎸",
+    audio: ""
   },
+
   {
     id: 5,
     title: "Stadium Riff",
@@ -718,8 +915,10 @@ const samples = [
     bpm: 126,
     key: "D Major",
     rights: "Check Rights",
-    icon: "⚡"
+    icon: "⚡",
+    audio: ""
   },
+
   {
     id: 6,
     title: "Sunday Strings",
@@ -729,455 +928,1175 @@ const samples = [
     bpm: 76,
     key: "G Major",
     rights: "Restricted",
-    icon: "🎻"
+    icon: "🎻",
+    audio: ""
   },
+
   {
     id: 7,
-    title: "Neon Pocket",
-    artist: "After Hours",
-    genre: "R&B",
-    type: "Drum Groove",
-    bpm: 90,
+    title: "Midnight Soul",
+    artist: "GrooveDNA Library",
+    genre: "Soul",
+    type: "Vocal",
+    bpm: 88,
     key: "F Minor",
     rights: "Cleared / Licensed",
-    icon: "🎧"
+    icon: "🎤",
+    audio: ""
   },
+
   {
     id: 8,
+    title: "Late Night R&B",
+    artist: "GrooveDNA Library",
+    genre: "R&B",
+    type: "Keys",
+    bpm: 92,
+    key: "B Minor",
+    rights: "Cleared / Licensed",
+    icon: "🎹",
+    audio: ""
+  },
+
+  {
+    id: 9,
     title: "Blue Room",
-    artist: "Late Set",
+    artist: "GrooveDNA Library",
     genre: "Jazz",
-    type: "Piano Phrase",
-    bpm: 78,
-    key: "B♭ Major",
-    rights: "Check Rights",
-    icon: "🎷"
+    type: "Saxophone",
+    bpm: 72,
+    key: "C Major",
+    rights: "Cleared / Licensed",
+    icon: "🎷",
+    audio: ""
   }
 ];
 
-let selectedGenre = "All";
-let searchTerm = "";
-
-
-/* =========================================================
-   DISCOVER FILTERING
-   ========================================================= */
 
 function filteredSamples() {
-  return samples.filter(
-    (sample) => {
-      const genreMatch =
-        selectedGenre === "All" ||
-        sample.genre === selectedGenre;
 
-      const searchMatch =
-        !searchTerm ||
-        [
-          sample.title,
-          sample.artist,
-          sample.genre,
-          sample.type,
-          sample.key
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(
-            searchTerm.toLowerCase()
-          );
+  return sampleCatalog.filter(sample => {
 
-      return genreMatch && searchMatch;
-    }
-  );
+    const genreMatch =
+      GrooveDNA.selectedGenre === "All" ||
+      sample.genre ===
+        GrooveDNA.selectedGenre;
+
+    const searchable = [
+      sample.title,
+      sample.artist,
+      sample.genre,
+      sample.type,
+      sample.key
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    const searchMatch =
+      !GrooveDNA.searchTerm ||
+      searchable.includes(
+        GrooveDNA.searchTerm.toLowerCase()
+      );
+
+    return genreMatch && searchMatch;
+  });
 }
 
-
-/* =========================================================
-   RIGHTS
-   ========================================================= */
-
-function rightsClass(rights) {
-  if (
-    rights.startsWith("Cleared")
-  ) {
-    return "cleared";
-  }
-
-  if (
-    rights === "Restricted"
-  ) {
-    return "restricted";
-  }
-
-  return "caution";
-}
-
-
-/* =========================================================
-   RENDER SAMPLES
-   ========================================================= */
 
 function renderSamples() {
-  const sampleGrid =
-    document.getElementById(
-      "sampleGrid"
-    );
 
-  const resultCount =
-    document.getElementById(
-      "resultCount"
-    );
+  const grid =
+    $("#sampleGrid");
 
-  if (!sampleGrid) {
+  const count =
+    $("#resultCount");
+
+  if (!grid) {
     return;
   }
 
-  const results =
+  const samples =
     filteredSamples();
 
-  if (resultCount) {
-    resultCount.textContent =
-      `${results.length} sounds found`;
+  if (count) {
+    count.textContent =
+      `${samples.length} sounds found`;
   }
 
-  if (!results.length) {
-    sampleGrid.innerHTML =
-      `<div class="empty-state">
-        No sounds matched your search.
-      </div>`;
+  if (!samples.length) {
+
+    grid.innerHTML = `
+      <div class="empty-state">
+        No sounds found.
+        Try another search or genre.
+      </div>
+    `;
 
     return;
   }
 
-  sampleGrid.innerHTML =
-    results.map(
-      (sample) => `
-        <article
-          class="sample-card"
-          data-genre="${sample.genre}"
-          data-id="${sample.id}"
-        >
-          <div class="sample-art">
-            <span class="genre-tag">
-              ${sample.genre}
-            </span>
+  grid.innerHTML =
+    samples.map(sample => `
+      <article
+        class="sample-card"
+        data-sample-id="${sample.id}">
 
-            <span class="sample-icon">
-              ${sample.icon}
-            </span>
-          </div>
+        <div class="sample-icon">
+          ${sample.icon}
+        </div>
 
-          <div class="sample-info">
-            <h3>${sample.title}</h3>
+        <p class="eyebrow">
+          ${escapeHTML(sample.genre)}
+        </p>
 
-            <p>
-              ${sample.artist} ·
-              ${sample.type}
-            </p>
+        <h3>
+          ${escapeHTML(sample.title)}
+        </h3>
 
-            <div class="track-meta">
-              <span>${sample.bpm} BPM</span>
-              <span>${sample.key}</span>
-            </div>
+        <p>
+          ${escapeHTML(sample.artist)}
+        </p>
 
-            <span class="rights ${rightsClass(sample.rights)}">
-              ${sample.rights}
-            </span>
+        <small>
+          ${sample.bpm} BPM ·
+          ${escapeHTML(sample.key)}
+        </small>
 
-            <div class="sample-actions">
-              <button
-                type="button"
-                data-preview="${sample.id}"
-              >
-                ▶ Preview
-              </button>
+        <div class="sample-actions">
 
-              <button
-                type="button"
-                data-save="${sample.id}"
-              >
-                ♡ Save
-              </button>
+          <button
+            class="btn secondary"
+            data-preview
+            data-id="${sample.id}">
+            ▶ Play
+          </button>
 
-              <button
-                type="button"
-                data-add="${sample.id}"
-              >
-                ＋ Beat Lab
-              </button>
-            </div>
-          </div>
-        </article>
-      `
-    ).join("");
+          <button
+            class="btn secondary"
+            data-crop
+            data-id="${sample.id}">
+            ✂ Crop
+          </button>
+
+          <button
+            class="btn primary"
+            data-add
+            data-id="${sample.id}">
+            + Beat Lab
+          </button>
+
+        </div>
+
+      </article>
+    `).join("");
 }
 
 
-/* =========================================================
-   DISCOVER CONTROLS
-   ========================================================= */
-
 function setupDiscover() {
-  const sampleGrid =
-    document.getElementById(
-      "sampleGrid"
-    );
 
   const searchInput =
-    document.getElementById(
-      "searchInput"
-    );
+    $("#searchInput");
 
   const searchButton =
-    document.getElementById(
-      "searchBtn"
+    $("#searchBtn");
+
+  if (searchInput) {
+
+    searchInput.addEventListener(
+      "input",
+      () => {
+
+        GrooveDNA.searchTerm =
+          searchInput.value.trim();
+
+        renderSamples();
+      }
     );
 
-  const uploadButton =
-    document.getElementById(
-      "uploadBtn2"
-    );
+    searchInput.addEventListener(
+      "keydown",
+      event => {
 
-  const audioUpload =
-    document.getElementById(
-      "audioUpload"
-    );
+        if (
+          event.key === "Enter"
+        ) {
+          event.preventDefault();
 
-  const filters =
-    document.querySelectorAll(
-      ".filter"
-    );
+          GrooveDNA.searchTerm =
+            searchInput.value.trim();
 
-  filters.forEach(
-    (filter) => {
-      filter.addEventListener(
+          renderSamples();
+        }
+      }
+    );
+  }
+
+  searchButton?.addEventListener(
+    "click",
+    () => {
+
+      GrooveDNA.searchTerm =
+        searchInput?.value.trim() || "";
+
+      renderSamples();
+    }
+  );
+
+
+  /*
+    Genre buttons
+  */
+
+  $$("#genreFilters .filter")
+    .forEach(button => {
+
+      button.addEventListener(
         "click",
         () => {
-          filters.forEach(
-            (item) =>
+
+          $$("#genreFilters .filter")
+            .forEach(item =>
               item.classList.remove(
                 "active"
               )
-          );
+            );
 
-          filter.classList.add(
+          button.classList.add(
             "active"
           );
 
-          selectedGenre =
-            filter.dataset.genre ||
+          GrooveDNA.selectedGenre =
+            button.dataset.genre ||
             "All";
 
           renderSamples();
         }
       );
+    });
+
+
+  /*
+    Refresh picks
+  */
+
+  $("#discoverMore")?.addEventListener(
+    "click",
+    () => {
+
+      GrooveDNA.selectedGenre =
+        "All";
+
+      GrooveDNA.searchTerm =
+        "";
+
+      if (searchInput) {
+        searchInput.value = "";
+      }
+
+      renderSamples();
+
+      showToast(
+        "Your discovery picks were refreshed."
+      );
     }
   );
 
-  function runSearch() {
-    searchTerm =
-      searchInput
-        ? searchInput.value.trim()
-        : "";
 
-    renderSamples();
-  }
+  /*
+    Sample cards
+  */
 
-  if (searchButton) {
-    searchButton.addEventListener(
-      "click",
-      runSearch
-    );
-  }
+  $("#sampleGrid")?.addEventListener(
+    "click",
+    event => {
 
-  if (searchInput) {
-    searchInput.addEventListener(
-      "keydown",
-      (event) => {
-        if (
-          event.key === "Enter"
-        ) {
-          event.preventDefault();
-          runSearch();
+      const preview =
+        event.target.closest(
+          "[data-preview]"
+        );
+
+      const crop =
+        event.target.closest(
+          "[data-crop]"
+        );
+
+      const add =
+        event.target.closest(
+          "[data-add]"
+        );
+
+      if (preview) {
+
+        const sample =
+          sampleCatalog.find(
+            item =>
+              String(item.id) ===
+              preview.dataset.id
+          );
+
+        if (sample) {
+          playSample(sample);
+        }
+
+        return;
+      }
+
+      if (crop) {
+
+        const sample =
+          sampleCatalog.find(
+            item =>
+              String(item.id) ===
+              crop.dataset.id
+          );
+
+        if (sample) {
+          openCropper(sample);
+        }
+
+        return;
+      }
+
+      if (add) {
+
+        const sample =
+          sampleCatalog.find(
+            item =>
+              String(item.id) ===
+              add.dataset.id
+          );
+
+        if (sample) {
+          addSampleToBeatLab(sample);
         }
       }
-    );
-  }
-
-  if (uploadButton) {
-    uploadButton.addEventListener(
-      "click",
-      () => {
-        if (audioUpload) {
-          audioUpload.click();
-        } else {
-          showToast(
-            "Audio upload is not configured on this page."
-          );
-        }
-      }
-    );
-  }
-
-  if (audioUpload) {
-    audioUpload.addEventListener(
-      "change",
-      () => {
-        if (
-          audioUpload.files &&
-          audioUpload.files.length
-        ) {
-          showToast(
-            `Selected: ${audioUpload.files[0].name}`
-          );
-        }
-      }
-    );
-  }
-
-  if (sampleGrid) {
-    sampleGrid.addEventListener(
-      "click",
-      (event) => {
-        const preview =
-          event.target.closest(
-            "[data-preview]"
-          );
-
-        const save =
-          event.target.closest(
-            "[data-save]"
-          );
-
-        const add =
-          event.target.closest(
-            "[data-add]"
-          );
-
-        if (preview) {
-          const id =
-            Number(
-              preview.dataset.preview
-            );
-
-          const sample =
-            samples.find(
-              (item) =>
-                item.id === id
-            );
-
-          if (sample) {
-            showToast(
-              `▶ Previewing ${sample.title}`
-            );
-          }
-        }
-
-        if (save) {
-          const id =
-            Number(
-              save.dataset.save
-            );
-
-          let saved =
-            JSON.parse(
-              localStorage.getItem(
-                "grooveDNA_saved"
-              ) || "[]"
-            );
-
-          if (!saved.includes(id)) {
-            saved.push(id);
-
-            localStorage.setItem(
-              "grooveDNA_saved",
-              JSON.stringify(saved)
-            );
-
-            showToast(
-              "✓ Saved to your library!"
-            );
-          } else {
-            showToast(
-              "Already saved to your library."
-            );
-          }
-        }
-
-        if (add) {
-          const id =
-            Number(
-              add.dataset.add
-            );
-
-          const sample =
-            samples.find(
-              (item) =>
-                item.id === id
-            );
-
-          if (sample) {
-            addSampleToBeatLab(sample);
-          }
-        }
-      }
-    );
-  }
+    }
+  );
 
   renderSamples();
 }
 
 
 /* =========================================================
-   ADD SAMPLE TO BEAT LAB
+   12. AUDIO PLAYBACK
    ========================================================= */
 
-function addSampleToBeatLab(sample) {
-  const timeline =
-    document.getElementById(
-      "timeline"
-    );
+function playSample(sample) {
 
-  const empty =
-    document.getElementById(
-      "labEmpty"
-    );
+  if (!sample.audio) {
 
-  if (!timeline) {
     showToast(
-      "Open Beat Lab to add samples."
+      `${sample.title} is a catalog demo. Add an audio URL in Supabase to play it.`
     );
 
     return;
   }
 
-  if (empty) {
-    empty.style.display = "none";
-  }
+  if (
+    GrooveDNA.currentAudioUrl ===
+    sample.audio &&
+    GrooveDNA.currentAudio
+  ) {
 
-  let sampleTrack =
-    timeline.querySelector(
-      ".track.samples .track-lane"
-    );
+    if (
+      GrooveDNA.currentAudio.paused
+    ) {
 
-  if (!sampleTrack) {
-    const tracks =
-      timeline.querySelectorAll(
-        ".track"
+      GrooveDNA.currentAudio.play();
+
+      showToast(
+        `Playing ${sample.title}`
       );
 
-    sampleTrack =
-      tracks.length
-        ? tracks[tracks.length - 1].querySelector(
-            ".track-lane"
-          )
-        : null;
+    } else {
+
+      GrooveDNA.currentAudio.pause();
+
+      showToast(
+        `Paused ${sample.title}`
+      );
+    }
+
+    return;
   }
 
-  if (!sampleTrack) {
-    showToast(
-      "Sample track is unavailable."
+  if (GrooveDNA.currentAudio) {
+    GrooveDNA.currentAudio.pause();
+  }
+
+  const audio =
+    new Audio(sample.audio);
+
+  GrooveDNA.currentAudio =
+    audio;
+
+  GrooveDNA.currentAudioUrl =
+    sample.audio;
+
+  audio.play();
+
+  showToast(
+    `Playing ${sample.title}`
+  );
+}
+
+
+/* =========================================================
+   13. AUDIO UPLOAD
+   ========================================================= */
+
+function setupAudioUpload() {
+
+  const uploadButtons =
+    [
+      $("#uploadBtn"),
+      $("#uploadBtn2")
+    ].filter(Boolean);
+
+  if (!uploadButtons.length) {
+    return;
+  }
+
+  let input =
+    $("#audioUpload");
+
+  if (!input) {
+
+    input =
+      document.createElement("input");
+
+    input.type = "file";
+    input.id = "audioUpload";
+    input.accept = "audio/*";
+    input.hidden = true;
+
+    document.body.appendChild(input);
+  }
+
+  uploadButtons.forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => input.click()
+    );
+  });
+
+
+  input.addEventListener(
+    "change",
+    event => {
+
+      const file =
+        event.target.files?.[0];
+
+      if (!file) {
+        return;
+      }
+
+      const url =
+        URL.createObjectURL(file);
+
+      GrooveDNA.currentAudioUrl =
+        url;
+
+      GrooveDNA.currentAudio =
+        new Audio(url);
+
+      GrooveDNA.currentAudio.play();
+
+      showToast(
+        `${file.name} loaded.`
+      );
+
+      /*
+        The uploaded file can now be
+        cropped and added to Beat Lab.
+      */
+
+      GrooveDNA.currentUploadedFile =
+        file;
+    }
+  );
+}
+
+
+/* =========================================================
+   14. AUDIO CROPPER
+   ========================================================= */
+
+function openCropper(sample) {
+
+  const existing =
+    $("#audioCropper");
+
+  if (existing) {
+    existing.remove();
+  }
+
+  const modal =
+    document.createElement("div");
+
+  modal.id =
+    "audioCropper";
+
+  modal.className =
+    "modal-backdrop";
+
+  modal.innerHTML = `
+    <div class="modal crop-modal">
+
+      <button
+        class="modal-close"
+        id="closeCropper">
+        ×
+      </button>
+
+      <p class="eyebrow">
+        SAMPLE EDITOR
+      </p>
+
+      <h2>
+        Crop ${escapeHTML(sample.title)}
+      </h2>
+
+      <p>
+        Choose the section you want
+        to use in Beat Lab.
+      </p>
+
+      <label>
+        Start
+        <input
+          type="range"
+          id="cropStart"
+          min="0"
+          max="100"
+          value="0">
+      </label>
+
+      <label>
+        End
+        <input
+          type="range"
+          id="cropEnd"
+          min="0"
+          max="100"
+          value="100">
+      </label>
+
+      <div class="modal-actions">
+
+        <button
+          class="btn secondary"
+          id="previewCrop">
+          ▶ Preview
+        </button>
+
+        <button
+          class="btn primary"
+          id="useCrop">
+          ✂ Sample This
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  $("#closeCropper").onclick =
+    () => modal.remove();
+
+  $("#previewCrop").onclick =
+    () => {
+
+      showToast(
+        "Previewing selected crop."
+      );
+    };
+
+  $("#useCrop").onclick =
+    () => {
+
+      const start =
+        Number(
+          $("#cropStart").value
+        );
+
+      const end =
+        Number(
+          $("#cropEnd").value
+        );
+
+      GrooveDNA.cropStart =
+        start;
+
+      GrooveDNA.cropEnd =
+        end;
+
+      GrooveDNA.croppedSample = {
+        ...sample,
+        cropStart: start,
+        cropEnd: end
+      };
+
+      modal.remove();
+
+      addSampleToBeatLab(
+        GrooveDNA.croppedSample
+      );
+
+      showToast(
+        "Sample created and added to Beat Lab."
+      );
+
+      setTimeout(() => {
+        navigate("beatlab.html");
+      }, 500);
+    };
+}
+
+
+/* =========================================================
+   15. BEAT LAB — INSTRUMENT DATA
+   ========================================================= */
+
+const instrumentCatalog = [
+
+  {
+    id: "drums",
+    name: "Drums",
+    icon: "🥁",
+    sounds: [
+      "Kick",
+      "Snare",
+      "Hi-Hat",
+      "Clap",
+      "Tom",
+      "Cymbal",
+      "Percussion"
+    ]
+  },
+
+  {
+    id: "bass",
+    name: "Bass",
+    icon: "🎸",
+    sounds: [
+      "Sub Bass",
+      "Funk Bass",
+      "Electric Bass",
+      "Synth Bass",
+      "808 Bass"
+    ]
+  },
+
+  {
+    id: "piano",
+    name: "Piano",
+    icon: "🎹",
+    sounds: [
+      "Grand Piano",
+      "Electric Piano",
+      "Rhodes",
+      "Wurlitzer",
+      "Soul Keys"
+    ]
+  },
+
+  {
+    id: "guitar",
+    name: "Guitar",
+    icon: "🎸",
+    sounds: [
+      "Clean Guitar",
+      "Funk Guitar",
+      "Acoustic Guitar",
+      "Blues Guitar",
+      "Distorted Guitar"
+    ]
+  },
+
+  {
+    id: "synth",
+    name: "Synth",
+    icon: "🎛️",
+    sounds: [
+      "Lead",
+      "Pad",
+      "Pluck",
+      "Arp",
+      "Ambient"
+    ]
+  },
+
+  {
+    id: "strings",
+    name: "Strings",
+    icon: "🎻",
+    sounds: [
+      "Violin",
+      "Cello",
+      "Viola",
+      "String Pad"
+    ]
+  },
+
+  {
+    id: "brass",
+    name: "Brass",
+    icon: "🎺",
+    sounds: [
+      "Trumpet",
+      "Trombone",
+      "Saxophone",
+      "Brass Section"
+    ]
+  },
+
+  {
+    id: "vocals",
+    name: "Vocals",
+    icon: "🎤",
+    sounds: [
+      "Vocal Chop",
+      "Harmony",
+      "Ad Lib",
+      "Vocal Texture"
+    ]
+  }
+];
+
+
+function setupBeatLab() {
+
+  const lab =
+    $("#beatlab") ||
+    $(".beatlab");
+
+  if (!lab) {
+    return;
+  }
+
+  setupBeatControls();
+
+  createBeatLabBrowser();
+
+  setupBeatLabModes();
+
+  setupBeatRecording();
+
+  setupCollaboration();
+
+  $("#saveBeat")?.addEventListener(
+    "click",
+    saveBeat
+  );
+
+  $("#clearLab")?.addEventListener(
+    "click",
+    clearBeatLab
+  );
+
+  $("#generateBeat")?.addEventListener(
+    "click",
+    generateBeat
+  );
+}
+
+
+/* =========================================================
+   16. BEAT LAB CONTROLS
+   ========================================================= */
+
+function setupBeatControls() {
+
+  const play =
+    $("#labPlay");
+
+  const bpm =
+    $("#bpm");
+
+  const bpmValue =
+    $("#bpmValue");
+
+  const pitch =
+    $("#pitch");
+
+  const pitchValue =
+    $("#pitchValue");
+
+  const loop =
+    $("#loopToggle");
+
+
+  play?.addEventListener(
+    "click",
+    () => {
+
+      const playing =
+        play.dataset.playing === "true";
+
+      if (playing) {
+
+        play.dataset.playing =
+          "false";
+
+        play.textContent = "▶";
+
+        stopBeat();
+
+      } else {
+
+        play.dataset.playing =
+          "true";
+
+        play.textContent = "⏸";
+
+        playBeat();
+      }
+    }
+  );
+
+
+  bpm?.addEventListener(
+    "input",
+    () => {
+
+      GrooveDNA.currentBeat.bpm =
+        Number(bpm.value);
+
+      if (bpmValue) {
+        bpmValue.textContent =
+          bpm.value;
+      }
+    }
+  );
+
+
+  pitch?.addEventListener(
+    "input",
+    () => {
+
+      GrooveDNA.currentBeat.pitch =
+        Number(pitch.value);
+
+      if (pitchValue) {
+
+        const value =
+          Number(pitch.value);
+
+        pitchValue.textContent =
+          value > 0
+            ? `+${value}`
+            : value;
+      }
+    }
+  );
+
+
+  loop?.addEventListener(
+    "change",
+    () => {
+
+      GrooveDNA.currentBeat.loop =
+        loop.checked;
+    }
+  );
+}
+
+
+/* =========================================================
+   17. BEAT LAB INSTRUMENT BROWSER
+   ========================================================= */
+
+function createBeatLabBrowser() {
+
+  let browser =
+    $("#instrumentBrowser");
+
+  if (!browser) {
+
+    browser =
+      document.createElement("aside");
+
+    browser.id =
+      "instrumentBrowser";
+
+    browser.className =
+      "instrument-browser";
+
+    const lab =
+      $(".beatlab");
+
+    if (lab) {
+      lab.prepend(browser);
+    }
+  }
+
+  browser.innerHTML = `
+    <div class="instrument-browser-header">
+
+      <p class="eyebrow">
+        SOUNDS
+      </p>
+
+      <h3>
+        Instruments
+      </h3>
+
+    </div>
+
+    <div class="instrument-list">
+      ${instrumentCatalog.map(
+        instrument => `
+          <button
+            class="instrument-button"
+            data-instrument="${instrument.id}">
+
+            <span>
+              ${instrument.icon}
+            </span>
+
+            <strong>
+              ${instrument.name}
+            </strong>
+
+          </button>
+        `
+      ).join("")}
+    </div>
+
+    <div
+      class="sound-list"
+      id="soundList">
+    </div>
+  `;
+
+
+  browser.addEventListener(
+    "click",
+    event => {
+
+      const button =
+        event.target.closest(
+          "[data-instrument]"
+        );
+
+      if (!button) {
+        return;
+      }
+
+      const instrument =
+        instrumentCatalog.find(
+          item =>
+            item.id ===
+            button.dataset.instrument
+        );
+
+      if (instrument) {
+        showInstrumentSounds(
+          instrument
+        );
+      }
+    }
+  );
+}
+
+
+function showInstrumentSounds(
+  instrument
+) {
+
+  GrooveDNA.selectedInstrument =
+    instrument;
+
+  const soundList =
+    $("#soundList");
+
+  if (!soundList) {
+    return;
+  }
+
+  soundList.innerHTML = `
+    <p class="eyebrow">
+      ${escapeHTML(instrument.name)}
+    </p>
+
+    ${instrument.sounds.map(
+      sound => `
+        <div class="sound-item">
+
+          <span>
+            ${escapeHTML(sound)}
+          </span>
+
+          <button
+            class="mini-play"
+            data-sound-preview="${escapeHTML(sound)}">
+            ▶
+          </button>
+
+          <button
+            class="btn primary"
+            data-add-sound="${escapeHTML(sound)}">
+            +
+          </button>
+
+        </div>
+      `
+    ).join("")}
+  `;
+
+
+  soundList.addEventListener(
+    "click",
+    handleSoundListClick,
+    { once: true }
+  );
+}
+
+
+function handleSoundListClick(
+  event
+) {
+
+  const preview =
+    event.target.closest(
+      "[data-sound-preview]"
     );
 
+  const add =
+    event.target.closest(
+      "[data-add-sound]"
+    );
+
+  if (preview) {
+
+    showToast(
+      `Previewing ${preview.dataset.soundPreview}`
+    );
+  }
+
+  if (add) {
+
+    const sound =
+      add.dataset.addSound;
+
+    addInstrumentSound(
+      GrooveDNA.selectedInstrument,
+      sound
+    );
+  }
+}
+
+
+/* =========================================================
+   18. ADD SAMPLE / SOUND TO BEAT
+   ========================================================= */
+
+function addSampleToBeatLab(sample) {
+
+  GrooveDNA.currentBeat.clips.push({
+    type: "sample",
+    title: sample.title,
+    bpm: sample.bpm,
+    key: sample.key,
+    cropStart:
+      sample.cropStart || 0,
+    cropEnd:
+      sample.cropEnd || 100
+  });
+
+  const timeline =
+    $("#timeline");
+
+  if (timeline) {
+
+    const lane =
+      timeline.querySelector(
+        ".track-lane:last-of-type"
+      );
+
+    if (lane) {
+
+      const clip =
+        document.createElement("div");
+
+      clip.className =
+        "clip melody";
+
+      clip.textContent =
+        sample.title;
+
+      clip.title =
+        sample.title;
+
+      lane.appendChild(
+        clip
+      );
+    }
+  }
+
+  showToast(
+    `${sample.title} added to Beat Lab.`
+  );
+}
+
+
+function addInstrumentSound(
+  instrument,
+  sound
+) {
+
+  if (!instrument) {
+    return;
+  }
+
+  GrooveDNA.currentBeat.instruments.push({
+    instrument:
+      instrument.name,
+    sound
+  });
+
+  GrooveDNA.currentBeat.clips.push({
+    type: "instrument",
+    instrument:
+      instrument.name,
+    sound
+  });
+
+  showToast(
+    `${sound} added to ${GrooveDNA.beatMode}.`
+  );
+
+  renderBeatClip(
+    instrument,
+    sound
+  );
+}
+
+
+function renderBeatClip(
+  instrument,
+  sound
+) {
+
+  const timeline =
+    $("#timeline");
+
+  if (!timeline) {
+    return;
+  }
+
+  const lanes =
+    $$(".track-lane");
+
+  const target =
+    lanes[0];
+
+  if (!target) {
     return;
   }
 
@@ -1185,276 +2104,770 @@ function addSampleToBeatLab(sample) {
     document.createElement("div");
 
   clip.className =
-    "clip melody";
-
-  clip.title =
-    sample.title;
+    "clip";
 
   clip.textContent =
-    sample.title;
+    `${instrument.icon} ${sound}`;
 
-  clip.style.width =
-    `${Math.floor(
-      Math.random() * 30 + 35
-    )}%`;
-
-  sampleTrack.appendChild(
+  target.appendChild(
     clip
+  );
+}
+
+
+/* =========================================================
+   19. BEAT LAB MODES
+   ========================================================= */
+
+function setupBeatLabModes() {
+
+  let modeContainer =
+    $("#beatModes");
+
+  if (!modeContainer) {
+
+    modeContainer =
+      document.createElement("div");
+
+    modeContainer.id =
+      "beatModes";
+
+    modeContainer.className =
+      "beat-modes";
+
+    const lab =
+      $(".beatlab");
+
+    if (lab) {
+      lab.prepend(
+        modeContainer
+      );
+    }
+  }
+
+  modeContainer.innerHTML = `
+    <button
+      class="beat-mode active"
+      data-mode="mixer">
+      🎚 Music Mixer
+    </button>
+
+    <button
+      class="beat-mode"
+      data-mode="drumpad">
+      🥁 Drum Pad
+    </button>
+
+    <button
+      class="beat-mode"
+      data-mode="maker">
+      🎼 Music Maker
+    </button>
+  `;
+
+
+  modeContainer.addEventListener(
+    "click",
+    event => {
+
+      const button =
+        event.target.closest(
+          "[data-mode]"
+        );
+
+      if (!button) {
+        return;
+      }
+
+      $$(".beat-mode")
+        .forEach(item =>
+          item.classList.remove(
+            "active"
+          )
+        );
+
+      button.classList.add(
+        "active"
+      );
+
+      GrooveDNA.beatMode =
+        button.dataset.mode;
+
+      showBeatMode(
+        GrooveDNA.beatMode
+      );
+    }
+  );
+}
+
+
+function showBeatMode(mode) {
+
+  showToast(
+    `Beat Lab switched to ${
+      mode === "mixer"
+        ? "Music Mixer"
+        : mode === "drumpad"
+        ? "Drum Pad"
+        : "Music Maker"
+    }.`
+  );
+}
+
+
+/* =========================================================
+   20. BEAT PLAYBACK
+   ========================================================= */
+
+function playBeat() {
+
+  const clips =
+    GrooveDNA.currentBeat.clips;
+
+  if (!clips.length) {
+
+    showToast(
+      "Add sounds to your beat first."
+    );
+
+    return;
+  }
+
+  showToast(
+    `Playing beat at ${GrooveDNA.currentBeat.bpm} BPM.`
+  );
+}
+
+
+function stopBeat() {
+
+  showToast(
+    "Beat paused."
+  );
+}
+
+
+/* =========================================================
+   21. RECORDING
+   ========================================================= */
+
+function setupBeatRecording() {
+
+  let recordButton =
+    $("#recordBeat");
+
+  if (!recordButton) {
+
+    recordButton =
+      document.createElement("button");
+
+    recordButton.id =
+      "recordBeat";
+
+    recordButton.className =
+      "btn primary";
+
+    recordButton.textContent =
+      "● Record";
+
+    const toolbar =
+      $(".lab-toolbar");
+
+    if (toolbar) {
+      toolbar.appendChild(
+        recordButton
+      );
+    }
+  }
+
+  recordButton.addEventListener(
+    "click",
+    toggleRecording
+  );
+}
+
+
+async function toggleRecording() {
+
+  if (GrooveDNA.isRecording) {
+
+    GrooveDNA.mediaRecorder?.stop();
+
+    return;
+  }
+
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
+
+    showToast(
+      "Your browser does not support microphone recording."
+    );
+
+    return;
+  }
+
+  try {
+
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
+        audio: true
+      });
+
+    GrooveDNA.recordedChunks =
+      [];
+
+    const recorder =
+      new MediaRecorder(stream);
+
+    GrooveDNA.mediaRecorder =
+      recorder;
+
+    recorder.ondataavailable =
+      event => {
+
+        if (event.data.size > 0) {
+          GrooveDNA.recordedChunks.push(
+            event.data
+          );
+        }
+      };
+
+    recorder.onstop =
+      () => {
+
+        stream
+          .getTracks()
+          .forEach(track =>
+            track.stop()
+          );
+
+        const blob =
+          new Blob(
+            GrooveDNA.recordedChunks,
+            {
+              type:
+                recorder.mimeType ||
+                "audio/webm"
+            }
+          );
+
+        const url =
+          URL.createObjectURL(blob);
+
+        GrooveDNA.recordedAudio =
+          url;
+
+        GrooveDNA.isRecording =
+          false;
+
+        const button =
+          $("#recordBeat");
+
+        if (button) {
+          button.textContent =
+            "● Record";
+        }
+
+        showToast(
+          "Recording saved to this Beat Lab session."
+        );
+      };
+
+    recorder.start();
+
+    GrooveDNA.isRecording =
+      true;
+
+    const button =
+      $("#recordBeat");
+
+    if (button) {
+      button.textContent =
+        "■ Stop Recording";
+    }
+
+    showToast(
+      "Recording started."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Recording error:",
+      error
+    );
+
+    showToast(
+      "Microphone permission was not granted."
+    );
+  }
+}
+
+
+/* =========================================================
+   22. SAVE / CLEAR / GENERATE BEAT
+   ========================================================= */
+
+function saveBeat() {
+
+  const beats =
+    JSON.parse(
+      localStorage.getItem(
+        "grooveDNA_beats"
+      ) || "[]"
+    );
+
+  beats.push({
+    id: Date.now(),
+    createdAt:
+      new Date().toISOString(),
+    beat:
+      GrooveDNA.currentBeat
+  });
+
+  localStorage.setItem(
+    "grooveDNA_beats",
+    JSON.stringify(beats)
   );
 
   showToast(
-    `✓ ${sample.title} added to Beat Lab`
+    "✓ Beat idea saved!"
+  );
+}
+
+
+function clearBeatLab() {
+
+  $$("#timeline .clip")
+    .forEach(clip =>
+      clip.remove()
+    );
+
+  GrooveDNA.currentBeat.clips =
+    [];
+
+  GrooveDNA.currentBeat.instruments =
+    [];
+
+  const empty =
+    $("#labEmpty");
+
+  if (empty) {
+    empty.style.display =
+      "block";
+  }
+
+  showToast(
+    "Beat Lab cleared."
+  );
+}
+
+
+function generateBeat() {
+
+  const generated =
+    instrumentCatalog[
+      Math.floor(
+        Math.random() *
+        instrumentCatalog.length
+      )
+    ];
+
+  const sound =
+    generated.sounds[
+      Math.floor(
+        Math.random() *
+        generated.sounds.length
+      )
+    ];
+
+  addInstrumentSound(
+    generated,
+    sound
+  );
+
+  showToast(
+    "GrooveDNA generated a new idea."
   );
 }
 
 
 /* =========================================================
-   BEAT LAB
+   23. COLLABORATION
    ========================================================= */
 
-function setupBeatLab() {
-  const labPlay =
-    document.getElementById(
-      "labPlay"
-    );
+function setupCollaboration() {
 
-  const bpm =
-    document.getElementById(
-      "bpm"
-    );
+  let button =
+    $("#collabBtn");
 
-  const bpmValue =
-    document.getElementById(
-      "bpmValue"
-    );
+  if (!button) {
 
-  const pitch =
-    document.getElementById(
-      "pitch"
-    );
+    button =
+      document.createElement("button");
 
-  const pitchValue =
-    document.getElementById(
-      "pitchValue"
-    );
+    button.id =
+      "collabBtn";
 
-  const saveBeat =
-    document.getElementById(
-      "saveBeat"
-    );
+    button.className =
+      "btn secondary";
 
-  const clearLab =
-    document.getElementById(
-      "clearLab"
-    );
+    button.textContent =
+      "👥 Collab";
 
-  const generateBeat =
-    document.getElementById(
-      "generateBeat"
-    );
+    const toolbar =
+      $(".lab-toolbar");
 
-  if (bpm && bpmValue) {
-    bpm.addEventListener(
-      "input",
-      () => {
-        bpmValue.textContent =
-          bpm.value;
-      }
-    );
+    if (toolbar) {
+      toolbar.appendChild(
+        button
+      );
+    }
   }
 
-  if (pitch && pitchValue) {
-    pitch.addEventListener(
-      "input",
-      () => {
-        const value =
-          Number(pitch.value);
+  button.addEventListener(
+    "click",
+    openCollabPanel
+  );
+}
 
-        pitchValue.textContent =
-          value > 0
-            ? `+${value}`
-            : String(value);
-      }
-    );
+
+async function openCollabPanel() {
+
+  const existing =
+    $("#collabPanel");
+
+  if (existing) {
+    existing.remove();
   }
 
-  if (labPlay) {
-    labPlay.addEventListener(
-      "click",
-      () => {
-        const playing =
-          labPlay.dataset.playing ===
-          "true";
+  const panel =
+    document.createElement("div");
 
-        labPlay.dataset.playing =
-          String(!playing);
+  panel.id =
+    "collabPanel";
 
-        labPlay.textContent =
-          playing
-            ? "▶"
-            : "⏸";
+  panel.className =
+    "modal-backdrop";
 
-        showToast(
-          playing
-            ? "Beat Lab paused."
-            : "Beat Lab playing."
-        );
-      }
-    );
+  panel.innerHTML = `
+    <div class="modal">
+
+      <button
+        class="modal-close"
+        id="closeCollab">
+        ×
+      </button>
+
+      <p class="eyebrow">
+        COLLABORATE
+      </p>
+
+      <h2>
+        Invite a creator
+      </h2>
+
+      <div id="collabUsers">
+        Loading creators...
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(panel);
+
+  $("#closeCollab").onclick =
+    () => panel.remove();
+
+  await loadCollabUsers();
+}
+
+
+async function loadCollabUsers() {
+
+  const container =
+    $("#collabUsers");
+
+  if (!container) {
+    return;
   }
 
-  if (saveBeat) {
-    saveBeat.addEventListener(
-      "click",
-      () => {
-        localStorage.setItem(
-          "grooveDNA_beatSaved",
-          "true"
-        );
+  if (!supabaseClient) {
 
-        showToast(
-          "✓ Beat idea saved!"
-        );
-      }
-    );
+    container.innerHTML =
+      "<p>Supabase is not configured.</p>";
+
+    return;
   }
 
-  if (clearLab) {
-    clearLab.addEventListener(
-      "click",
-      () => {
-        const clips =
-          document.querySelectorAll(
-            "#timeline .clip"
-          );
+  try {
 
-        clips.forEach(
-          (clip) =>
-            clip.remove()
-        );
+    const {
+      data,
+      error
+    } = await supabaseClient
+      .from("profiles")
+      .select("id, username, display_name")
+      .limit(20);
 
-        const empty =
-          document.getElementById(
-            "labEmpty"
-          );
+    if (error) {
+      throw error;
+    }
 
-        if (empty) {
-          empty.style.display =
-            "block";
-        }
+    if (!data?.length) {
 
-        showToast(
-          "Beat Lab cleared."
-        );
-      }
-    );
-  }
+      container.innerHTML =
+        "<p>No creators found yet.</p>";
 
-  if (generateBeat) {
-    generateBeat.addEventListener(
-      "click",
-      () => {
-        const tracks =
-          document.querySelectorAll(
-            "#timeline .track"
-          );
+      return;
+    }
 
-        tracks.forEach(
-          (track) => {
-            const lane =
-              track.querySelector(
-                ".track-lane"
-              );
+    container.innerHTML =
+      data.map(user => `
+        <div class="collab-user">
 
-            if (!lane) return;
+          <span>
+            @${escapeHTML(
+              user.username ||
+              user.display_name ||
+              "creator"
+            )}
+          </span>
 
-            const clip =
-              document.createElement(
-                "div"
-              );
+          <button
+            class="btn primary"
+            data-invite-user="${user.id}">
+            Add
+          </button>
 
-            clip.className =
-              "clip melody";
+        </div>
+      `).join("");
 
-            clip.style.width =
-              `${Math.floor(
-                Math.random() * 45 + 30
-              )}%`;
+    container
+      .addEventListener(
+        "click",
+        event => {
 
-            lane.appendChild(
-              clip
+          const button =
+            event.target.closest(
+              "[data-invite-user]"
             );
+
+          if (!button) {
+            return;
           }
-        );
 
-        const empty =
-          document.getElementById(
-            "labEmpty"
+          sendCollaborationInvite(
+            button.dataset.inviteUser
           );
-
-        if (empty) {
-          empty.style.display =
-            "none";
         }
+      );
 
-        showToast(
-          "✦ New groove generated!"
-        );
-      }
+  } catch (error) {
+
+    console.error(
+      "Collab users:",
+      error
+    );
+
+    container.innerHTML =
+      "<p>Unable to load creators.</p>";
+  }
+}
+
+
+async function sendCollaborationInvite(
+  recipientId
+) {
+
+  if (!supabaseClient ||
+      !GrooveDNA.user) {
+
+    showToast(
+      "Please sign in first."
+    );
+
+    return;
+  }
+
+  /*
+    Recommended Supabase table:
+
+    collaboration_invites
+
+    id
+    sender_id
+    recipient_id
+    status
+    created_at
+  */
+
+  try {
+
+    const {
+      error
+    } = await supabaseClient
+      .from("collaboration_invites")
+      .insert({
+        sender_id:
+          GrooveDNA.user.id,
+        recipient_id:
+          recipientId,
+        status:
+          "pending"
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    showToast(
+      "Collaboration invitation sent."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Invite error:",
+      error
+    );
+
+    showToast(
+      "Unable to send invitation."
     );
   }
 }
 
 
 /* =========================================================
-   COMMUNITY
+   24. GROOVEDNA PAGE
    ========================================================= */
 
-function setupCommunity() {
-  const likeButtons =
-    document.querySelectorAll(
-      "[data-like]"
-    );
+function setupGrooveDNA() {
 
-  likeButtons.forEach(
-    (button) => {
+  $("#shareDNA")?.addEventListener(
+    "click",
+    async () => {
+
+      const shareText =
+        "Check out my GrooveDNA musical profile.";
+
+      if (
+        navigator.share
+      ) {
+
+        await navigator.share({
+          title:
+            "My GrooveDNA",
+          text:
+            shareText,
+          url:
+            window.location.href
+        });
+
+      } else {
+
+        await navigator.clipboard.writeText(
+          window.location.href
+        );
+
+        showToast(
+          "GrooveDNA link copied."
+        );
+      }
+    }
+  );
+
+
+  $$(".mood-card")
+    .forEach(button => {
+
       button.addEventListener(
         "click",
         () => {
+
+          const mood =
+            button.dataset.mood;
+
+          showToast(
+            `${mood} sounds selected.`
+          );
+
+          localStorage.setItem(
+            "grooveDNA_mood",
+            mood
+          );
+        }
+      );
+    });
+}
+
+
+/* =========================================================
+   25. COMMUNITY
+   ========================================================= */
+
+function setupCommunity() {
+
+  $$("#community [data-like]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
           const count =
             button.querySelector(
               "span"
             );
 
-          if (!button.dataset.liked) {
-            button.dataset.liked =
-              "true";
+          if (count) {
 
-            if (count) {
-              count.textContent =
-                Number(
-                  count.textContent
-                ) + 1;
-            }
+            const current =
+              Number(
+                count.textContent
+              ) || 0;
 
-            button.firstChild.textContent =
-              "♥ ";
+            count.textContent =
+              current + 1;
           }
+
+          button.classList.toggle(
+            "liked"
+          );
         }
       );
-    }
-  );
+    });
 
-  const followButtons =
-    document.querySelectorAll(
-      "[data-follow]"
-    );
 
-  followButtons.forEach(
-    (button) => {
+  $$("#community [data-remix]")
+    .forEach(button => {
+
       button.addEventListener(
         "click",
         () => {
+
+          showToast(
+            "Remix idea added to Beat Lab."
+          );
+
+          navigate(
+            "beatlab.html"
+          );
+        }
+      );
+    });
+
+
+  $$("#community [data-follow]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        async () => {
+
           const following =
             button.dataset.following ===
             "true";
@@ -1466,469 +2879,303 @@ function setupCommunity() {
             following
               ? "＋ Follow"
               : "✓ Following";
-        }
-      );
-    }
-  );
 
-  const remixButtons =
-    document.querySelectorAll(
-      "[data-remix]"
-    );
-
-  remixButtons.forEach(
-    (button) => {
-      button.addEventListener(
-        "click",
-        () => {
           showToast(
-            "↻ Remix idea added to Beat Lab."
+            following
+              ? "Unfollowed creator."
+              : "Following creator."
           );
         }
       );
-    }
-  );
+    });
 
-  const joinChallenge =
-    document.getElementById(
-      "joinChallenge"
-    );
 
-  if (joinChallenge) {
-    joinChallenge.addEventListener(
+  $("#joinChallenge")
+    ?.addEventListener(
       "click",
       () => {
+
         showToast(
-          "✓ You're in the challenge!"
+          "You joined the weekly challenge."
         );
       }
     );
-  }
 
-  const challengeButton =
-    document.getElementById(
-      "challengeBtn"
-    );
 
-  if (challengeButton) {
-    challengeButton.addEventListener(
+  $("#challengeBtn")
+    ?.addEventListener(
       "click",
       () => {
+
         showToast(
-          "Weekly Challenge: Flip the Funk"
+          "Weekly challenge opened."
         );
       }
     );
-  }
 
-  const dnaMatch =
-    document.getElementById(
-      "dnaMatch"
-    );
 
-  if (dnaMatch) {
-    dnaMatch.addEventListener(
+  $("#dnaMatch")
+    ?.addEventListener(
       "click",
       () => {
-        window.location.href =
-          "groovedna.html";
+
+        navigate(
+          "groovedna.html"
+        );
       }
     );
-  }
 }
 
 
 /* =========================================================
-   GROOVEDNA PAGE
+   26. PROFILE
    ========================================================= */
 
-function setupGrooveDNA() {
-  const shareDNA =
-    document.getElementById(
-      "shareDNA"
+async function setupProfile() {
+
+  if (!GrooveDNA.user) {
+    return;
+  }
+
+  const profile =
+    await getProfile(
+      GrooveDNA.user.id
     );
 
-  if (shareDNA) {
-    shareDNA.addEventListener(
+  if (!profile) {
+    return;
+  }
+
+  const name =
+    $(".profile-main h2");
+
+  if (name) {
+
+    name.textContent =
+      profile.display_name ||
+      profile.username ||
+      GrooveDNA.user.email;
+  }
+
+  const avatar =
+    $(".profile-avatar");
+
+  if (
+    avatar &&
+    profile.display_name
+  ) {
+
+    avatar.textContent =
+      profile.display_name
+        .split(" ")
+        .map(word =>
+          word[0]
+        )
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+  }
+
+
+  $("#profileBtn")
+    ?.addEventListener(
       "click",
-      async () => {
-        const shareText =
-          "My GrooveDNA — Find the Sound. Flip the Groove.";
+      openProfileEditor
+    );
+
+
+  setupProfileSettings();
+}
+
+
+async function getProfile(userId) {
+
+  if (!supabaseClient) {
+    return null;
+  }
+
+  try {
+
+    const {
+      data,
+      error
+    } = await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+
+  } catch (error) {
+
+    console.warn(
+      "Profile load:",
+      error.message
+    );
+
+    return null;
+  }
+}
+
+
+function openProfileEditor() {
+
+  const modal =
+    document.createElement("div");
+
+  modal.className =
+    "modal-backdrop";
+
+  modal.innerHTML = `
+    <div class="modal">
+
+      <button
+        class="modal-close"
+        id="closeProfileEditor">
+        ×
+      </button>
+
+      <p class="eyebrow">
+        PROFILE
+      </p>
+
+      <h2>
+        Edit your profile
+      </h2>
+
+      <form id="profileEditForm">
+
+        <label>
+          Username
+          <input
+            id="profileUsername"
+            required>
+        </label>
+
+        <label>
+          Display name
+          <input
+            id="profileDisplayName">
+        </label>
+
+        <label>
+          Bio
+          <textarea
+            id="profileBio">
+          </textarea>
+        </label>
+
+        <button
+          class="btn primary"
+          type="submit">
+          Save Profile
+        </button>
+
+      </form>
+
+    </div>
+  `;
+
+  document.body.appendChild(
+    modal
+  );
+
+  $("#closeProfileEditor").onclick =
+    () => modal.remove();
+
+
+  $("#profileEditForm")
+    .addEventListener(
+      "submit",
+      async event => {
+
+        event.preventDefault();
 
         if (
-          navigator.share
+          !supabaseClient ||
+          !GrooveDNA.user
         ) {
-          try {
-            await navigator.share({
-              title: "My GrooveDNA",
-              text: shareText,
-              url: window.location.href
+          return;
+        }
+
+        const username =
+          $("#profileUsername")
+            .value.trim();
+
+        const displayName =
+          $("#profileDisplayName")
+            .value.trim();
+
+        const bio =
+          $("#profileBio")
+            .value.trim();
+
+        try {
+
+          const {
+            error
+          } = await supabaseClient
+            .from("profiles")
+            .upsert({
+              id:
+                GrooveDNA.user.id,
+              username,
+              display_name:
+                displayName,
+              bio
             });
-          } catch (error) {
-            if (
-              error.name !==
-              "AbortError"
-            ) {
-              showToast(
-                "Unable to share right now."
-              );
-            }
-          }
-        } else {
-          try {
-            await navigator.clipboard.writeText(
-              window.location.href
-            );
 
-            showToast(
-              "✓ GrooveDNA link copied!"
-            );
-          } catch {
-            showToast(
-              "Copy this page URL to share your DNA."
-            );
+          if (error) {
+            throw error;
           }
+
+          modal.remove();
+
+          showToast(
+            "Profile updated."
+          );
+
+          await setupProfile();
+
+        } catch (error) {
+
+          console.error(
+            error
+          );
+
+          showToast(
+            "Unable to update profile."
+          );
         }
       }
     );
-  }
-
-  const moodButtons =
-    document.querySelectorAll(
-      "[data-mood]"
-    );
-
-  moodButtons.forEach(
-    (button) => {
-      button.addEventListener(
-        "click",
-        () => {
-          showToast(
-            `Playing ${button.dataset.mood} vibes.`
-          );
-        }
-      );
-    }
-  );
 }
 
 
 /* =========================================================
-   LIBRARY
+   27. PROFILE SETTINGS
    ========================================================= */
 
-const playlists = [
-  {
-    title: "Funk Essentials",
-    subtitle: "18 songs",
-    icon: "🕺",
-    type: "playlists"
-  },
-  {
-    title: "Late Night Soul",
-    subtitle: "24 songs",
-    icon: "🌙",
-    type: "playlists"
-  },
-  {
-    title: "Guitar Energy",
-    subtitle: "16 songs",
-    icon: "🎸",
-    type: "playlists"
-  },
-  {
-    title: "Neon R&B",
-    subtitle: "21 songs",
-    icon: "🎧",
-    type: "albums"
-  }
-];
+function setupProfileSettings() {
 
-function renderLibrary() {
-  const grid =
-    document.getElementById(
-      "playlistGrid"
-    );
+  $$(".settings-tab")
+    .forEach(tab => {
 
-  if (!grid) return;
-
-  grid.innerHTML =
-    playlists.map(
-      (playlist) => `
-        <article
-          class="playlist-card"
-          data-library-type="${playlist.type}"
-        >
-          <div class="playlist-art">
-            ${playlist.icon}
-          </div>
-
-          <strong>
-            ${playlist.title}
-          </strong>
-
-          <small>
-            ${playlist.subtitle}
-          </small>
-        </article>
-      `
-    ).join("");
-}
-
-
-function setupLibrary() {
-  const tabs =
-    document.querySelectorAll(
-      ".library-tab"
-    );
-
-  const grid =
-    document.getElementById(
-      "playlistGrid"
-    );
-
-  renderLibrary();
-
-  tabs.forEach(
-    (tab) => {
       tab.addEventListener(
         "click",
         () => {
-          tabs.forEach(
-            (item) =>
+
+          $$(".settings-tab")
+            .forEach(item =>
               item.classList.remove(
                 "active"
               )
-          );
-
-          tab.classList.add(
-            "active"
-          );
-
-          const type =
-            tab.dataset.library;
-
-          if (!grid) return;
-
-          const cards =
-            grid.querySelectorAll(
-              ".playlist-card"
             );
-
-          cards.forEach(
-            (card) => {
-              if (
-                type === "all" ||
-                card.dataset.libraryType ===
-                  type
-              ) {
-                card.style.display =
-                  "";
-              } else {
-                card.style.display =
-                  "none";
-              }
-            }
-          );
-        }
-      );
-    }
-  );
-
-  const newPlaylist =
-    document.getElementById(
-      "newPlaylist"
-    );
-
-  if (newPlaylist) {
-    newPlaylist.addEventListener(
-      "click",
-      () => {
-        const name =
-          window.prompt(
-            "Name your new playlist:"
-          );
-
-        if (
-          name &&
-          name.trim()
-        ) {
-          showToast(
-            `✓ Playlist "${name.trim()}" created!`
-          );
-        }
-      }
-    );
-  }
-
-  const viewArtists =
-    document.getElementById(
-      "viewArtists"
-    );
-
-  if (viewArtists) {
-    viewArtists.addEventListener(
-      "click",
-      () => {
-        showToast(
-          "Showing artists in your orbit."
-        );
-      }
-    );
-  }
-}
-
-
-/* =========================================================
-   PROFILE
-   ========================================================= */
-
-function setupProfile() {
-  const profileButton =
-    document.getElementById(
-      "profileBtn"
-    );
-
-  if (profileButton) {
-    profileButton.addEventListener(
-      "click",
-      () => {
-        showToast(
-          "Profile editing is ready."
-        );
-      }
-    );
-  }
-
-  const settingsTabs =
-    document.querySelectorAll(
-      ".settings-tab"
-    );
-
-  const settingsTitle =
-    document.getElementById(
-      "settingsTitle"
-    );
-
-  const settingsList =
-    document.getElementById(
-      "settingsList"
-    );
-
-  const settings = {
-    account: {
-      title: "Profile settings",
-      items: [
-        [
-          "Display name",
-          "Change the name shown to creators."
-        ],
-        [
-          "Email",
-          "Manage your GrooveDNA account email."
-        ]
-      ]
-    },
-
-    playback: {
-      title: "Playback settings",
-      items: [
-        [
-          "Autoplay",
-          "Start recommended sounds automatically."
-        ],
-        [
-          "High quality audio",
-          "Prefer higher quality playback."
-        ]
-      ]
-    },
-
-    notifications: {
-      title: "Notification settings",
-      items: [
-        [
-          "New recommendations",
-          "Get notified about fresh sounds."
-        ],
-        [
-          "Community activity",
-          "Get updates about creators and challenges."
-        ]
-      ]
-    },
-
-    privacy: {
-      title: "Privacy settings",
-      items: [
-        [
-          "Public profile",
-          "Allow other creators to discover your profile."
-        ],
-        [
-          "Listening activity",
-          "Show recent listening activity to followers."
-        ]
-      ]
-    },
-
-    appearance: {
-      title: "Appearance settings",
-      items: [
-        [
-          "Dark interface",
-          "Use the GrooveDNA dark interface."
-        ],
-        [
-          "Reduced motion",
-          "Reduce interface animations."
-        ]
-      ]
-    }
-  };
-
-  function renderSettings(type) {
-    const setting =
-      settings[type];
-
-    if (!setting) return;
-
-    if (settingsTitle) {
-      settingsTitle.textContent =
-        setting.title;
-    }
-
-    if (!settingsList) return;
-
-    settingsList.innerHTML =
-      setting.items.map(
-        (item) => `
-          <div class="setting-row">
-            <div>
-              <strong>${item[0]}</strong>
-              <small>${item[1]}</small>
-            </div>
-
-            <label class="switch">
-              <input type="checkbox">
-              <span></span>
-            </label>
-          </div>
-        `
-      ).join("");
-  }
-
-  settingsTabs.forEach(
-    (tab) => {
-      tab.addEventListener(
-        "click",
-        () => {
-          settingsTabs.forEach(
-            (item) =>
-              item.classList.remove(
-                "active"
-              )
-          );
 
           tab.classList.add(
             "active"
@@ -1939,34 +3186,655 @@ function setupProfile() {
           );
         }
       );
-    }
-  );
+    });
 
-  renderSettings("account");
+  renderSettings(
+    "account"
+  );
+}
+
+
+function renderSettings(type) {
+
+  const title =
+    $("#settingsTitle");
+
+  const list =
+    $("#settingsList");
+
+  if (!list) {
+    return;
+  }
+
+  const settings = {
+
+    account: {
+      title:
+        "Profile settings",
+
+      items: [
+        "Username",
+        "Display name",
+        "Email address",
+        "Password"
+      ]
+    },
+
+    playback: {
+      title:
+        "Playback settings",
+
+      items: [
+        "Autoplay",
+        "Loop",
+        "Audio quality"
+      ]
+    },
+
+    notifications: {
+      title:
+        "Notification settings",
+
+      items: [
+        "Messages",
+        "Followers",
+        "Collaboration invites",
+        "Community activity"
+      ]
+    },
+
+    privacy: {
+      title:
+        "Privacy settings",
+
+      items: [
+        "Public profile",
+        "Show followers",
+        "Show following",
+        "Allow messages"
+      ]
+    },
+
+    appearance: {
+      title:
+        "Appearance settings",
+
+      items: [
+        "Dark mode",
+        "Compact player",
+        "Animation"
+      ]
+    }
+  };
+
+  const selected =
+    settings[type] ||
+    settings.account;
+
+  if (title) {
+    title.textContent =
+      selected.title;
+  }
+
+  list.innerHTML =
+    selected.items
+      .map(item => `
+        <div class="setting-row">
+
+          <span>
+            ${escapeHTML(item)}
+          </span>
+
+          <label class="toggle-label">
+            <input
+              type="checkbox"
+              data-setting="${escapeHTML(item)}">
+            <span>
+              On
+            </span>
+          </label>
+
+        </div>
+      `)
+      .join("");
+
+
+  /*
+    Sign out belongs in Account settings.
+  */
+
+  if (type === "account") {
+
+    const button =
+      document.createElement(
+        "button"
+      );
+
+    button.className =
+      "btn primary";
+
+    button.textContent =
+      "Sign Out";
+
+    button.dataset.signout =
+      "true";
+
+    button.addEventListener(
+      "click",
+      async () => {
+
+        const confirmed =
+          await showConfirmation(
+            "Sign out?",
+            "Are you sure you want to sign out?"
+          );
+
+        if (confirmed) {
+          await signOut();
+        }
+      }
+    );
+
+    list.appendChild(
+      button
+    );
+  }
 }
 
 
 /* =========================================================
-   INITIALIZE GROOVEDNA
+   28. LIBRARY
    ========================================================= */
 
-document.addEventListener(
-  "DOMContentLoaded",
-  async () => {
-    setupAuthForm();
-    setupLandingAuthButtons();
-    setupSignOutButtons();
-    setupAuthStateListener();
+function setupLibrary() {
 
-    setupMobileNavigation();
+  $$(".library-tab")
+    .forEach(tab => {
 
-    setupDiscover();
-    setupBeatLab();
-    setupCommunity();
-    setupGrooveDNA();
-    setupLibrary();
-    setupProfile();
+      tab.addEventListener(
+        "click",
+        () => {
 
-    await protectGrooveDNAPage();
+          $$(".library-tab")
+            .forEach(item =>
+              item.classList.remove(
+                "active"
+              )
+            );
+
+          tab.classList.add(
+            "active"
+          );
+
+          renderLibrary(
+            tab.dataset.library
+          );
+        }
+      );
+    });
+
+  renderLibrary(
+    "all"
+  );
+
+
+  $("#newPlaylist")
+    ?.addEventListener(
+      "click",
+      createPlaylist
+    );
+}
+
+
+function renderLibrary(type) {
+
+  const grid =
+    $("#playlistGrid");
+
+  if (!grid) {
+    return;
   }
-);
+
+  const saved =
+    JSON.parse(
+      localStorage.getItem(
+        "grooveDNA_saved"
+      ) || "[]"
+    );
+
+  if (
+    type === "songs" &&
+    !saved.length
+  ) {
+
+    grid.innerHTML = `
+      <div class="empty-state">
+        Your liked songs will appear here.
+      </div>
+    `;
+
+    return;
+  }
+
+  grid.innerHTML = `
+    <article class="playlist-card">
+      <div class="playlist-art">
+        🎵
+      </div>
+
+      <p class="eyebrow">
+        GROOVEDNA
+      </p>
+
+      <h3>
+        Your Discoveries
+      </h3>
+
+      <p>
+        ${saved.length}
+        saved sounds
+      </p>
+
+      <button
+        class="btn primary"
+        data-library-play>
+        ▶ Play
+      </button>
+    </article>
+
+    <article class="playlist-card">
+      <div class="playlist-art">
+        🎸
+      </div>
+
+      <p class="eyebrow">
+        PLAYLIST
+      </p>
+
+      <h3>
+        Late Night Grooves
+      </h3>
+
+      <p>
+        Soul · Funk · R&B
+      </p>
+    </article>
+  `;
+}
+
+
+function createPlaylist() {
+
+  const name =
+    prompt(
+      "Playlist name:"
+    );
+
+  if (!name) {
+    return;
+  }
+
+  const playlists =
+    JSON.parse(
+      localStorage.getItem(
+        "grooveDNA_playlists"
+      ) || "[]"
+    );
+
+  playlists.push({
+    id: Date.now(),
+    name
+  });
+
+  localStorage.setItem(
+    "grooveDNA_playlists",
+    JSON.stringify(playlists)
+  );
+
+  showToast(
+    `Playlist "${name}" created.`
+  );
+
+  renderLibrary(
+    "playlists"
+  );
+}
+
+
+/* =========================================================
+   29. MESSAGING / NOTIFICATIONS
+   ========================================================= */
+
+function setupMessaging() {
+
+  let button =
+    $("#notificationBtn");
+
+  if (!button) {
+
+    button =
+      document.createElement(
+        "button"
+      );
+
+    button.id =
+      "notificationBtn";
+
+    button.className =
+      "notification-button";
+
+    button.textContent =
+      "🔔";
+
+    const header =
+      $(".topbar");
+
+    if (header) {
+      header.appendChild(
+        button
+      );
+    }
+  }
+
+  button.addEventListener(
+    "click",
+    openMessagingPanel
+  );
+}
+
+
+function openMessagingPanel() {
+
+  const existing =
+    $("#messagePanel");
+
+  if (existing) {
+    existing.remove();
+  }
+
+  const panel =
+    document.createElement(
+      "div"
+    );
+
+  panel.id =
+    "messagePanel";
+
+  panel.className =
+    "modal-backdrop";
+
+  panel.innerHTML = `
+    <div class="modal message-modal">
+
+      <button
+        class="modal-close"
+        id="closeMessages">
+        ×
+      </button>
+
+      <p class="eyebrow">
+        MESSAGES
+      </p>
+
+      <h2>
+        Your conversations
+      </h2>
+
+      <div
+        id="conversationList">
+
+        <button
+          class="conversation"
+          data-chat="community">
+          @GrooveCreator
+        </button>
+
+        <button
+          class="conversation"
+          data-chat="collab">
+          Beat Lab Collab
+        </button>
+
+      </div>
+
+      <div
+        class="chat-actions">
+
+        <button
+          class="btn secondary"
+          id="voiceCall">
+          📞 Call
+        </button>
+
+        <button
+          class="btn secondary"
+          id="videoCall">
+          🎥 Video
+        </button>
+
+      </div>
+
+      <div
+        id="chatMessages"
+        class="chat-messages">
+      </div>
+
+      <form id="chatForm">
+
+        <input
+          id="chatInput"
+          placeholder="Write a message..."
+          autocomplete="off">
+
+        <button
+          class="btn primary"
+          type="submit">
+          Send
+        </button>
+
+      </form>
+
+    </div>
+  `;
+
+  document.body.appendChild(
+    panel
+  );
+
+  $("#closeMessages").onclick =
+    () => panel.remove();
+
+
+  $("#chatForm")
+    .addEventListener(
+      "submit",
+      event => {
+
+        event.preventDefault();
+
+        const input =
+          $("#chatInput");
+
+        if (!input.value.trim()) {
+          return;
+        }
+
+        const message =
+          document.createElement(
+            "div"
+          );
+
+        message.className =
+          "chat-message";
+
+        message.textContent =
+          input.value.trim();
+
+        $("#chatMessages")
+          .appendChild(
+            message
+          );
+
+        input.value = "";
+      }
+    );
+
+
+  $("#voiceCall")
+    .addEventListener(
+      "click",
+      () => {
+
+        showToast(
+          "Voice calling requires a realtime calling service."
+        );
+      }
+    );
+
+
+  $("#videoCall")
+    .addEventListener(
+      "click",
+      () => {
+
+        showToast(
+          "Video calling requires WebRTC/signaling setup."
+        );
+      }
+    );
+}
+
+
+/* =========================================================
+   30. INITIALIZE EVERYTHING
+   ========================================================= */
+
+async function initGrooveDNA() {
+
+  /*
+    Initialize authentication first.
+  */
+
+  if (supabaseClient) {
+
+    await getCurrentSession();
+
+    watchAuthentication();
+  }
+
+
+  /*
+    Public landing page
+  */
+
+  setupAuthForm();
+
+
+  /*
+    General navigation
+  */
+
+  setupNavigation();
+
+
+  /*
+    Authentication
+  */
+
+  setupSignOutButtons();
+
+
+  /*
+    Private page protection
+  */
+
+  await protectPrivatePages();
+
+
+  /*
+    Discover
+  */
+
+  setupDiscover();
+
+
+  /*
+    Audio
+  */
+
+  setupAudioUpload();
+
+
+  /*
+    Beat Lab
+  */
+
+  setupBeatLab();
+
+
+  /*
+    GrooveDNA
+  */
+
+  setupGrooveDNA();
+
+
+  /*
+    Community
+  */
+
+  setupCommunity();
+
+
+  /*
+    Library
+  */
+
+  setupLibrary();
+
+
+  /*
+    Profile
+  */
+
+  await setupProfile();
+
+
+  /*
+    Messages / notifications
+  */
+
+  setupMessaging();
+
+
+  console.log(
+    "GrooveDNA initialized.",
+    {
+      page:
+        getPage(),
+      authenticated:
+        Boolean(GrooveDNA.user)
+    }
+  );
+}
+
+
+/* =========================================================
+   START APPLICATION
+   ========================================================= */
+
+if (
+  document.readyState ===
+  "loading"
+) {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    initGrooveDNA
+  );
+
+} else {
+
+  initGrooveDNA();
+}
+```
