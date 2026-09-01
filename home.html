@@ -1,32 +1,440 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="GrooveDNA home — find the sound and flip the groove.">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="GrooveDNA — find the sound and flip the groove."
+  >
+
   <title>GrooveDNA | Home</title>
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- GrooveDNA Styles -->
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
 </head>
+
 <body>
+
   <div class="app-shell">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
     <header class="topbar">
-      <a class="brand" href="home.html" aria-label="GrooveDNA home"><span class="brand-mark">GD</span><span>Groove<span>DNA</span></span></a>
-      <button class="menu-toggle" id="menuToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
-      <nav id="mainNav"><a href="home.html">Home</a><a href="discover.html">Discover</a><a href="groovedna.html">GrooveDNA</a><a href="beatlab.html">Beat Lab</a><a href="community.html">Community</a><a href="library.html">Library</a><a href="profile.html">Profile</a></nav>
-      <div class="top-actions"><button class="header-action" id="uploadBtn">＋ Upload Audio</button></div>
+
+      <a
+        class="brand"
+        href="home.html"
+        aria-label="GrooveDNA home"
+      >
+        <span class="brand-mark">GD</span>
+
+        <span>
+          Groove<span>DNA</span>
+        </span>
+      </a>
+
+
+      <button
+        type="button"
+        class="menu-toggle"
+        id="menuToggle"
+        aria-label="Open navigation"
+        aria-expanded="false"
+        aria-controls="mainNav"
+      >
+        ☰
+      </button>
+
+
+      <nav
+        id="mainNav"
+        aria-label="Main navigation"
+      >
+
+        <a
+          class="active"
+          href="home.html"
+          aria-current="page"
+        >
+          Home
+        </a>
+
+        <a href="discover.html">
+          Discover
+        </a>
+
+        <a href="groovedna.html">
+          GrooveDNA
+        </a>
+
+        <a href="beatlab.html">
+          Beat Lab
+        </a>
+
+        <a href="community.html">
+          Community
+        </a>
+
+        <a href="library.html">
+          Library
+        </a>
+
+        <a href="profile.html">
+          Profile
+        </a>
+
+      </nav>
+
+
+      <div class="top-actions">
+
+        <button
+          type="button"
+          class="header-action"
+          id="uploadBtn"
+        >
+          ＋ Upload Audio
+        </button>
+
+      </div>
+
     </header>
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+
     <main>
-      <section class="hero" id="home">
-        <div class="hero-copy"><p class="eyebrow">ROCK • FUNK • SOUL • R&B</p><h1>Find the sound.<br><span>Flip the groove.</span></h1><p class="hero-text">Discover sounds that fit your taste, understand your musical DNA, build original ideas, and connect with creators.</p><div class="hero-actions"><a class="btn primary" href="discover.html">Explore Sounds</a><a class="btn secondary" href="groovedna.html">See My DNA</a></div><div class="hero-stats"><div><strong>1,284</strong><span>sounds discovered</span></div><div><strong>87%</strong><span>taste match</span></div><div><strong>12</strong><span>day streak</span></div></div></div>
-        <div class="hero-console"><div class="record"></div><div class="console-card"><p>NOW EXPLORING</p><h3>Funky Guitar Break</h3><div class="waveform"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="track-meta"><span>96 BPM</span><span>E Minor</span><span>Funk</span></div><button class="play-btn" data-demo-play data-title="Funky Guitar Break">▶ Play Preview</button></div></div>
+
+      <!-- =========================
+           HERO
+      ========================== -->
+
+      <section
+        class="hero"
+        id="home"
+      >
+
+        <div class="hero-copy">
+
+          <p class="eyebrow">
+            ROCK • FUNK • SOUL
+          </p>
+
+          <h1>
+            Find the sound.
+            <br>
+            <span>Flip the groove.</span>
+          </h1>
+
+          <p class="hero-text">
+            Discover riffs, drum breaks, basslines, melodies and
+            samples that fit your musical taste.
+          </p>
+
+
+          <div class="hero-actions">
+
+            <a
+              class="btn primary"
+              href="discover.html"
+            >
+              Explore Sounds
+            </a>
+
+            <a
+              class="btn secondary"
+              href="beatlab.html"
+            >
+              Open Beat Lab
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <!-- =========================
+             HERO CONSOLE
+        ========================== -->
+
+        <div class="hero-console">
+
+          <div class="record"></div>
+
+          <div class="console-card">
+
+            <p>
+              NOW EXPLORING
+            </p>
+
+            <h3>
+              Funky Guitar Break
+            </h3>
+
+
+            <div
+              class="waveform"
+              aria-hidden="true"
+            >
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+            </div>
+
+
+            <div class="track-meta">
+
+              <span>
+                96 BPM
+              </span>
+
+              <span>
+                E Minor
+              </span>
+
+              <span>
+                Funk
+              </span>
+
+            </div>
+
+
+            <button
+              type="button"
+              class="play-btn"
+              data-demo-play
+              data-title="Funky Guitar Break"
+              aria-label="Play Funky Guitar Break"
+            >
+              ▶ Play Preview
+            </button>
+
+          </div>
+
+        </div>
+
       </section>
-      <section class="quick-grid"><a class="quick-card" href="discover.html"><span>⌕</span><div><strong>Discover</strong><small>Find your next obsession</small></div></a><a class="quick-card" href="groovedna.html"><span>🧬</span><div><strong>Your GrooveDNA</strong><small>See what makes your taste unique</small></div></a><a class="quick-card" href="beatlab.html"><span>✦</span><div><strong>Create</strong><small>Turn inspiration into a beat</small></div></a><a class="quick-card" href="community.html"><span>◎</span><div><strong>Connect</strong><small>Meet creators with your taste</small></div></a></section>
+
+
+      <!-- =========================
+           QUICK ACTIONS
+      ========================== -->
+
+      <section class="quick-grid">
+
+        <a
+          class="quick-card"
+          href="discover.html"
+        >
+
+          <span aria-hidden="true">
+            ⌕
+          </span>
+
+          <div>
+
+            <strong>
+              Discover
+            </strong>
+
+            <small>
+              Find your next sound
+            </small>
+
+          </div>
+
+        </a>
+
+
+        <a
+          class="quick-card"
+          href="groovedna.html"
+        >
+
+          <span aria-hidden="true">
+            🧬
+          </span>
+
+          <div>
+
+            <strong>
+              Your GrooveDNA
+            </strong>
+
+            <small>
+              See what makes your taste unique
+            </small>
+
+          </div>
+
+        </a>
+
+
+        <a
+          class="quick-card"
+          href="beatlab.html"
+        >
+
+          <span aria-hidden="true">
+            ✦
+          </span>
+
+          <div>
+
+            <strong>
+              Create
+            </strong>
+
+            <small>
+              Turn inspiration into a beat
+            </small>
+
+          </div>
+
+        </a>
+
+
+        <a
+          class="quick-card"
+          href="community.html"
+        >
+
+          <span aria-hidden="true">
+            ◎
+          </span>
+
+          <div>
+
+            <strong>
+              Connect
+            </strong>
+
+            <small>
+              Meet creators with your taste
+            </small>
+
+          </div>
+
+        </a>
+
+      </section>
+
     </main>
-    <footer><strong>GrooveDNA</strong><span>Find the Sound. Flip the Groove. Create Something New.</span><div><a href="library.html">Library</a><a href="home.html">Privacy</a><a href="home.html">Help</a></div></footer>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+
+      <strong>
+        GrooveDNA
+      </strong>
+
+      <span>
+        Find the Sound. Flip the Groove. Create Something New.
+      </span>
+
+      <div>
+
+        <a href="library.html">
+          Library
+        </a>
+
+        <a href="profile.html">
+          Profile
+        </a>
+
+      </div>
+
+    </footer>
+
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="script.js"></script>
+
+
+  <!-- =========================
+       AUDIO UPLOAD
+  ========================== -->
+
+  <input
+    type="file"
+    id="audioUpload"
+    accept="audio/*"
+    hidden
+  >
+
+
+  <!-- =========================
+       TOAST
+  ========================== -->
+
+  <div
+    class="toast"
+    id="toast"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+
+  <!-- =========================
+       SUPABASE
+  ========================== -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+  <!-- =========================
+       GROOVEDNA JAVASCRIPT
+  ========================== -->
+
+  <script src="script.js"></script>
+
 </body>
+
 </html>
+```
