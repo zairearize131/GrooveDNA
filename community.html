@@ -1,4 +1,400 @@
 <!DOCTYPE html>
+
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Connect with creators in the GrooveDNA community."><title>GrooveDNA | Community</title><link rel="stylesheet" href="styles.css"></head>
-<body><div class="app-shell"><header class="topbar"><a class="brand" href="home.html" aria-label="GrooveDNA home"><span class="brand-mark">GD</span><span>Groove<span>DNA</span></span></a><nav id="mainNav"><a href="home.html">Home</a><a href="discover.html">Discover</a><a href="groovedna.html">GrooveDNA</a><a href="beatlab.html">Beat Lab</a><a href="community.html">Community</a><a href="library.html">Library</a></nav></header><main><section class="community-section" id="community"><div class="section-heading"><div><p class="eyebrow">CONNECT</p><h1>Community grooves</h1><p>Follow creators, share ideas, remix beats and join challenges.</p></div><button class="btn secondary" id="challengeBtn">Weekly Challenge</button></div><div class="community-grid"><article class="post-card"><div class="avatar">JG</div><div class="post-body"><div class="user-line"><strong>@JayGrooves</strong><span class="muted">2h ago • Funk</span></div><h3>Found a bass groove that changed the whole beat.</h3><div class="post-player"><button class="mini-play" data-demo-play data-title="Funky Bass Experiment">▶</button><span>Funky Bass Experiment</span><span>01:12</span></div><div class="post-actions"><button data-like>♡ <span>124</span></button><button>💬 31</button><button data-remix>↻ Remix</button><button data-follow>＋ Follow</button></div></div></article><article class="challenge-card"><p class="eyebrow">WEEKLY CHALLENGE</p><h3>Flip the Funk</h3><p>Build an original instrumental around this week's approved source material.</p><div class="challenge-stats"><span>🔥 438 entries</span><span>⏱ 5 days left</span></div><button class="btn primary" id="joinChallenge">Join Challenge</button></article></div><div class="social-grid"><div class="panel match-card"><div><p class="eyebrow">NEW MATCH</p><h3>You + Maya = 89%</h3><p>You share 7 favorite artists and a strong love for rhythmic soul.</p></div><button class="btn secondary" id="dnaMatch">View DNA Match</button></div><div class="panel activity-card"><p class="eyebrow">FRIEND ACTIVITY</p><div><span class="avatar mini">AM</span><span><strong>@AriMade</strong> saved <b>Velvet Keys</b></span><small>14m ago</small></div><div><span class="avatar mini">KL</span><span><strong>@KLeo</strong> started <b>Midnight Drive</b></span><small>1h ago</small></div></div></div></section></main><footer><strong>GrooveDNA</strong><span>Find the Sound. Flip the Groove. Create Something New.</span></footer></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="script.js"></script></body></html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+name="description"
+content="Connect with creators in the GrooveDNA community."
+
+>
+
+  <title>GrooveDNA | Community</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div class="app-shell">
+
+```
+<!-- HEADER -->
+<header class="topbar">
+
+  <a
+    class="brand"
+    href="home.html"
+    aria-label="GrooveDNA home"
+  >
+    <span class="brand-mark">GD</span>
+    <span>Groove<span>DNA</span></span>
+  </a>
+
+  <button
+    class="menu-toggle"
+    id="menuToggle"
+    type="button"
+    aria-label="Open navigation"
+    aria-expanded="false"
+    aria-controls="mainNav"
+  >
+    ☰
+  </button>
+
+  <nav id="mainNav" aria-label="Main navigation">
+
+    <a href="home.html">Home</a>
+
+    <a href="discover.html">Discover</a>
+
+    <a href="groovedna.html">GrooveDNA</a>
+
+    <a href="beatlab.html">Beat Lab</a>
+
+    <a
+      href="community.html"
+      class="active"
+      aria-current="page"
+    >
+      Community
+    </a>
+
+    <a href="library.html">Library</a>
+
+  </nav>
+
+  <div class="top-actions">
+
+    <a
+      class="header-action"
+      href="index.html"
+      id="signOutBtn"
+    >
+      Sign out
+    </a>
+
+  </div>
+
+</header>
+
+
+<!-- MAIN CONTENT -->
+<main>
+
+  <section
+    class="community-section"
+    id="community"
+  >
+
+    <!-- SECTION HEADER -->
+    <div class="section-heading">
+
+      <div>
+
+        <p class="eyebrow">
+          CONNECT
+        </p>
+
+        <h1>
+          Community grooves
+        </h1>
+
+        <p>
+          Follow creators, share ideas, remix beats and join challenges.
+        </p>
+
+      </div>
+
+      <button
+        class="btn secondary"
+        id="challengeBtn"
+        type="button"
+      >
+        Weekly Challenge
+      </button>
+
+    </div>
+
+
+    <!-- COMMUNITY CARDS -->
+    <div class="community-grid">
+
+      <!-- CREATOR POST -->
+      <article class="post-card panel">
+
+        <div
+          class="avatar"
+          aria-hidden="true"
+        >
+          JG
+        </div>
+
+        <div class="post-body">
+
+          <div class="user-line">
+
+            <strong>
+              @JayGrooves
+            </strong>
+
+            <span class="muted">
+              2h ago • Funk
+            </span>
+
+          </div>
+
+          <h3>
+            Found a bass groove that changed the whole beat.
+          </h3>
+
+
+          <!-- POST AUDIO PLAYER -->
+          <div class="post-player">
+
+            <button
+              class="mini-play"
+              type="button"
+              data-demo-play
+              data-title="Funky Bass Experiment"
+              aria-label="Play Funky Bass Experiment"
+            >
+              ▶
+            </button>
+
+            <span>
+              Funky Bass Experiment
+            </span>
+
+            <span>
+              01:12
+            </span>
+
+          </div>
+
+
+          <!-- POST ACTIONS -->
+          <div class="post-actions">
+
+            <button
+              type="button"
+              data-like
+              aria-label="Like this post"
+            >
+              ♡
+              <span>124</span>
+            </button>
+
+            <button
+              type="button"
+              data-comment
+              aria-label="View comments"
+            >
+              💬
+              <span>31</span>
+            </button>
+
+            <button
+              type="button"
+              data-remix
+            >
+              ↻ Remix
+            </button>
+
+            <button
+              type="button"
+              data-follow
+            >
+              ＋ Follow
+            </button>
+
+          </div>
+
+        </div>
+
+      </article>
+
+
+      <!-- WEEKLY CHALLENGE -->
+      <article class="challenge-card panel">
+
+        <p class="eyebrow">
+          WEEKLY CHALLENGE
+        </p>
+
+        <h3>
+          Flip the Funk
+        </h3>
+
+        <p>
+          Build an original instrumental around this week's approved
+          source material.
+        </p>
+
+        <div class="challenge-stats">
+
+          <span>
+            🔥 438 entries
+          </span>
+
+          <span>
+            ⏱ 5 days left
+          </span>
+
+        </div>
+
+        <button
+          class="btn primary"
+          id="joinChallenge"
+          type="button"
+        >
+          Join Challenge
+        </button>
+
+      </article>
+
+    </div>
+
+
+    <!-- SOCIAL AREA -->
+    <div class="social-grid">
+
+
+      <!-- DNA MATCH -->
+      <div class="panel match-card">
+
+        <div>
+
+          <p class="eyebrow">
+            NEW MATCH
+          </p>
+
+          <h3>
+            You + Maya = 89%
+          </h3>
+
+          <p>
+            You share 7 favorite artists and a strong love for rhythmic soul.
+          </p>
+
+        </div>
+
+        <button
+          class="btn secondary"
+          id="dnaMatch"
+          type="button"
+        >
+          View DNA Match
+        </button>
+
+      </div>
+
+
+      <!-- FRIEND ACTIVITY -->
+      <div class="panel activity-card">
+
+        <p class="eyebrow">
+          FRIEND ACTIVITY
+        </p>
+
+
+        <div>
+
+          <span
+            class="avatar mini"
+            aria-hidden="true"
+          >
+            AM
+          </span>
+
+          <span>
+            <strong>@AriMade</strong>
+            saved
+            <b>Velvet Keys</b>
+          </span>
+
+          <small>
+            14m ago
+          </small>
+
+        </div>
+
+
+        <div>
+
+          <span
+            class="avatar mini"
+            aria-hidden="true"
+          >
+            KL
+          </span>
+
+          <span>
+            <strong>@KLeo</strong>
+            started
+            <b>Midnight Drive</b>
+          </span>
+
+          <small>
+            1h ago
+          </small>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<!-- FOOTER -->
+<footer>
+
+  <strong>
+    GrooveDNA
+  </strong>
+
+  <span>
+    Find the Sound. Flip the Groove. Create Something New.
+  </span>
+
+  <div>
+
+    <a href="library.html">
+      Library
+    </a>
+
+    <a href="index.html">
+      Sign out
+    </a>
+
+  </div>
+
+</footer>
+```
+
+  </div>
+
+  <!-- SUPABASE -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- GROOVEDNA JAVASCRIPT -->
+
+  <script src="script.js"></script>
+
+</body>
+</html>
