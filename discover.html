@@ -1,8 +1,462 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Discover sounds matched to your GrooveDNA."><title>GrooveDNA | Discover</title><link rel="stylesheet" href="styles.css"></head>
-<body><div class="app-shell"><header class="topbar"><a class="brand" href="home.html" aria-label="GrooveDNA home"><span class="brand-mark">GD</span><span>Groove<span>DNA</span></span></a><button class="menu-toggle" id="menuToggle" aria-label="Open navigation" aria-expanded="false">☰</button><nav id="mainNav"><a href="home.html">Home</a><a href="discover.html">Discover</a><a href="groovedna.html">GrooveDNA</a><a href="beatlab.html">Beat Lab</a><a href="community.html">Community</a><a href="library.html">Library</a></nav></header><main>
-  <section class="search-panel" id="discover"><div class="section-heading compact"><div><p class="eyebrow">DISCOVER</p><h1>What sound are you looking for?</h1></div><button class="btn ghost" id="discoverMore">Refresh picks ↻</button></div><div class="search-row"><label class="search-box"><span>⌕</span><input id="searchInput" type="search" placeholder="Search artists, songs, riffs, drums, bass..." autocomplete="off"></label><button class="btn primary" id="searchBtn">Search</button><button class="btn upload" id="uploadBtn2">🎙 Upload Audio</button></div><div class="filter-row" id="genreFilters"><button class="filter active" data-genre="All">All</button><button class="filter" data-genre="Rock">🎸 Rock</button><button class="filter" data-genre="Funk">🕺 Funk</button><button class="filter" data-genre="Soul">💜 Soul</button><button class="filter" data-genre="R&B">🎙 R&B</button><button class="filter" data-genre="Jazz">🎷 Jazz</button></div></section>
-  <section class="content-section"><div class="section-heading"><div><p class="eyebrow">FOR YOU</p><h2>Trending sounds</h2><p>Fresh picks based on your musical DNA.</p></div><span id="resultCount" class="result-count"></span></div><div class="sample-grid" id="sampleGrid"></div></section>
-  <section class="content-section recommendation-band"><div class="section-heading"><div><p class="eyebrow">DISCOVER OUTSIDE YOUR COMFORT ZONE</p><h2>Stretch your DNA</h2><p>Three sounds just far enough from your usual taste.</p></div></div><div class="horizontal-cards" id="stretchGrid"></div></section>
-  </main><footer><strong>GrooveDNA</strong><span>Find the Sound. Flip the Groove. Create Something New.</span></footer></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="script.js"></script></body></html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="description"
+    content="Discover sounds matched to your GrooveDNA."
+  >
+
+  <title>GrooveDNA | Discover</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div class="app-shell">
+
+    <!-- HEADER -->
+    <header class="topbar">
+
+      <a
+        class="brand"
+        href="home.html"
+        aria-label="GrooveDNA home"
+      >
+        <span class="brand-mark">GD</span>
+        <span>Groove<span>DNA</span></span>
+      </a>
+
+      <button
+        class="menu-toggle"
+        id="menuToggle"
+        type="button"
+        aria-label="Open navigation"
+        aria-expanded="false"
+        aria-controls="mainNav"
+      >
+        ☰
+      </button>
+
+      <nav id="mainNav" aria-label="Main navigation">
+
+        <a href="home.html">Home</a>
+
+        <a
+          class="active"
+          href="discover.html"
+          aria-current="page"
+        >
+          Discover
+        </a>
+
+        <a href="groovedna.html">GrooveDNA</a>
+
+        <a href="beatlab.html">Beat Lab</a>
+
+        <a href="community.html">Community</a>
+
+        <a href="library.html">Library</a>
+
+        <a href="profile.html">Profile</a>
+
+      </nav>
+
+      <div class="top-actions">
+
+        <button
+          class="header-action"
+          id="uploadBtn"
+          type="button"
+        >
+          ＋ Upload Audio
+        </button>
+
+        <button
+          class="icon-btn"
+          id="notificationBtn"
+          type="button"
+          aria-label="Open notifications"
+        >
+          ♡
+          <span class="badge">3</span>
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <!-- MAIN CONTENT -->
+    <main>
+
+      <!-- DISCOVER SEARCH -->
+      <section
+        class="search-panel"
+        id="discover"
+      >
+
+        <div class="section-heading compact">
+
+          <div>
+
+            <p class="eyebrow">
+              DISCOVER
+            </p>
+
+            <h1>
+              What sound are you looking for?
+            </h1>
+
+            <p>
+              Search the GrooveDNA sound catalog and discover samples that match your taste.
+            </p>
+
+          </div>
+
+          <button
+            class="btn ghost"
+            id="discoverMore"
+            type="button"
+          >
+            Refresh picks ↻
+          </button>
+
+        </div>
+
+
+        <div class="search-row">
+
+          <label
+            class="search-box"
+            for="searchInput"
+          >
+
+            <span aria-hidden="true">⌕</span>
+
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="Search artists, songs, riffs, drums, bass..."
+              autocomplete="off"
+              aria-label="Search sounds"
+            >
+
+          </label>
+
+
+          <button
+            class="btn primary"
+            id="searchBtn"
+            type="button"
+          >
+            Search
+          </button>
+
+
+          <button
+            class="btn upload"
+            id="uploadBtn2"
+            type="button"
+          >
+            🎙 Upload Audio
+          </button>
+
+        </div>
+
+
+        <!-- GENRE FILTERS -->
+        <div
+          class="filter-row"
+          id="genreFilters"
+          aria-label="Filter by genre"
+        >
+
+          <button
+            class="filter active"
+            type="button"
+            data-genre="All"
+            aria-pressed="true"
+          >
+            All
+          </button>
+
+          <button
+            class="filter"
+            type="button"
+            data-genre="Rock"
+            aria-pressed="false"
+          >
+            🎸 Rock
+          </button>
+
+          <button
+            class="filter"
+            type="button"
+            data-genre="Funk"
+            aria-pressed="false"
+          >
+            🕺 Funk
+          </button>
+
+          <button
+            class="filter"
+            type="button"
+            data-genre="Soul"
+            aria-pressed="false"
+          >
+            💜 Soul
+          </button>
+
+          <button
+            class="filter"
+            type="button"
+            data-genre="R&B"
+            aria-pressed="false"
+          >
+            🎙 R&B
+          </button>
+
+          <button
+            class="filter"
+            type="button"
+            data-genre="Jazz"
+            aria-pressed="false"
+          >
+            🎷 Jazz
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <!-- TRENDING SOUNDS -->
+      <section class="content-section">
+
+        <div class="section-heading">
+
+          <div>
+
+            <p class="eyebrow">
+              FOR YOU
+            </p>
+
+            <h2>
+              Trending sounds
+            </h2>
+
+            <p>
+              Fresh picks based on your musical DNA.
+            </p>
+
+          </div>
+
+          <span
+            id="resultCount"
+            class="result-count"
+            aria-live="polite"
+          >
+          </span>
+
+        </div>
+
+
+        <!-- JavaScript inserts sample cards here -->
+        <div
+          class="sample-grid"
+          id="sampleGrid"
+          aria-live="polite"
+        >
+        </div>
+
+      </section>
+
+
+      <!-- STRETCH YOUR DNA -->
+      <section class="content-section recommendation-band">
+
+        <div class="section-heading">
+
+          <div>
+
+            <p class="eyebrow">
+              DISCOVER OUTSIDE YOUR COMFORT ZONE
+            </p>
+
+            <h2>
+              Stretch your DNA
+            </h2>
+
+            <p>
+              Three sounds just far enough from your usual taste.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- JavaScript inserts recommendations here -->
+        <div
+          class="horizontal-cards"
+          id="stretchGrid"
+        >
+        </div>
+
+      </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer>
+
+      <strong>GrooveDNA</strong>
+
+      <span>
+        Find the Sound. Flip the Groove. Create Something New.
+      </span>
+
+      <div>
+
+        <a href="library.html">
+          Library
+        </a>
+
+        <a href="profile.html">
+          Profile
+        </a>
+
+      </div>
+
+    </footer>
+
+  </div>
+
+
+  <!-- AUDIO UPLOAD -->
+  <input
+    type="file"
+    id="audioUpload"
+    accept="audio/*"
+    hidden
+  >
+
+
+  <!-- NOTIFICATIONS DRAWER -->
+  <div
+    class="drawer-backdrop"
+    id="drawerBackdrop"
+  ></div>
+
+
+  <aside
+    class="drawer"
+    id="notificationDrawer"
+    aria-label="Notifications"
+    aria-hidden="true"
+  >
+
+    <div class="drawer-head">
+
+      <h2>
+        Notifications
+      </h2>
+
+      <button
+        class="close-drawer"
+        id="closeDrawer"
+        type="button"
+        aria-label="Close notifications"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div id="notificationList">
+
+      <div class="notification-item unread">
+
+        <div class="avatar mini">
+          JG
+        </div>
+
+        <div>
+          <strong>@JayGrooves</strong>
+          saved your groove.
+          <small>
+            8 minutes ago
+          </small>
+        </div>
+
+      </div>
+
+
+      <div class="notification-item">
+
+        <div class="avatar mini">
+          AM
+        </div>
+
+        <div>
+          <strong>@AriMade</strong>
+          followed you.
+          <small>
+            24 minutes ago
+          </small>
+        </div>
+
+      </div>
+
+
+      <div class="notification-item">
+
+        <div class="avatar mini">
+          KL
+        </div>
+
+        <div>
+          <strong>@KLeo</strong>
+          remixed one of your ideas.
+          <small>
+            1 hour ago
+          </small>
+        </div>
+
+      </div>
+
+    </div>
+
+  </aside>
+
+
+  <!-- TOAST -->
+  <div
+    class="toast"
+    id="toast"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+
+  <!-- SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- GROOVEDNA JAVASCRIPT -->
+  <script src="script.js"></script>
+
+</body>
+</html>
