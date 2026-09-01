@@ -3500,6 +3500,1159 @@ function createPlaylist() {
   );
 }
 
+/* =========================================================
+   28A. LIBRARY SOUND / SONG SAVING SYSTEM
+   =========================================================
+
+   This add-on works alongside the existing Library code.
+
+   It adds:
+
+   1. Save Discover sounds to Library
+   2. Track sounds that are played
+   3. Track sounds added to Beat Lab
+   4. Track how many times a sound is used
+   5. Track liked/saved sounds
+   6. Display saved sounds in Library
+   7. Display most-used sounds in Library
+   8. Play saved sounds from Library
+   9. Remove sounds from Library
+   10. Keep Library data in localStorage
+
+   IMPORTANT:
+   This section does NOT replace the existing Library code.
+   It extends the existing GrooveDNA Library system.
+   ========================================================= */
+
+
+/* =========================================================
+   LIBRARY STORAGE HELPERS
+   ========================================================= */
+
+function getLibraryData() {
+
+  return JSON.parse(
+    localStorage.getItem(
+      "grooveDNA_library"
+    ) || "{}"
+  );
+}
+
+
+function saveLibraryData(data) {
+
+  localStorage.setItem(
+    "grooveDNA_library",
+    JSON.stringify(data)
+  );
+}
+
+
+/* =========================================================
+   GET ONE SAMPLE FROM THE CATALOG
+   ========================================================= */
+
+function getLibrarySample(sampleId) {
+
+  return sampleCatalog.find(
+    sample =>
+      String(sample.id) ===
+      String(sampleId)
+  );
+}
+
+
+/* =========================================================
+   SAVE SOUND TO LIBRARY
+   ========================================================= */
+
+function saveSoundToLibrary(sample) {
+
+  if (!sample) {
+    return;
+  }
+
+  const library =
+    getLibraryData();
+
+  if (!library.sounds) {
+    library.sounds = {};
+  }
+
+  const id =
+    String(sample.id);
+
+  if (!library.sounds[id]) {
+
+    library.sounds[id] = {
+
+      id: sample.id,
+
+      title:
+        sample.title,
+
+      artist:
+        sample.artist,
+
+      genre:
+        sample.genre,
+
+      type:
+        sample.type,
+
+      bpm:
+        sample.bpm,
+
+      key:
+        sample.key,
+
+      rights:
+        sample.rights,
+
+      icon:
+        sample.icon,
+
+      audio:
+        sample.audio || "",
+
+      savedAt:
+        new Date().toISOString(),
+
+      plays:
+        0,
+
+      uses:
+        0,
+
+      liked:
+        true
+    };
+
+  } else {
+
+    library.sounds[id].liked =
+      true;
+  }
+
+  saveLibraryData(
+    library
+  );
+
+  /*
+    Keep the original localStorage
+    saved-sounds system working too.
+  */
+
+  const existingSaved =
+    JSON.parse(
+      localStorage.getItem(
+        "grooveDNA_saved"
+      ) || "[]"
+    );
+
+  if (
+    !existingSaved.includes(
+      sample.id
+    )
+  ) {
+
+    existingSaved.push(
+      sample.id
+    );
+
+    localStorage.setItem(
+      "grooveDNA_saved",
+      JSON.stringify(
+        existingSaved
+      )
+    );
+  }
+
+  showToast(
+    `✓ ${sample.title} saved to your Library.`
+  );
+
+  refreshLibraryIfVisible();
+}
+
+
+/* =========================================================
+   REMOVE SOUND FROM LIBRARY
+   ========================================================= */
+
+function removeSoundFromLibrary(
+  sampleId
+) {
+
+  const library =
+    getLibraryData();
+
+  if (
+    library.sounds &&
+    library.sounds[
+      String(sampleId)
+    ]
+  ) {
+
+    delete library.sounds[
+      String(sampleId)
+    ];
+
+    saveLibraryData(
+      library
+    );
+  }
+
+
+  /*
+    Also remove from the original
+    GrooveDNA saved array.
+  */
+
+  const saved =
+    JSON.parse(
+      localStorage.getItem(
+        "grooveDNA_saved"
+      ) || "[]"
+    );
+
+  const updated =
+    saved.filter(
+      id =>
+        String(id) !==
+        String(sampleId)
+    );
+
+  localStorage.setItem(
+    "grooveDNA_saved",
+    JSON.stringify(
+      updated
+    )
+  );
+
+  refreshLibraryIfVisible();
+}
+
+
+/* =========================================================
+   CHECK IF SOUND IS SAVED
+   ========================================================= */
+
+function isSoundSaved(
+  sampleId
+) {
+
+  const library =
+    getLibraryData();
+
+  return Boolean(
+    library.sounds &&
+    library.sounds[
+      String(sampleId)
+    ] &&
+    library.sounds[
+      String(sampleId)
+    ].liked
+  );
+}
+
+
+/* =========================================================
+   RECORD SOUND PLAY
+   ========================================================= */
+
+function recordLibraryPlay(
+  sample
+) {
+
+  if (!sample) {
+    return;
+  }
+
+  const library =
+    getLibraryData();
+
+  if (!library.sounds) {
+    library.sounds = {};
+  }
+
+  const id =
+    String(sample.id);
+
+  if (!library.sounds[id]) {
+
+    library.sounds[id] = {
+
+      id: sample.id,
+      title: sample.title,
+      artist: sample.artist,
+      genre: sample.genre,
+      type: sample.type,
+      bpm: sample.bpm,
+      key: sample.key,
+      rights: sample.rights,
+      icon: sample.icon,
+      audio: sample.audio || "",
+      savedAt:
+        new Date().toISOString(),
+      plays: 0,
+      uses: 0,
+      liked: false
+    };
+  }
+
+  library.sounds[id].plays =
+    Number(
+      library.sounds[id].plays || 0
+    ) + 1;
+
+  library.sounds[id].lastPlayedAt =
+    new Date().toISOString();
+
+  saveLibraryData(
+    library
+  );
+}
+
+
+/* =========================================================
+   RECORD SOUND USE IN BEAT LAB
+   ========================================================= */
+
+function recordLibraryUse(
+  sample
+) {
+
+  if (!sample) {
+    return;
+  }
+
+  const library =
+    getLibraryData();
+
+  if (!library.sounds) {
+    library.sounds = {};
+  }
+
+  const id =
+    String(sample.id);
+
+  if (!library.sounds[id]) {
+
+    library.sounds[id] = {
+
+      id: sample.id,
+      title: sample.title,
+      artist: sample.artist,
+      genre: sample.genre,
+      type: sample.type,
+      bpm: sample.bpm,
+      key: sample.key,
+      rights: sample.rights,
+      icon: sample.icon,
+      audio: sample.audio || "",
+      savedAt:
+        new Date().toISOString(),
+      plays: 0,
+      uses: 0,
+      liked: false
+    };
+  }
+
+  library.sounds[id].uses =
+    Number(
+      library.sounds[id].uses || 0
+    ) + 1;
+
+  library.sounds[id].lastUsedAt =
+    new Date().toISOString();
+
+  /*
+    If a user uses a sound in Beat Lab,
+    automatically save it to Library.
+  */
+
+  library.sounds[id].liked =
+    true;
+
+  saveLibraryData(
+    library
+  );
+
+
+  /*
+    Keep original saved array
+    synchronized.
+  */
+
+  const saved =
+    JSON.parse(
+      localStorage.getItem(
+        "grooveDNA_saved"
+      ) || "[]"
+    );
+
+  if (
+    !saved.includes(
+      sample.id
+    )
+  ) {
+
+    saved.push(
+      sample.id
+    );
+
+    localStorage.setItem(
+      "grooveDNA_saved",
+      JSON.stringify(
+        saved
+      )
+    );
+  }
+}
+
+
+/* =========================================================
+   ENHANCE DISCOVER SAMPLE CARDS
+   ========================================================= */
+
+function enhanceDiscoverLibraryButtons() {
+
+  const grid =
+    $("#sampleGrid");
+
+  if (!grid) {
+    return;
+  }
+
+  $$("#sampleGrid .sample-card")
+    .forEach(card => {
+
+      if (
+        card.querySelector(
+          "[data-library-save]"
+        )
+      ) {
+        return;
+      }
+
+      const sampleId =
+        card.dataset.sampleId;
+
+      if (!sampleId) {
+        return;
+      }
+
+      const actions =
+        card.querySelector(
+          ".sample-actions"
+        );
+
+      if (!actions) {
+        return;
+      }
+
+      const saveButton =
+        document.createElement(
+          "button"
+        );
+
+      saveButton.className =
+        "btn secondary";
+
+      saveButton.type =
+        "button";
+
+      saveButton.dataset.librarySave =
+        "true";
+
+      saveButton.dataset.id =
+        sampleId;
+
+      saveButton.textContent =
+        isSoundSaved(sampleId)
+          ? "♥ Saved"
+          : "♡ Save";
+
+      actions.insertBefore(
+        saveButton,
+        actions.firstChild
+      );
+    });
+}
+
+
+/* =========================================================
+   LIBRARY SAVE BUTTON HANDLER
+   ========================================================= */
+
+function setupLibrarySoundSaving() {
+
+  const grid =
+    $("#sampleGrid");
+
+  if (!grid) {
+    return;
+  }
+
+  grid.addEventListener(
+    "click",
+    event => {
+
+      const saveButton =
+        event.target.closest(
+          "[data-library-save]"
+        );
+
+      if (!saveButton) {
+        return;
+      }
+
+      const sample =
+        getLibrarySample(
+          saveButton.dataset.id
+        );
+
+      if (!sample) {
+        return;
+      }
+
+      if (
+        isSoundSaved(
+          sample.id
+        )
+      ) {
+
+        removeSoundFromLibrary(
+          sample.id
+        );
+
+        saveButton.textContent =
+          "♡ Save";
+
+        showToast(
+          `${sample.title} removed from your Library.`
+        );
+
+      } else {
+
+        saveSoundToLibrary(
+          sample
+        );
+
+        saveButton.textContent =
+          "♥ Saved";
+      }
+    }
+  );
+}
+
+
+/* =========================================================
+   ENHANCE SAMPLE PLAYBACK
+   ========================================================= */
+
+function setupLibraryPlaybackTracking() {
+
+  const grid =
+    $("#sampleGrid");
+
+  if (!grid) {
+    return;
+  }
+
+  grid.addEventListener(
+    "click",
+    event => {
+
+      const preview =
+        event.target.closest(
+          "[data-preview]"
+        );
+
+      if (!preview) {
+        return;
+      }
+
+      const sample =
+        getLibrarySample(
+          preview.dataset.id
+        );
+
+      if (!sample) {
+        return;
+      }
+
+      recordLibraryPlay(
+        sample
+      );
+    }
+  );
+}
+
+
+/* =========================================================
+   ENHANCE BEAT LAB SAMPLE USAGE
+   ========================================================= */
+
+function setupLibraryBeatLabTracking() {
+
+  if (
+    window.__grooveLibraryBeatTracking
+  ) {
+    return;
+  }
+
+  window.__grooveLibraryBeatTracking =
+    true;
+
+  const originalAddSampleToBeatLab =
+    addSampleToBeatLab;
+
+  window.addSampleToBeatLab =
+    function(sample) {
+
+      originalAddSampleToBeatLab(
+        sample
+      );
+
+      recordLibraryUse(
+        sample
+      );
+    };
+}
+
+
+/* =========================================================
+   LIBRARY SONG DATA
+   ========================================================= */
+
+function getLibrarySongs() {
+
+  const library =
+    getLibraryData();
+
+  if (!library.sounds) {
+    return [];
+  }
+
+  return Object.values(
+    library.sounds
+  );
+}
+
+
+/* =========================================================
+   SORT LIBRARY SONGS
+   ========================================================= */
+
+function getMostUsedLibrarySongs() {
+
+  return getLibrarySongs()
+    .filter(
+      song =>
+        song.uses > 0 ||
+        song.plays > 0
+    )
+    .sort(
+      (a, b) =>
+        (
+          Number(b.uses || 0) +
+          Number(b.plays || 0)
+        ) -
+        (
+          Number(a.uses || 0) +
+          Number(a.plays || 0)
+        )
+    );
+}
+
+
+function getLikedLibrarySongs() {
+
+  return getLibrarySongs()
+    .filter(
+      song =>
+        song.liked === true
+    )
+    .sort(
+      (a, b) =>
+        new Date(
+          b.savedAt || 0
+        ) -
+        new Date(
+          a.savedAt || 0
+        )
+    );
+}
+
+
+/* =========================================================
+   RENDER ENHANCED LIBRARY
+   ========================================================= */
+
+function renderEnhancedLibrary(
+  type = "all"
+) {
+
+  const grid =
+    $("#playlistGrid");
+
+  if (!grid) {
+    return;
+  }
+
+  const likedSongs =
+    getLikedLibrarySongs();
+
+  const mostUsed =
+    getMostUsedLibrarySongs();
+
+  let songs = [];
+
+  if (type === "songs") {
+
+    songs =
+      likedSongs;
+
+  } else if (type === "history") {
+
+    songs =
+      mostUsed;
+
+  } else {
+
+    songs =
+      likedSongs;
+  }
+
+
+  /*
+    If there are no saved songs,
+    keep the existing Library UI
+    visible and add the new empty state.
+  */
+
+  if (!songs.length) {
+
+    const existingCards =
+      grid.querySelectorAll(
+        ".playlist-card"
+      );
+
+    /*
+      Don't erase the existing
+      playlist cards for All.
+    */
+
+    if (
+      type === "songs" ||
+      type === "history"
+    ) {
+
+      grid.innerHTML = `
+        <div class="empty-state">
+
+          <p>
+            ${
+              type === "songs"
+                ? "Your liked sounds will appear here."
+                : "Sounds you play or use will appear here."
+            }
+          </p>
+
+          <button
+            class="btn primary"
+            type="button"
+            onclick="navigate('discover.html')">
+            Discover Sounds
+          </button>
+
+        </div>
+      `;
+    }
+
+    return;
+  }
+
+
+  /*
+    For All, append a dedicated
+    saved sounds section instead
+    of destroying the original cards.
+  */
+
+  if (type === "all") {
+
+    let existing =
+      $("#librarySavedSounds");
+
+    if (!existing) {
+
+      existing =
+        document.createElement(
+          "div"
+        );
+
+      existing.id =
+        "librarySavedSounds";
+
+      existing.className =
+        "library-saved-sounds";
+
+      grid.appendChild(
+        existing
+      );
+    }
+
+    existing.innerHTML = `
+      <div class="library-subheading">
+
+        <div>
+
+          <p class="eyebrow">
+            SAVED SOUNDS
+          </p>
+
+          <h3>
+            Your GrooveDNA picks
+          </h3>
+
+        </div>
+
+        <span>
+          ${likedSongs.length} saved
+        </span>
+
+      </div>
+
+      <div class="saved-sound-grid">
+
+        ${likedSongs.map(
+          song =>
+            createLibrarySongCard(
+              song
+            )
+        ).join("")}
+
+      </div>
+    `;
+
+    setupLibrarySongCardHandlers(
+      existing
+    );
+
+    return;
+  }
+
+
+  grid.innerHTML =
+    songs.map(
+      song =>
+        createLibrarySongCard(
+          song
+        )
+    ).join("");
+
+  setupLibrarySongCardHandlers(
+    grid
+  );
+}
+
+
+/* =========================================================
+   LIBRARY SONG CARD
+   ========================================================= */
+
+function createLibrarySongCard(
+  song
+) {
+
+  return `
+    <article
+      class="playlist-card library-song-card"
+      data-library-song-id="${escapeHTML(song.id)}">
+
+      <div class="playlist-art">
+        ${escapeHTML(song.icon || "🎵")}
+      </div>
+
+      <p class="eyebrow">
+        ${escapeHTML(song.genre || "SOUND")}
+      </p>
+
+      <h3>
+        ${escapeHTML(song.title)}
+      </h3>
+
+      <p>
+        ${escapeHTML(song.artist)}
+      </p>
+
+      <small>
+        ${song.bpm || "--"} BPM ·
+        ${escapeHTML(song.key || "")}
+      </small>
+
+      <small>
+        Played:
+        ${Number(song.plays || 0)}
+        · Used:
+        ${Number(song.uses || 0)}
+      </small>
+
+      <div class="sample-actions">
+
+        <button
+          class="btn primary"
+          type="button"
+          data-library-play-song
+          data-id="${escapeHTML(song.id)}">
+          ▶ Play
+        </button>
+
+        <button
+          class="btn secondary"
+          type="button"
+          data-library-remove-song
+          data-id="${escapeHTML(song.id)}">
+          Remove
+        </button>
+
+      </div>
+
+    </article>
+  `;
+}
+
+
+/* =========================================================
+   LIBRARY SONG CARD BUTTONS
+   ========================================================= */
+
+function setupLibrarySongCardHandlers(
+  container
+) {
+
+  if (!container) {
+    return;
+  }
+
+  container.onclick =
+    event => {
+
+      const play =
+        event.target.closest(
+          "[data-library-play-song]"
+        );
+
+      const remove =
+        event.target.closest(
+          "[data-library-remove-song]"
+        );
+
+
+      if (play) {
+
+        const song =
+          getLibrarySample(
+            play.dataset.id
+          );
+
+        if (!song) {
+          return;
+        }
+
+        recordLibraryPlay(
+          song
+        );
+
+        playSample(
+          song
+        );
+
+        return;
+      }
+
+
+      if (remove) {
+
+        const song =
+          getLibrarySample(
+            remove.dataset.id
+          );
+
+        if (!song) {
+          return;
+        }
+
+        removeSoundFromLibrary(
+          song.id
+        );
+
+        showToast(
+          `${song.title} removed from your Library.`
+        );
+
+        refreshLibraryIfVisible();
+      }
+    };
+}
+
+
+/* =========================================================
+   REFRESH LIBRARY WHEN NEEDED
+   ========================================================= */
+
+function refreshLibraryIfVisible() {
+
+  const grid =
+    $("#playlistGrid");
+
+  if (!grid) {
+    return;
+  }
+
+  const activeTab =
+    $(".library-tab.active");
+
+  const type =
+    activeTab?.dataset.library ||
+    "all";
+
+  renderEnhancedLibrary(
+    type
+  );
+}
+
+
+/* =========================================================
+   ENHANCE EXISTING LIBRARY INITIALIZATION
+   ========================================================= */
+
+function initializeLibraryEnhancements() {
+
+  /*
+    Discover save button system
+  */
+
+  enhanceDiscoverLibraryButtons();
+
+  setupLibrarySoundSaving();
+
+  setupLibraryPlaybackTracking();
+
+
+  /*
+    Beat Lab usage tracking
+  */
+
+  setupLibraryBeatLabTracking();
+
+
+  /*
+    Watch for Discover cards being
+    regenerated by search/filtering.
+  */
+
+  const grid =
+    $("#sampleGrid");
+
+  if (grid) {
+
+    const observer =
+      new MutationObserver(
+        () => {
+
+          enhanceDiscoverLibraryButtons();
+        }
+      );
+
+    observer.observe(
+      grid,
+      {
+        childList: true,
+        subtree: true
+      }
+    );
+  }
+
+
+  /*
+    Add enhanced Library behavior
+    to existing Library tabs.
+  */
+
+  $$(".library-tab")
+    .forEach(tab => {
+
+      tab.addEventListener(
+        "click",
+        () => {
+
+          setTimeout(
+            () => {
+
+              renderEnhancedLibrary(
+                tab.dataset.library
+              );
+
+            },
+            0
+          );
+        }
+      );
+    });
+
+
+  /*
+    Initial Library rendering.
+  */
+
+  if ($("#playlistGrid")) {
+
+    setTimeout(
+      () => {
+
+        renderEnhancedLibrary(
+          "all"
+        );
+
+      },
+      0
+    );
+  }
+}
+
+
+/* =========================================================
+   START LIBRARY ENHANCEMENTS
+   ========================================================= */
+
+if (
+  document.readyState ===
+  "loading"
+) {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+      setTimeout(
+        initializeLibraryEnhancements,
+        100
+      );
+
+    }
+  );
+
+} else {
+
+  setTimeout(
+    initializeLibraryEnhancements,
+    100
+  );
+}
 
 /* =========================================================
    29. MESSAGING / NOTIFICATIONS
