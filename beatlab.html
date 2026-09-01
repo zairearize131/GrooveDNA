@@ -1,409 +1,720 @@
+```html
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
   >
 
-<meta
-name="description"
-content="Create and experiment in the GrooveDNA Beat Lab."
-
->
+  <meta
+    name="description"
+    content="Create, experiment, record, and collaborate in the GrooveDNA Beat Lab."
+  >
 
   <title>GrooveDNA | Beat Lab</title>
 
-  <!-- Fonts -->
+  <!-- =========================
+       FONTS
+       ========================= -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
 
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
     rel="stylesheet"
   >
 
-  <!-- GrooveDNA Styles -->
+  <!-- =========================
+       GROOVEDNA STYLES
+       ========================= -->
 
-  <link rel="stylesheet" href="styles.css">
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
 </head>
+
 
 <body>
 
   <div class="app-shell">
 
-```
-<!-- =========================
-     HEADER
-     ========================= -->
+    <!-- =========================
+         HEADER
+         ========================= -->
 
-<header class="topbar">
+    <header class="topbar">
 
-  <a
-    class="brand"
-    href="home.html"
-    aria-label="GrooveDNA home"
-  >
-    <span class="brand-mark">GD</span>
+      <a
+        class="brand"
+        href="home.html"
+        aria-label="GrooveDNA home"
+      >
+        <span class="brand-mark">
+          GD
+        </span>
 
-    <span>
-      Groove<span>DNA</span>
-    </span>
-  </a>
-
-
-  <button
-    type="button"
-    class="menu-toggle"
-    id="menuToggle"
-    aria-label="Open navigation"
-    aria-expanded="false"
-  >
-    ☰
-  </button>
+        <span>
+          Groove<span>DNA</span>
+        </span>
+      </a>
 
 
-  <nav
-    id="mainNav"
-    aria-label="Main navigation"
-  >
-    <a href="home.html">Home</a>
-
-    <a href="discover.html">Discover</a>
-
-    <a href="groovedna.html">GrooveDNA</a>
-
-    <a
-      class="active"
-      href="beatlab.html"
-      aria-current="page"
-    >
-      Beat Lab
-    </a>
-
-    <a href="community.html">Community</a>
-
-    <a href="library.html">Library</a>
-
-    <a href="profile.html">Profile</a>
-  </nav>
-
-
-  <div class="top-actions">
-
-    <a
-      class="header-action"
-      href="profile.html"
-    >
-      Profile
-    </a>
-
-  </div>
-
-</header>
-
-
-<!-- =========================
-     MAIN CONTENT
-     ========================= -->
-
-<main>
-
-  <section
-    class="beatlab-section"
-    id="beatlab"
-  >
-
-    <!-- Section heading -->
-    <div class="section-heading">
-
-      <div>
-
-        <p class="eyebrow">
-          CREATE
-        </p>
-
-        <h1>
-          Beat Lab
-        </h1>
-
-        <p>
-          Drop discovered sounds into your idea and experiment.
-        </p>
-
-      </div>
-
+      <!-- Mobile menu -->
 
       <button
         type="button"
-        class="btn secondary"
-        id="clearLab"
+        class="menu-toggle"
+        id="menuToggle"
+        aria-label="Open navigation"
+        aria-expanded="false"
       >
-        Clear Lab
+        ☰
       </button>
 
-    </div>
+
+      <!-- Main navigation -->
+
+      <nav
+        id="mainNav"
+        aria-label="Main navigation"
+      >
+
+        <a href="home.html">
+          Home
+        </a>
+
+        <a href="discover.html">
+          Discover
+        </a>
+
+        <a href="groovedna.html">
+          GrooveDNA
+        </a>
+
+        <a
+          class="active"
+          href="beatlab.html"
+          aria-current="page"
+        >
+          Beat Lab
+        </a>
+
+        <a href="community.html">
+          Community
+        </a>
+
+        <a href="library.html">
+          Library
+        </a>
+
+        <a href="profile.html">
+          Profile
+        </a>
+
+      </nav>
+
+
+      <!-- Header actions -->
+
+      <div class="top-actions">
+
+        <a
+          class="header-action"
+          href="profile.html"
+        >
+          Profile
+        </a>
+
+      </div>
+
+    </header>
 
 
     <!-- =========================
-         BEAT LAB
+         MAIN
          ========================= -->
 
-    <div class="beatlab panel">
+    <main>
 
-
-      <!-- TOOLBAR -->
-      <div class="lab-toolbar">
-
-        <!-- Play -->
-        <button
-          type="button"
-          class="play-large"
-          id="labPlay"
-          aria-label="Play Beat Lab"
-          aria-pressed="false"
-        >
-          ▶
-        </button>
-
-
-        <!-- BPM -->
-        <label for="bpm">
-
-          <span>BPM</span>
-
-          <input
-            id="bpm"
-            type="range"
-            min="60"
-            max="160"
-            value="96"
-            step="1"
-          >
-
-          <strong id="bpmValue">
-            96
-          </strong>
-
-        </label>
-
-
-        <!-- Pitch -->
-        <label for="pitch">
-
-          <span>Pitch</span>
-
-          <input
-            id="pitch"
-            type="range"
-            min="-12"
-            max="12"
-            value="0"
-            step="1"
-          >
-
-          <strong id="pitchValue">
-            0
-          </strong>
-
-        </label>
-
-
-        <!-- Loop -->
-        <label
-          class="toggle-label"
-          for="loopToggle"
-        >
-
-          <input
-            id="loopToggle"
-            type="checkbox"
-            checked
-          >
-
-          <span>
-            Loop
-          </span>
-
-        </label>
-
-
-        <!-- Save -->
-        <button
-          type="button"
-          class="btn secondary"
-          id="saveBeat"
-        >
-          Save Idea
-        </button>
-
-
-        <!-- Generate -->
-        <button
-          type="button"
-          class="btn primary"
-          id="generateBeat"
-        >
-          ✦ Generate
-        </button>
-
-      </div>
-
-
-      <!-- =========================
-           TIMELINE
-           ========================= -->
-
-      <div
-        class="timeline"
-        id="timeline"
+      <section
+        class="beatlab-section"
+        id="beatlab"
       >
 
+        <!-- =========================
+             SECTION HEADER
+             ========================= -->
 
-        <!-- Timeline ruler -->
-        <div
-          class="timeline-ruler"
-          aria-hidden="true"
-        >
-          <span>1</span>
-          <span>2</span>
-          <span>3</span>
-          <span>4</span>
-          <span>5</span>
-          <span>6</span>
-          <span>7</span>
-          <span>8</span>
-        </div>
+        <div class="section-heading">
 
+          <div>
 
-        <!-- DRUMS -->
-        <div class="track">
+            <p class="eyebrow">
+              CREATE
+            </p>
 
-          <span>
-            DRUMS
-          </span>
+            <h1>
+              Beat Lab
+            </h1>
 
-          <div class="track-lane">
-
-            <div
-              class="clip drum"
-              title="Drum pattern"
-            ></div>
+            <p>
+              Build beats, experiment with instruments,
+              record ideas, and collaborate with other
+              GrooveDNA creators.
+            </p>
 
           </div>
 
-        </div>
 
-
-        <!-- BASS -->
-        <div class="track">
-
-          <span>
-            BASS
-          </span>
-
-          <div class="track-lane">
-
-            <div
-              class="clip bass"
-              title="Bass pattern"
-            ></div>
-
-          </div>
+          <button
+            type="button"
+            class="btn secondary"
+            id="clearLab"
+          >
+            Clear Lab
+          </button>
 
         </div>
 
 
-        <!-- MELODY -->
-        <div class="track">
+        <!-- =========================
+             BEAT LAB CONTAINER
+             ========================= -->
 
-          <span>
-            MELODY
-          </span>
-
-          <div class="track-lane">
-
-            <div
-              class="clip melody"
-              title="Melody pattern"
-            ></div>
-
-          </div>
-
-        </div>
+        <div class="beatlab panel">
 
 
-        <!-- SAMPLES -->
-        <div class="track">
+          <!-- =========================
+               BEAT MODES
+               ========================= -->
 
-          <span>
-            SAMPLES
-          </span>
+          <!--
+            script.js will populate this area with:
+
+            Music Mixer
+            Drum Pad
+            Music Maker
+          -->
 
           <div
-            class="track-lane"
-            id="sampleLane"
-          ></div>
+            id="beatModes"
+            class="beat-modes"
+            aria-label="Beat Lab modes"
+          >
+
+            <button
+              type="button"
+              class="beat-mode active"
+              data-mode="mixer"
+            >
+              🎚 Music Mixer
+            </button>
+
+            <button
+              type="button"
+              class="beat-mode"
+              data-mode="drumpad"
+            >
+              🥁 Drum Pad
+            </button>
+
+            <button
+              type="button"
+              class="beat-mode"
+              data-mode="maker"
+            >
+              🎼 Music Maker
+            </button>
+
+          </div>
+
+
+          <!-- =========================
+               TOOLBAR
+               ========================= -->
+
+          <div class="lab-toolbar">
+
+            <!-- Play / Pause -->
+
+            <button
+              type="button"
+              class="play-large"
+              id="labPlay"
+              aria-label="Play Beat Lab"
+              aria-pressed="false"
+              data-playing="false"
+            >
+              ▶
+            </button>
+
+
+            <!-- BPM -->
+
+            <label for="bpm">
+
+              <span>
+                BPM
+              </span>
+
+              <input
+                id="bpm"
+                type="range"
+                min="60"
+                max="160"
+                value="96"
+                step="1"
+              >
+
+              <strong id="bpmValue">
+                96
+              </strong>
+
+            </label>
+
+
+            <!-- Pitch -->
+
+            <label for="pitch">
+
+              <span>
+                Pitch
+              </span>
+
+              <input
+                id="pitch"
+                type="range"
+                min="-12"
+                max="12"
+                value="0"
+                step="1"
+              >
+
+              <strong id="pitchValue">
+                0
+              </strong>
+
+            </label>
+
+
+            <!-- Loop -->
+
+            <label
+              class="toggle-label"
+              for="loopToggle"
+            >
+
+              <input
+                id="loopToggle"
+                type="checkbox"
+                checked
+              >
+
+              <span>
+                Loop
+              </span>
+
+            </label>
+
+
+            <!-- Save -->
+
+            <button
+              type="button"
+              class="btn secondary"
+              id="saveBeat"
+            >
+              Save Idea
+            </button>
+
+
+            <!-- Generate -->
+
+            <button
+              type="button"
+              class="btn primary"
+              id="generateBeat"
+            >
+              ✦ Generate
+            </button>
+
+
+            <!--
+              JavaScript automatically adds:
+
+              Record
+              Collab
+            -->
+
+            <button
+              type="button"
+              class="btn primary"
+              id="recordBeat"
+              aria-label="Record audio"
+            >
+              ● Record
+            </button>
+
+
+            <button
+              type="button"
+              class="btn secondary"
+              id="collabBtn"
+              aria-label="Collaborate with another creator"
+            >
+              👥 Collab
+            </button>
+
+          </div>
+
+
+          <!-- =========================
+               INSTRUMENT BROWSER
+               ========================= -->
+
+          <!--
+            script.js uses this area to display:
+
+            Drums
+            Bass
+            Piano
+            Guitar
+            Synth
+            Strings
+            Brass
+            Vocals
+
+            Clicking an instrument opens its sounds.
+          -->
+
+          <aside
+            id="instrumentBrowser"
+            class="instrument-browser"
+            aria-label="Instrument browser"
+          >
+
+            <div class="instrument-browser-header">
+
+              <p class="eyebrow">
+                SOUNDS
+              </p>
+
+              <h2>
+                Instruments
+              </h2>
+
+              <p>
+                Choose an instrument to explore
+                available sounds.
+              </p>
+
+            </div>
+
+
+            <div
+              class="instrument-list"
+              aria-label="Available instruments"
+            >
+
+              <!--
+                JavaScript populates instruments here.
+              -->
+
+            </div>
+
+
+            <div
+              class="sound-list"
+              id="soundList"
+              aria-label="Available instrument sounds"
+            >
+
+              <div class="empty-state">
+                Select an instrument to see its sounds.
+              </div>
+
+            </div>
+
+          </aside>
+
+
+          <!-- =========================
+               TIMELINE
+               ========================= -->
+
+          <div
+            class="timeline"
+            id="timeline"
+          >
+
+            <!-- Timeline ruler -->
+
+            <div
+              class="timeline-ruler"
+              aria-hidden="true"
+            >
+
+              <span>
+                1
+              </span>
+
+              <span>
+                2
+              </span>
+
+              <span>
+                3
+              </span>
+
+              <span>
+                4
+              </span>
+
+              <span>
+                5
+              </span>
+
+              <span>
+                6
+              </span>
+
+              <span>
+                7
+              </span>
+
+              <span>
+                8
+              </span>
+
+            </div>
+
+
+            <!-- =========================
+                 DRUMS TRACK
+                 ========================= -->
+
+            <div class="track">
+
+              <span>
+                DRUMS
+              </span>
+
+              <div
+                class="track-lane"
+                data-track="drums"
+              >
+              </div>
+
+            </div>
+
+
+            <!-- =========================
+                 BASS TRACK
+                 ========================= -->
+
+            <div class="track">
+
+              <span>
+                BASS
+              </span>
+
+              <div
+                class="track-lane"
+                data-track="bass"
+              >
+              </div>
+
+            </div>
+
+
+            <!-- =========================
+                 MELODY TRACK
+                 ========================= -->
+
+            <div class="track">
+
+              <span>
+                MELODY
+              </span>
+
+              <div
+                class="track-lane"
+                data-track="melody"
+              >
+              </div>
+
+            </div>
+
+
+            <!-- =========================
+                 SAMPLES TRACK
+                 ========================= -->
+
+            <div class="track">
+
+              <span>
+                SAMPLES
+              </span>
+
+              <div
+                class="track-lane"
+                id="sampleLane"
+                data-track="samples"
+              >
+              </div>
+
+            </div>
+
+
+            <!-- =========================
+                 EMPTY STATE
+                 ========================= -->
+
+            <div
+              class="empty-state"
+              id="labEmpty"
+            >
+              Select an instrument or add a sample
+              from Discover to start creating.
+            </div>
+
+          </div>
+
+
+          <!-- =========================
+               RECORDING AREA
+               ========================= -->
+
+          <section
+            class="recording-panel"
+            aria-label="Recording controls"
+          >
+
+            <div>
+
+              <p class="eyebrow">
+                RECORD
+              </p>
+
+              <h2>
+                Record your idea
+              </h2>
+
+              <p>
+                Record your voice or another audio
+                idea while working on your beat.
+              </p>
+
+            </div>
+
+
+            <div class="recording-controls">
+
+              <button
+                type="button"
+                class="btn primary"
+                id="recordBeatSecondary"
+                onclick="document.getElementById('recordBeat')?.click()"
+              >
+                ● Record
+              </button>
+
+            </div>
+
+          </section>
+
+
+          <!-- =========================
+               COLLABORATION AREA
+               ========================= -->
+
+          <section
+            class="collaboration-section"
+            aria-label="Beat Lab collaboration"
+          >
+
+            <div>
+
+              <p class="eyebrow">
+                COLLABORATE
+              </p>
+
+              <h2>
+                Make music together
+              </h2>
+
+              <p>
+                Invite another GrooveDNA creator
+                into your Beat Lab session.
+              </p>
+
+            </div>
+
+
+            <button
+              type="button"
+              class="btn secondary"
+              id="collabBtnSecondary"
+              onclick="document.getElementById('collabBtn')?.click()"
+            >
+              👥 Find Creators
+            </button>
+
+          </section>
 
         </div>
 
+      </section>
 
-        <!-- EMPTY STATE -->
-        <div
-          class="empty-state"
-          id="labEmpty"
-          hidden
-        >
-          Add a sample with "Beat Lab" from Discover.
-        </div>
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+         ========================= -->
+
+    <footer>
+
+      <strong>
+        GrooveDNA
+      </strong>
+
+      <span>
+        Find the Sound. Flip the Groove.
+        Create Something New.
+      </span>
+
+
+      <div>
+
+        <a href="discover.html">
+          Discover
+        </a>
+
+        <a href="library.html">
+          Library
+        </a>
+
+        <a href="profile.html">
+          Profile
+        </a>
 
       </div>
 
-    </div>
-
-  </section>
-
-</main>
-
-
-<!-- =========================
-     FOOTER
-     ========================= -->
-
-<footer>
-
-  <strong>
-    GrooveDNA
-  </strong>
-
-  <span>
-    Find the Sound. Flip the Groove. Create Something New.
-  </span>
-
-  <div>
-
-    <a href="discover.html">
-      Discover
-    </a>
-
-    <a href="library.html">
-      Library
-    </a>
-
-    <a href="profile.html">
-      Profile
-    </a>
+    </footer>
 
   </div>
 
-</footer>
-```
-
-  </div>
 
   <!-- =========================
        TOAST
@@ -416,14 +727,26 @@ content="Create and experiment in the GrooveDNA Beat Lab."
     aria-live="polite"
   ></div>
 
+
   <!-- =========================
        SUPABASE
        ========================= -->
 
+  <!--
+    IMPORTANT:
+
+    This loads the Supabase JavaScript library.
+
+    Your actual Supabase project URL and
+    publishable/anon key belong in script.js,
+    NOT in this HTML file.
+  -->
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+
   <!-- =========================
-       GROOVEDNA JAVASCRIPT
+       GROOVEDNA MASTER SCRIPT
        ========================= -->
 
   <script src="script.js"></script>
@@ -431,3 +754,4 @@ content="Create and experiment in the GrooveDNA Beat Lab."
 </body>
 
 </html>
+```
