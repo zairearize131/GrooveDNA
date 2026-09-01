@@ -4,6 +4,7 @@
 
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
@@ -51,7 +52,9 @@
         href="home.html"
         aria-label="GrooveDNA home"
       >
-        <span class="brand-mark">GD</span>
+        <span class="brand-mark">
+          GD
+        </span>
 
         <span>
           Groove<span>DNA</span>
@@ -142,7 +145,8 @@
             </h1>
 
             <p>
-              Save music, playlists, albums and ideas in one place.
+              Save music, playlists, albums and ideas
+              in one place.
             </p>
 
           </div>
@@ -227,7 +231,7 @@
 
 
         <!-- =========================
-             PLAYLIST GRID
+             LIBRARY CONTENT
         ========================== -->
 
         <div
@@ -236,6 +240,222 @@
           aria-live="polite"
         >
         </div>
+
+
+        <!-- =========================
+             SAVED SOUNDS
+        ========================== -->
+
+        <section
+          class="library-subsection"
+          id="savedSoundsSection"
+          aria-labelledby="savedSoundsTitle"
+        >
+
+          <div class="section-heading">
+
+            <div>
+
+              <p class="eyebrow">
+                SAVED SOUNDS
+              </p>
+
+              <h2 id="savedSoundsTitle">
+                Your saved sounds
+              </h2>
+
+              <p>
+                Sounds you've saved from Discover
+                will appear here.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="sample-grid"
+            id="savedSoundsGrid"
+            aria-live="polite"
+          >
+          </div>
+
+        </section>
+
+
+        <!-- =========================
+             LIKED / MOST PLAYED SONGS
+        ========================== -->
+
+        <section
+          class="library-subsection"
+          id="likedSongsSection"
+          aria-labelledby="likedSongsTitle"
+        >
+
+          <div class="section-heading">
+
+            <div>
+
+              <p class="eyebrow">
+                YOUR FAVORITES
+              </p>
+
+              <h2 id="likedSongsTitle">
+                Songs you love
+              </h2>
+
+              <p>
+                Your most liked and frequently used
+                songs will appear here.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="playlist-grid"
+            id="likedSongsGrid"
+            aria-live="polite"
+          >
+          </div>
+
+        </section>
+
+
+        <!-- =========================
+             RECENTLY PLAYED
+        ========================== -->
+
+        <section
+          class="library-subsection"
+          id="recentlyPlayedSection"
+          aria-labelledby="recentlyPlayedTitle"
+        >
+
+          <div class="section-heading">
+
+            <div>
+
+              <p class="eyebrow">
+                LISTENING HISTORY
+              </p>
+
+              <h2 id="recentlyPlayedTitle">
+                Recently played
+              </h2>
+
+              <p>
+                Pick up where you left off.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="playlist-grid"
+            id="recentlyPlayedGrid"
+            aria-live="polite"
+          >
+          </div>
+
+        </section>
+
+
+        <!-- =========================
+             PLAYLISTS
+        ========================== -->
+
+        <section
+          class="library-subsection"
+          id="playlistsSection"
+          aria-labelledby="playlistsTitle"
+        >
+
+          <div class="section-heading">
+
+            <div>
+
+              <p class="eyebrow">
+                PLAYLISTS
+              </p>
+
+              <h2 id="playlistsTitle">
+                Your playlists
+              </h2>
+
+              <p>
+                Organize your favorite sounds and songs.
+              </p>
+
+            </div>
+
+
+            <button
+              class="btn secondary"
+              id="newPlaylistSecondary"
+              type="button"
+            >
+              ＋ New Playlist
+            </button>
+
+          </div>
+
+
+          <div
+            class="playlist-grid"
+            id="userPlaylistGrid"
+            aria-live="polite"
+          >
+          </div>
+
+        </section>
+
+
+        <!-- =========================
+             ALBUMS
+        ========================== -->
+
+        <section
+          class="library-subsection"
+          id="albumsSection"
+          aria-labelledby="albumsTitle"
+        >
+
+          <div class="section-heading">
+
+            <div>
+
+              <p class="eyebrow">
+                ALBUMS
+              </p>
+
+              <h2 id="albumsTitle">
+                Saved albums
+              </h2>
+
+              <p>
+                Albums you've saved or listened to.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="playlist-grid"
+            id="albumGrid"
+            aria-live="polite"
+          >
+          </div>
+
+        </section>
 
       </section>
 
@@ -260,6 +480,11 @@
             <h2 id="artistsTitle">
               Artists in your orbit
             </h2>
+
+            <p>
+              Creators connected to the music
+              you're discovering.
+            </p>
 
           </div>
 
@@ -298,7 +523,8 @@
       </strong>
 
       <span>
-        Find the Sound. Flip the Groove. Create Something New.
+        Find the Sound. Flip the Groove.
+        Create Something New.
       </span>
 
       <div>
@@ -318,14 +544,31 @@
   </div>
 
 
-  <!-- Supabase -->
+  <!-- =========================
+       TOAST
+  ========================== -->
+
+  <div
+    id="toast"
+    class="toast"
+    role="status"
+    aria-live="polite"
+  >
+  </div>
+
+
+  <!-- =========================
+       SUPABASE
+  ========================== -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
   ></script>
 
 
-  <!-- GrooveDNA JavaScript -->
+  <!-- =========================
+       GROOVEDNA JAVASCRIPT
+  ========================== -->
 
   <script src="script.js"></script>
 
