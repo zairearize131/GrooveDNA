@@ -12,7 +12,6 @@
 
   <title>GrooveDNA | Profile</title>
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -21,7 +20,6 @@
     rel="stylesheet"
   >
 
-  <!-- GrooveDNA CSS -->
   <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -47,7 +45,6 @@
         </span>
       </a>
 
-
       <button
         class="menu-toggle"
         id="menuToggle"
@@ -58,20 +55,31 @@
         ☰
       </button>
 
-
       <nav id="mainNav">
 
-        <a href="home.html">Home</a>
+        <a href="home.html">
+          Home
+        </a>
 
-        <a href="discover.html">Discover</a>
+        <a href="discover.html">
+          Discover
+        </a>
 
-        <a href="groovedna.html">GrooveDNA</a>
+        <a href="groovedna.html">
+          GrooveDNA
+        </a>
 
-        <a href="beatlab.html">Beat Lab</a>
+        <a href="beatlab.html">
+          Beat Lab
+        </a>
 
-        <a href="community.html">Community</a>
+        <a href="community.html">
+          Community
+        </a>
 
-        <a href="library.html">Library</a>
+        <a href="library.html">
+          Library
+        </a>
 
         <a
           class="active"
@@ -82,11 +90,10 @@
 
       </nav>
 
-
       <div class="top-actions">
 
         <button
-          class="header-action"
+          class="header-action sign-out-btn"
           id="signOutBtn"
           type="button"
         >
@@ -104,9 +111,7 @@
 
     <main>
 
-      <!-- ===================================================
-           PROFILE
-           =================================================== -->
+      <!-- PROFILE -->
 
       <section
         class="profile-section"
@@ -126,11 +131,11 @@
             </h1>
 
             <p>
-              Shape how creators and recommendations experience your groove.
+              Shape how creators and recommendations
+              experience your groove.
             </p>
 
           </div>
-
 
           <button
             class="btn secondary"
@@ -145,13 +150,9 @@
 
         <div class="profile-card panel">
 
-          <div
-            class="profile-avatar"
-            id="profileAvatar"
-          >
-            GD
+          <div class="profile-avatar">
+            ZC
           </div>
-
 
           <div class="profile-main">
 
@@ -159,21 +160,27 @@
               CREATOR
             </p>
 
-            <h2 id="profileName">
-              Loading...
+            <h2>
+              Zaire's Groove
             </h2>
 
-            <p id="profileEmail">
-              Loading account...
+            <p>
+              Creator • 24 playlists • 186 followers
             </p>
 
             <div class="profile-tags">
 
-              <span>Funk</span>
+              <span>
+                Funk
+              </span>
 
-              <span>Soul</span>
+              <span>
+                Soul
+              </span>
 
-              <span>Rock</span>
+              <span>
+                Rock
+              </span>
 
             </div>
 
@@ -184,9 +191,7 @@
       </section>
 
 
-      <!-- ===================================================
-           ACTIVITY
-           =================================================== -->
+      <!-- LISTENING SNAPSHOT -->
 
       <section class="content-section">
 
@@ -203,7 +208,8 @@
             </h2>
 
             <p>
-              A quick view of what has been moving through your headphones.
+              A quick view of what has been moving
+              through your headphones.
             </p>
 
           </div>
@@ -285,9 +291,7 @@
       </section>
 
 
-      <!-- ===================================================
-           SETTINGS
-           =================================================== -->
+      <!-- SETTINGS -->
 
       <section
         class="settings-section panel"
@@ -300,7 +304,6 @@
             ACCOUNT
           </p>
 
-
           <button
             class="settings-tab active"
             type="button"
@@ -308,7 +311,6 @@
           >
             Profile
           </button>
-
 
           <button
             class="settings-tab"
@@ -318,7 +320,6 @@
             Playback
           </button>
 
-
           <button
             class="settings-tab"
             type="button"
@@ -327,7 +328,6 @@
             Notifications
           </button>
 
-
           <button
             class="settings-tab"
             type="button"
@@ -335,7 +335,6 @@
           >
             Privacy
           </button>
-
 
           <button
             class="settings-tab"
@@ -381,7 +380,8 @@
       </strong>
 
       <span>
-        Find the Sound. Flip the Groove. Create Something New.
+        Find the Sound. Flip the Groove.
+        Create Something New.
       </span>
 
       <div>
@@ -391,9 +391,9 @@
         </a>
 
         <button
-          id="footerSignOutBtn"
           type="button"
-          class="footer-signout"
+          class="sign-out-btn"
+          id="footerSignOutBtn"
         >
           Sign out
         </button>
@@ -405,302 +405,28 @@
   </div>
 
 
-  <!-- =======================================================
-       SUPABASE LIBRARY
-       ======================================================= -->
+  <!-- =====================================================
+       TOAST
+       ===================================================== -->
+
+  <div
+    class="toast"
+    id="toast"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+
+  <!-- =====================================================
+       SUPABASE
+       IMPORTANT: THIS MUST LOAD BEFORE script.js
+       ===================================================== -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-
-  <!-- =======================================================
-       GROOVEDNA JAVASCRIPT
-       ======================================================= -->
+  <!-- GrooveDNA application JavaScript -->
 
   <script src="script.js"></script>
-
-
-  <!-- =======================================================
-       PROFILE AUTHENTICATION
-       ======================================================= -->
-
-  <script>
-
-    document.addEventListener("DOMContentLoaded", async function () {
-
-      /*
-       * Make sure the Supabase library exists.
-       */
-
-      if (!window.supabase) {
-
-        console.error("Supabase library failed to load.");
-
-        return;
-
-      }
-
-
-      /*
-       * GrooveDNA's authenticated Supabase client
-       *
-       * IMPORTANT:
-       *
-       * script.js must create:
-       *
-       * window.grooveSupabase
-       *
-       * using your real Supabase URL and anon/publishable key.
-       */
-
-      const client = window.grooveSupabase;
-
-
-      /*
-       * Stop if script.js did not create the client.
-       */
-
-      if (!client) {
-
-        console.error(
-          "GrooveDNA Supabase client was not created."
-        );
-
-        return;
-
-      }
-
-
-      /*
-       * Check the current login session.
-       */
-
-      const {
-        data,
-        error
-      } = await client.auth.getSession();
-
-
-      /*
-       * Session lookup failed.
-       */
-
-      if (error) {
-
-        console.error(
-          "Unable to retrieve GrooveDNA login session:",
-          error
-        );
-
-        window.location.replace("index.html");
-
-        return;
-
-      }
-
-
-      /*
-       * No logged-in user.
-       */
-
-      if (!data || !data.session) {
-
-        console.warn(
-          "No active GrooveDNA session found."
-        );
-
-        window.location.replace("index.html");
-
-        return;
-
-      }
-
-
-      /*
-       * Current authenticated user.
-       */
-
-      const user = data.session.user;
-
-
-      /*
-       * Get account information.
-       */
-
-      const email =
-        user.email || "No email available";
-
-
-      const metadata =
-        user.user_metadata || {};
-
-
-      const fullName =
-        metadata.full_name ||
-        metadata.name ||
-        metadata.display_name ||
-        "GrooveDNA Creator";
-
-
-      /*
-       * Update profile name.
-       */
-
-      const profileName =
-        document.getElementById("profileName");
-
-
-      if (profileName) {
-
-        profileName.textContent =
-          fullName;
-
-      }
-
-
-      /*
-       * Update email.
-       */
-
-      const profileEmail =
-        document.getElementById("profileEmail");
-
-
-      if (profileEmail) {
-
-        profileEmail.textContent =
-          email;
-
-      }
-
-
-      /*
-       * Generate initials.
-       */
-
-      const profileAvatar =
-        document.getElementById("profileAvatar");
-
-
-      if (profileAvatar) {
-
-        const initials =
-          fullName
-            .split(" ")
-            .filter(Boolean)
-            .slice(0, 2)
-            .map(function (word) {
-              return word.charAt(0);
-            })
-            .join("")
-            .toUpperCase();
-
-
-        profileAvatar.textContent =
-          initials || "GD";
-
-      }
-
-
-      /*
-       * Sign out.
-       */
-
-      async function signOut() {
-
-        const {
-          error
-        } = await client.auth.signOut();
-
-
-        if (error) {
-
-          console.error(
-            "GrooveDNA sign-out error:",
-            error
-          );
-
-          alert(
-            "Unable to sign out. Please try again."
-          );
-
-          return;
-
-        }
-
-
-        /*
-         * Return to the login page.
-         */
-
-        window.location.replace("index.html");
-
-      }
-
-
-      /*
-       * Header sign out.
-       */
-
-      const signOutBtn =
-        document.getElementById("signOutBtn");
-
-
-      if (signOutBtn) {
-
-        signOutBtn.addEventListener(
-          "click",
-          signOut
-        );
-
-      }
-
-
-      /*
-       * Footer sign out.
-       */
-
-      const footerSignOutBtn =
-        document.getElementById(
-          "footerSignOutBtn"
-        );
-
-
-      if (footerSignOutBtn) {
-
-        footerSignOutBtn.addEventListener(
-          "click",
-          signOut
-        );
-
-      }
-
-
-      /*
-       * Edit Profile button.
-       */
-
-      const profileBtn =
-        document.getElementById("profileBtn");
-
-
-      if (profileBtn) {
-
-        profileBtn.addEventListener(
-          "click",
-          function () {
-
-            alert(
-              "Profile editing will be available here."
-            );
-
-          }
-        );
-
-      }
-
-    });
-
-  </script>
 
 </body>
 </html>
