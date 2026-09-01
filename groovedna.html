@@ -1,7 +1,576 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Understand your musical identity with GrooveDNA."><title>GrooveDNA | Your Musical DNA</title><link rel="stylesheet" href="styles.css"></head>
-<body><div class="app-shell"><header class="topbar"><a class="brand" href="home.html" aria-label="GrooveDNA home"><span class="brand-mark">GD</span><span>Groove<span>DNA</span></span></a><nav id="mainNav"><a href="home.html">Home</a><a href="discover.html">Discover</a><a href="groovedna.html">GrooveDNA</a><a href="beatlab.html">Beat Lab</a><a href="community.html">Community</a><a href="library.html">Library</a></nav></header><main>
-  <section class="dna-section" id="dna"><div class="section-heading"><div><p class="eyebrow">YOUR MUSICAL IDENTITY</p><h1>GrooveDNA</h1><p>Your taste, translated into a musical fingerprint.</p></div><button class="btn secondary" id="shareDNA">Share DNA</button></div><div class="dna-grid"><div class="dna-visual panel"><div class="dna-orbit"><div class="dna-core">DNA</div><span class="orbit-dot d1">F</span><span class="orbit-dot d2">S</span><span class="orbit-dot d3">R</span><span class="orbit-dot d4">R&B</span></div><div class="dna-score"><strong>92</strong><span>Groove Score</span></div></div><div class="panel dna-details"><div class="dna-header"><div><span class="muted">THIS MONTH</span><h3>Your listening personality</h3></div><span class="pill accent">Evolving</span></div><div class="meter-row"><span>Funk</span><div class="meter"><i class="meter-funk"></i></div><strong>92%</strong></div><div class="meter-row"><span>Soul</span><div class="meter"><i class="meter-soul"></i></div><strong>84%</strong></div><div class="meter-row"><span>Rock</span><div class="meter"><i class="meter-rock"></i></div><strong>76%</strong></div><div class="meter-row"><span>R&B</span><div class="meter"><i class="meter-rnb"></i></div><strong>68%</strong></div><div class="dna-tags"><span>Warm</span><span>Groove-heavy</span><span>Analog</span><span>Rhythmic</span><span>Melodic</span></div></div></div><div class="stats-grid"><div class="stat-card"><span>Listening time</span><strong>42h 18m</strong><small>+18% this month</small></div><div class="stat-card"><span>Artists discovered</span><strong>38</strong><small>12 outside your usual genres</small></div><div class="stat-card"><span>Top artist</span><strong>Anderson .Paak</strong><small>17 plays this week</small></div><div class="stat-card"><span>Discovery streak</span><strong>12 days 🔥</strong><small>Personal best: 19 days</small></div></div></section>
-  <section class="mood-section"><div class="section-heading"><div><p class="eyebrow">PLAY BY FEEL</p><h2>What's the vibe?</h2></div></div><div class="mood-grid"><button class="mood-card" data-mood="Chill">🌙<strong>Chill</strong><span>Warm & slow</span></button><button class="mood-card" data-mood="Energy">⚡<strong>Energy</strong><span>Turn it up</span></button><button class="mood-card" data-mood="Focus">◌<strong>Focus</strong><span>Lock in</span></button><button class="mood-card" data-mood="Nostalgia">📼<strong>Nostalgia</strong><span>Back in time</span></button><button class="mood-card" data-mood="Party">✦<strong>Party</strong><span>Move the room</span></button><button class="mood-card" data-mood="Late Night">☾<strong>Late Night</strong><span>After hours</span></button></div></section>
-  </main><footer><strong>GrooveDNA</strong><span>Find the Sound. Flip the Groove. Create Something New.</span></footer></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="script.js"></script></body></html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="description"
+    content="Understand your musical identity with GrooveDNA."
+  >
+
+  <title>GrooveDNA | Your Musical DNA</title>
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div class="app-shell">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="topbar">
+
+      <a
+        class="brand"
+        href="home.html"
+        aria-label="GrooveDNA home"
+      >
+        <span class="brand-mark">GD</span>
+
+        <span>
+          Groove<span>DNA</span>
+        </span>
+      </a>
+
+      <button
+        class="menu-toggle"
+        id="menuToggle"
+        type="button"
+        aria-label="Open navigation"
+        aria-expanded="false"
+        aria-controls="mainNav"
+      >
+        ☰
+      </button>
+
+      <nav id="mainNav" aria-label="Main navigation">
+
+        <a href="home.html">Home</a>
+
+        <a href="discover.html">Discover</a>
+
+        <a
+          class="active"
+          href="groovedna.html"
+          aria-current="page"
+        >
+          GrooveDNA
+        </a>
+
+        <a href="beatlab.html">Beat Lab</a>
+
+        <a href="community.html">Community</a>
+
+        <a href="library.html">Library</a>
+
+        <a href="profile.html">Profile</a>
+
+      </nav>
+
+    </header>
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+
+    <main>
+
+      <!-- =========================
+           GROOVEDNA SECTION
+      ========================== -->
+
+      <section
+        class="dna-section"
+        id="dna"
+        aria-labelledby="dnaTitle"
+      >
+
+        <div class="section-heading">
+
+          <div>
+
+            <p class="eyebrow">
+              YOUR MUSICAL IDENTITY
+            </p>
+
+            <h1 id="dnaTitle">
+              GrooveDNA
+            </h1>
+
+            <p>
+              Your taste, translated into a musical fingerprint.
+            </p>
+
+          </div>
+
+          <button
+            class="btn secondary"
+            id="shareDNA"
+            type="button"
+          >
+            Share DNA
+          </button>
+
+        </div>
+
+
+        <!-- =========================
+             DNA GRID
+        ========================== -->
+
+        <div class="dna-grid">
+
+
+          <!-- DNA VISUAL -->
+
+          <div
+            class="dna-visual panel"
+            aria-label="Your GrooveDNA score visualization"
+          >
+
+            <div class="dna-orbit">
+
+              <div class="dna-core">
+                DNA
+              </div>
+
+              <span class="orbit-dot d1">
+                F
+              </span>
+
+              <span class="orbit-dot d2">
+                S
+              </span>
+
+              <span class="orbit-dot d3">
+                R
+              </span>
+
+              <span class="orbit-dot d4">
+                R&amp;B
+              </span>
+
+            </div>
+
+
+            <div class="dna-score">
+
+              <strong>92</strong>
+
+              <span>
+                Groove Score
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- DNA DETAILS -->
+
+          <div class="panel dna-details">
+
+            <div class="dna-header">
+
+              <div>
+
+                <span class="muted">
+                  THIS MONTH
+                </span>
+
+                <h3>
+                  Your listening personality
+                </h3>
+
+              </div>
+
+              <span class="pill accent">
+                Evolving
+              </span>
+
+            </div>
+
+
+            <!-- FUNK -->
+
+            <div class="meter-row">
+
+              <span>
+                Funk
+              </span>
+
+              <div
+                class="meter"
+                role="progressbar"
+                aria-label="Funk preference"
+                aria-valuenow="92"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                <i
+                  class="meter-funk"
+                  style="width: 92%;"
+                ></i>
+              </div>
+
+              <strong>
+                92%
+              </strong>
+
+            </div>
+
+
+            <!-- SOUL -->
+
+            <div class="meter-row">
+
+              <span>
+                Soul
+              </span>
+
+              <div
+                class="meter"
+                role="progressbar"
+                aria-label="Soul preference"
+                aria-valuenow="84"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                <i
+                  class="meter-soul"
+                  style="width: 84%;"
+                ></i>
+              </div>
+
+              <strong>
+                84%
+              </strong>
+
+            </div>
+
+
+            <!-- ROCK -->
+
+            <div class="meter-row">
+
+              <span>
+                Rock
+              </span>
+
+              <div
+                class="meter"
+                role="progressbar"
+                aria-label="Rock preference"
+                aria-valuenow="76"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                <i
+                  class="meter-rock"
+                  style="width: 76%;"
+                ></i>
+              </div>
+
+              <strong>
+                76%
+              </strong>
+
+            </div>
+
+
+            <!-- R&B -->
+
+            <div class="meter-row">
+
+              <span>
+                R&amp;B
+              </span>
+
+              <div
+                class="meter"
+                role="progressbar"
+                aria-label="R&B preference"
+                aria-valuenow="68"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                <i
+                  class="meter-rnb"
+                  style="width: 68%;"
+                ></i>
+              </div>
+
+              <strong>
+                68%
+              </strong>
+
+            </div>
+
+
+            <!-- DNA TAGS -->
+
+            <div
+              class="dna-tags"
+              aria-label="Musical characteristics"
+            >
+
+              <span>Warm</span>
+
+              <span>Groove-heavy</span>
+
+              <span>Analog</span>
+
+              <span>Rhythmic</span>
+
+              <span>Melodic</span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- =========================
+             LISTENING STATS
+        ========================== -->
+
+        <div class="stats-grid">
+
+          <div class="stat-card">
+
+            <span>
+              Listening time
+            </span>
+
+            <strong>
+              42h 18m
+            </strong>
+
+            <small>
+              +18% this month
+            </small>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <span>
+              Artists discovered
+            </span>
+
+            <strong>
+              38
+            </strong>
+
+            <small>
+              12 outside your usual genres
+            </small>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <span>
+              Top artist
+            </span>
+
+            <strong>
+              Anderson .Paak
+            </strong>
+
+            <small>
+              17 plays this week
+            </small>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <span>
+              Discovery streak
+            </span>
+
+            <strong>
+              12 days 🔥
+            </strong>
+
+            <small>
+              Personal best: 19 days
+            </small>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           MOOD SECTION
+      ========================== -->
+
+      <section
+        class="mood-section"
+        aria-labelledby="moodTitle"
+      >
+
+        <div class="section-heading">
+
+          <div>
+
+            <p class="eyebrow">
+              PLAY BY FEEL
+            </p>
+
+            <h2 id="moodTitle">
+              What's the vibe?
+            </h2>
+
+          </div>
+
+        </div>
+
+
+        <div class="mood-grid">
+
+
+          <button
+            class="mood-card"
+            type="button"
+            data-mood="Chill"
+          >
+            <span aria-hidden="true">🌙</span>
+            <strong>Chill</strong>
+            <span>Warm &amp; slow</span>
+          </button>
+
+
+          <button
+            class="mood-card"
+            type="button"
+            data-mood="Energy"
+          >
+            <span aria-hidden="true">⚡</span>
+            <strong>Energy</strong>
+            <span>Turn it up</span>
+          </button>
+
+
+          <button
+            class="mood-card"
+            type="button"
+            data-mood="Focus"
+          >
+            <span aria-hidden="true">◌</span>
+            <strong>Focus</strong>
+            <span>Lock in</span>
+          </button>
+
+
+          <button
+            class="mood-card"
+            type="button"
+            data-mood="Nostalgia"
+          >
+            <span aria-hidden="true">📼</span>
+            <strong>Nostalgia</strong>
+            <span>Back in time</span>
+          </button>
+
+
+          <button
+            class="mood-card"
+            type="button"
+            data-mood="Party"
+          >
+            <span aria-hidden="true">✦</span>
+            <strong>Party</strong>
+            <span>Move the room</span>
+          </button>
+
+
+          <button
+            class="mood-card"
+            type="button"
+            data-mood="Late Night"
+          >
+            <span aria-hidden="true">☾</span>
+            <strong>Late Night</strong>
+            <span>After hours</span>
+          </button>
+
+        </div>
+
+      </section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+
+      <strong>
+        GrooveDNA
+      </strong>
+
+      <span>
+        Find the Sound. Flip the Groove. Create Something New.
+      </span>
+
+      <div>
+
+        <a href="discover.html">
+          Discover
+        </a>
+
+        <a href="profile.html">
+          Profile
+        </a>
+
+      </div>
+
+    </footer>
+
+  </div>
+
+
+  <!-- Supabase -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- GrooveDNA JavaScript -->
+
+  <script src="script.js"></script>
+
+</body>
+</html>
+```
