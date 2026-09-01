@@ -1,928 +1,563 @@
 /* =========================================================
-   GROOVEDNA AUTHENTICATION
-   Supabase Login / Signup / Logout / Protected Pages
+   GROOVEDNA AUTH SYSTEM
    ========================================================= */
 
-const SUPABASE_URL = "https://nzfzcnusmjboykledznh.supabase.co";
+const SUPABASE_URL =
+  "https://nzfzcnusmjboykledznh.supabase.co";
 
 const SUPABASE_ANON_KEY =
-    "sb_publishable_qsskdrsPBxg1dECb1HY8Jg_x0rL7wR3";
+  "YOUR_SUPABASE_PUBLISHABLE_KEY";
 
-let supabaseClient = null;
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
 
-if (window.supabase) {
-    supabaseClient = window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
+
+/* =========================================================
+   GET CURRENT GROOVEDNA USER
+   ========================================================= */
+
+async function getGrooveDNAUser() {
+
+  const {
+    data,
+    error
+  } = await supabaseClient.auth.getUser();
+
+  if (error) {
+    console.error(
+      "Could not get GrooveDNA user:",
+      error
     );
-} else {
-    console.error("Supabase library failed to load.");
+
+    return null;
+  }
+
+  return data.user || null;
 }
 
 
 /* =========================================================
-   AUTH STATE
+   CREATE GROOVEDNA PROFILE
    ========================================================= */
 
-let currentUser = null;
+async function createGrooveDNAProfile(user) {
 
-async function getCurrentUser() {
+  if (!user) {
+    return null;
+  }
 
-    if (!supabaseClient) {
-        console.error("Supabase is not initialized.");
-        return null;
-    }
+  const displayName =
+    user.user_metadata?.full_name ||
+    user.email?.split("@")[0] ||
+    "GrooveDNA Creator";
 
-    try {
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("profiles")
+    .upsert(
+      {
+        id: user.id,
+        email: user.email,
+        full_name: displayName,
+        updated_at: new Date().toISOString()
+      },
+      {
+        onConflict: "id"
+      }
+    )
+    .select()
+    .single();
 
-        const {
-            data,
-            error
-        } = await supabaseClient.auth.getUser();
+  if (error) {
 
-        if (error) {
-            console.warn("No authenticated user:", error.message);
-            return null;
-        }
+    console.error(
+      "Could not create GrooveDNA profile:",
+      error
+    );
 
-        currentUser = data?.user || null;
+    return null;
+  }
 
-        return currentUser;
-
-    } catch (error) {
-
-        console.error(
-            "Could not get current user:",
-            error
-        );
-
-        return null;
-    }
+  return data;
 }
 
 
 /* =========================================================
-   LOGIN
+   CREATE ACCOUNT
    ========================================================= */
 
-async function loginUser(email, password) {
-
-    if (!supabaseClient) {
-
-        alert(
-            "GrooveDNA authentication is unavailable. Please refresh the page."
-        );
-
-        return false;
-    }
-
-    email = String(email || "").trim();
-    password = String(password || "");
-
-    if (!email || !password) {
-
-        alert(
-            "Please enter your email and password."
-        );
-
-        return false;
-    }
-
-    try {
-
-        const {
-            data,
-            error
-        } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-
-        if (error) {
-
-            console.error(
-                "Login error:",
-                error
-            );
-
-            alert(
-                getFriendlyAuthError(error)
-            );
-
-            return false;
-        }
-
-        currentUser = data?.user || null;
-
-        if (!currentUser) {
-
-            alert(
-                "Login succeeded, but GrooveDNA could not find your account session."
-            );
-
-            return false;
-        }
-
-        console.log(
-            "GrooveDNA login successful:",
-            currentUser.email
-        );
-
-        return true;
-
-    } catch (error) {
-
-        console.error(
-            "Unexpected login error:",
-            error
-        );
-
-        alert(
-            "Something went wrong while signing in. Please try again."
-        );
-
-        return false;
-    }
-}
-
-
-/* =========================================================
-   SIGN UP
-   ========================================================= */
-
-async function signupUser(
-    email,
-    password,
-    displayName = ""
+async function createGrooveDNAAccount(
+  name,
+  email,
+  password
 ) {
 
-    if (!supabaseClient) {
+  name = name.trim();
+  email = email.trim();
 
-        alert(
-            "GrooveDNA authentication is unavailable. Please refresh the page."
-        );
+  if (!name) {
 
-        return {
-            success: false,
-            needsConfirmation: false
-        };
-    }
+    alert(
+      "Please enter your name."
+    );
 
-    email = String(email || "").trim();
-    password = String(password || "");
-    displayName = String(displayName || "").trim();
+    return false;
+  }
 
-    if (!email || !password) {
+  if (!email) {
 
-        alert(
-            "Please enter your email and password."
-        );
+    alert(
+      "Please enter your email."
+    );
 
-        return {
-            success: false,
-            needsConfirmation: false
-        };
-    }
+    return false;
+  }
 
-    if (password.length < 6) {
+  if (!password) {
 
-        alert(
-            "Your password must be at least 6 characters."
-        );
+    alert(
+      "Please enter a password."
+    );
 
-        return {
-            success: false,
-            needsConfirmation: false
-        };
-    }
+    return false;
+  }
 
-    try {
+  if (password.length < 6) {
 
-        const {
-            data,
-            error
-        } = await supabaseClient.auth.signUp({
+    alert(
+      "Your password must be at least 6 characters."
+    );
 
-            email: email,
+    return false;
+  }
 
-            password: password,
 
-            options: {
-                data: {
-                    full_name: displayName
-                }
-            }
-        });
+  try {
 
-        if (error) {
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.signUp({
 
-            console.error(
-                "Signup error:",
-                error
-            );
+        email: email,
 
-            alert(
-                getFriendlyAuthError(error)
-            );
+        password: password,
 
-            return {
-                success: false,
-                needsConfirmation: false
-            };
+        options: {
+
+          data: {
+            full_name: name
+          },
+
+          /*
+           * Change this to your real
+           * deployed GrooveDNA URL later.
+           */
+
+          emailRedirectTo:
+            window.location.origin +
+            "/index.html"
         }
-
-        const user = data?.user || null;
-
-        if (!user) {
-
-            alert(
-                "Your account could not be created."
-            );
-
-            return {
-                success: false,
-                needsConfirmation: false
-            };
-        }
-
-        currentUser = user;
-
-        /*
-         * If Supabase requires email confirmation,
-         * session will be null here.
-         */
-
-        if (!data.session) {
-
-            console.log(
-                "Account created. Email confirmation required."
-            );
-
-            return {
-                success: true,
-                needsConfirmation: true,
-                user: user
-            };
-        }
-
-        /*
-         * If email confirmation is disabled,
-         * the user is already logged in.
-         */
-
-        await createOrUpdateProfile(
-            user.id,
-            displayName,
-            email
-        );
-
-        return {
-            success: true,
-            needsConfirmation: false,
-            user: user
-        };
-
-    } catch (error) {
-
-        console.error(
-            "Unexpected signup error:",
-            error
-        );
-
-        alert(
-            "Something went wrong while creating your account."
-        );
-
-        return {
-            success: false,
-            needsConfirmation: false
-        };
-    }
-}
+      });
 
 
-/* =========================================================
-   CREATE / UPDATE PROFILE
-   ========================================================= */
+    if (error) {
 
-async function createOrUpdateProfile(
-    userId,
-    displayName = "",
-    email = ""
-) {
+      console.error(
+        "GrooveDNA signup error:",
+        error
+      );
 
-    if (!supabaseClient || !userId) {
-        return null;
+      alert(
+        getGrooveDNAAuthError(error)
+      );
+
+      return false;
     }
 
-    try {
 
-        const profile = {
-
-            id: userId,
-
-            email: email || null,
-
-            full_name: displayName || null,
-
-            updated_at: new Date().toISOString()
-        };
-
-        const {
-            data,
-            error
-        } = await supabaseClient
-            .from("profiles")
-            .upsert(
-                profile,
-                {
-                    onConflict: "id"
-                }
-            )
-            .select()
-            .single();
-
-        if (error) {
-
-            console.error(
-                "Profile database error:",
-                error
-            );
-
-            return null;
-        }
-
-        return data || null;
-
-    } catch (error) {
-
-        console.error(
-            "Could not save profile:",
-            error
-        );
-
-        return null;
-    }
-}
-
-
-/* =========================================================
-   LOGOUT
-   ========================================================= */
-
-async function logoutUser() {
-
-    if (!supabaseClient) {
-
-        window.location.href = "index.html";
-
-        return;
-    }
-
-    try {
-
-        const {
-            error
-        } = await supabaseClient.auth.signOut();
-
-        if (error) {
-
-            console.error(
-                "Logout error:",
-                error
-            );
-
-            alert(
-                "Could not sign you out. Please try again."
-            );
-
-            return;
-        }
-
-        currentUser = null;
-
-        /*
-         * Make sure the browser leaves the protected page.
-         */
-
-        window.location.replace(
-            "index.html"
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Unexpected logout error:",
-            error
-        );
-
-        window.location.replace(
-            "index.html"
-        );
-    }
-}
-
-
-/* =========================================================
-   PROTECTED PAGE CHECK
-   ========================================================= */
-
-async function requireAuthentication() {
-
-    const user = await getCurrentUser();
+    const user = data?.user;
 
     if (!user) {
 
-        console.warn(
-            "No active GrooveDNA session. Redirecting to login."
-        );
+      alert(
+        "GrooveDNA could not create your account."
+      );
 
-        window.location.replace(
-            "index.html"
-        );
-
-        return null;
+      return false;
     }
 
-    console.log(
-        "Authenticated GrooveDNA user:",
-        user.email
-    );
-
-    return user;
-}
-
-
-/* =========================================================
-   AUTH ERROR MESSAGES
-   ========================================================= */
-
-function getFriendlyAuthError(error) {
-
-    const message =
-        String(error?.message || "").toLowerCase();
-
-    if (
-        message.includes("invalid login credentials")
-    ) {
-        return "Incorrect email or password.";
-    }
-
-    if (
-        message.includes("email not confirmed")
-    ) {
-        return "Please confirm your email address before signing in.";
-    }
-
-    if (
-        message.includes("user already registered")
-    ) {
-        return "An account with this email already exists. Try signing in instead.";
-    }
-
-    if (
-        message.includes("password should be at least")
-    ) {
-        return "Your password is too short.";
-    }
-
-    if (
-        message.includes("rate limit")
-    ) {
-        return "Too many attempts. Please wait a moment and try again.";
-    }
-
-    return (
-        error?.message ||
-        "Authentication failed. Please try again."
-    );
-}
-
-
-/* =========================================================
-   AUTH MODE
-   ========================================================= */
-
-let authMode = "signin";
-
-
-function setAuthMode(mode) {
-
-    authMode =
-        mode === "signup"
-            ? "signup"
-            : "signin";
-
-    const authTitle =
-        document.getElementById("authTitle");
-
-    const authSubmit =
-        document.getElementById("authSubmit");
-
-    const authNameGroup =
-        document.getElementById("authNameGroup");
-
-    const authToggleCopy =
-        document.getElementById("authToggleCopy");
-
-    if (authMode === "signup") {
-
-        if (authTitle) {
-            authTitle.textContent =
-                "Create your GrooveDNA account";
-        }
-
-        if (authSubmit) {
-            authSubmit.textContent =
-                "Create account";
-        }
-
-        if (authNameGroup) {
-            authNameGroup.style.display =
-                "";
-        }
-
-        if (authToggleCopy) {
-
-            authToggleCopy.innerHTML =
-                'Already have an account? <a href="#" id="authModeToggle">Sign in</a>';
-        }
-
-    } else {
-
-        if (authTitle) {
-            authTitle.textContent =
-                "Enter your groove.";
-        }
-
-        if (authSubmit) {
-            authSubmit.textContent =
-                "Sign In";
-        }
-
-        if (authNameGroup) {
-            authNameGroup.style.display =
-                "none";
-        }
-
-        if (authToggleCopy) {
-
-            authToggleCopy.innerHTML =
-                'New to GrooveDNA? <a href="#" id="authModeToggle">Create an account</a>';
-        }
-    }
-}
-
-
-/* =========================================================
-   LOGIN / SIGNUP FORM
-   ========================================================= */
-
-async function handleAuthSubmit(
-    email,
-    password,
-    displayName
-) {
-
-    if (authMode === "signup") {
-
-        const result =
-            await signupUser(
-                email,
-                password,
-                displayName
-            );
-
-        if (!result.success) {
-            return false;
-        }
-
-        /*
-         * Supabase requires email confirmation.
-         */
-
-        if (result.needsConfirmation) {
-
-            alert(
-                "Your GrooveDNA account has been created. Please check your email and confirm your account before signing in."
-            );
-
-            setAuthMode("signin");
-
-            return true;
-        }
-
-        /*
-         * User is already authenticated.
-         */
-
-        window.location.replace(
-            "profile.html"
-        );
-
-        return true;
-    }
 
     /*
-     * SIGN IN
+     * IMPORTANT:
+     *
+     * Supabase can create the Auth user
+     * without creating a session when
+     * email confirmation is enabled.
      */
 
-    const success =
-        await loginUser(
-            email,
-            password
-        );
+    if (!data.session) {
 
-    if (!success) {
-        return false;
+      console.log(
+        "GrooveDNA account created:",
+        user.id
+      );
+
+      alert(
+        "Your GrooveDNA account was created! Check your email to confirm your account, then sign in."
+      );
+
+      return true;
     }
 
+
+    /*
+     * Email confirmation is not required.
+     * We already have a live session.
+     */
+
+    await createGrooveDNAProfile(user);
+
+
+    /*
+     * Send the creator into GrooveDNA.
+     */
+
     window.location.replace(
-        "profile.html"
+      "profile.html"
     );
 
     return true;
+
+  } catch (error) {
+
+    console.error(
+      "Unexpected GrooveDNA signup error:",
+      error
+    );
+
+    alert(
+      "Something went wrong creating your GrooveDNA account."
+    );
+
+    return false;
+  }
 }
 
 
 /* =========================================================
-   AUTH PAGE INITIALIZATION
+   SIGN IN
    ========================================================= */
 
-function initializeAuthPage() {
+async function signInToGrooveDNA(
+  email,
+  password
+) {
 
-    const authForm =
-        document.getElementById("authForm");
+  email = email.trim();
 
-    if (!authForm) {
-        return;
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth
+        .signInWithPassword({
+
+          email: email,
+
+          password: password
+        });
+
+
+    if (error) {
+
+      console.error(
+        "GrooveDNA login error:",
+        error
+      );
+
+      alert(
+        getGrooveDNAAuthError(error)
+      );
+
+      return false;
     }
 
-    setAuthMode("signin");
 
-    authForm.addEventListener(
-        "submit",
-        async function(event) {
-
-            event.preventDefault();
-
-            const email =
-                document
-                    .getElementById("authEmail")
-                    ?.value
-                    ?.trim();
-
-            const password =
-                document
-                    .getElementById("authPassword")
-                    ?.value || "";
-
-            const displayName =
-                document
-                    .getElementById("authName")
-                    ?.value
-                    ?.trim() || "";
-
-            const submitButton =
-                document.getElementById(
-                    "authSubmit"
-                );
-
-            if (!email || !password) {
-
-                alert(
-                    "Please enter your email and password."
-                );
-
-                return;
-            }
-
-            if (authMode === "signup" && !displayName) {
-
-                alert(
-                    "Please enter your name."
-                );
-
-                return;
-            }
-
-            if (submitButton) {
-
-                submitButton.disabled =
-                    true;
-
-                submitButton.dataset.originalText =
-                    submitButton.textContent;
-
-                submitButton.textContent =
-                    authMode === "signup"
-                        ? "Creating account..."
-                        : "Signing in...";
-            }
-
-            try {
-
-                await handleAuthSubmit(
-                    email,
-                    password,
-                    displayName
-                );
-
-            } finally {
-
-                if (submitButton) {
-
-                    submitButton.disabled =
-                        false;
-
-                    submitButton.textContent =
-                        submitButton.dataset.originalText ||
-                        (
-                            authMode === "signup"
-                                ? "Create account"
-                                : "Sign In"
-                        );
-                }
-            }
-        }
-    );
-
-    /*
-     * Use event delegation so the Sign In /
-     * Create Account toggle continues working
-     * after its HTML is replaced.
-     */
-
-    document.addEventListener(
-        "click",
-        function(event) {
-
-            const toggle =
-                event.target.closest(
-                    "#authModeToggle"
-                );
-
-            if (!toggle) {
-                return;
-            }
-
-            event.preventDefault();
-
-            setAuthMode(
-                authMode === "signin"
-                    ? "signup"
-                    : "signin"
-            );
-        }
-    );
-}
-
-
-/* =========================================================
-   SIGN OUT BUTTONS
-   ========================================================= */
-
-function initializeLogoutButtons() {
-
-    const logoutButtons =
-        document.querySelectorAll(
-            "[data-logout]"
-        );
-
-    logoutButtons.forEach(
-        function(button) {
-
-            button.addEventListener(
-                "click",
-                async function(event) {
-
-                    event.preventDefault();
-
-                    await logoutUser();
-                }
-            );
-        }
-    );
-}
-
-
-/* =========================================================
-   PROTECTED PAGES
-   ========================================================= */
-
-async function initializeProtectedPage() {
-
-    /*
-     * Do not protect the login page itself.
-     */
-
-    const currentPage =
-        window.location.pathname
-            .split("/")
-            .pop()
-            .toLowerCase();
-
-    const publicPages = [
-        "",
-        "index.html",
-        "login.html"
-    ];
-
-    if (
-        publicPages.includes(
-            currentPage
-        )
-    ) {
-        return;
-    }
-
-    /*
-     * Only run the authentication check
-     * after Supabase has initialized.
-     */
-
-    const user =
-        await requireAuthentication();
+    const user = data?.user;
 
     if (!user) {
-        return;
+
+      alert(
+        "GrooveDNA could not find your account."
+      );
+
+      return false;
     }
+
 
     /*
-     * Display the authenticated user's
-     * information if the page supports it.
+     * Make sure this creator has
+     * a GrooveDNA profile.
      */
 
-    const emailElements =
-        document.querySelectorAll(
-            "[data-user-email]"
-        );
+    await createGrooveDNAProfile(user);
 
-    emailElements.forEach(
-        element => {
-            element.textContent =
-                user.email || "";
-        }
+
+    /*
+     * Login is successful.
+     */
+
+    console.log(
+      "GrooveDNA login successful:",
+      user.email
     );
 
-    const name =
-        user.user_metadata?.full_name ||
-        user.email?.split("@")[0] ||
-        "Creator";
 
-    const nameElements =
-        document.querySelectorAll(
-            "[data-user-name]"
-        );
-
-    nameElements.forEach(
-        element => {
-            element.textContent =
-                name;
-        }
+    window.location.replace(
+      "profile.html"
     );
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      "Unexpected GrooveDNA login error:",
+      error
+    );
+
+    alert(
+      "Something went wrong signing you in."
+    );
+
+    return false;
+  }
 }
 
 
 /* =========================================================
-   AUTH SESSION LISTENER
+   SIGN OUT
    ========================================================= */
 
-function initializeAuthListener() {
+async function signOutOfGrooveDNA() {
 
-    if (!supabaseClient) {
-        return;
-    }
+  const {
+    error
+  } =
+    await supabaseClient.auth.signOut();
 
-    supabaseClient.auth.onAuthStateChange(
-        function(event, session) {
+  if (error) {
 
-            console.log(
-                "GrooveDNA auth event:",
-                event
-            );
-
-            currentUser =
-                session?.user || null;
-        }
+    console.error(
+      "GrooveDNA logout error:",
+      error
     );
+
+    alert(
+      "Could not sign you out."
+    );
+
+    return;
+  }
+
+
+  window.location.replace(
+    "index.html"
+  );
 }
 
 
 /* =========================================================
-   DOM READY
+   PROTECT GROOVEDNA PAGES
+   ========================================================= */
+
+async function protectGrooveDNAPage() {
+
+  const page =
+    window.location.pathname
+      .split("/")
+      .pop()
+      .toLowerCase();
+
+
+  const publicPages = [
+    "",
+    "index.html",
+    "login.html"
+  ];
+
+
+  if (
+    publicPages.includes(page)
+  ) {
+    return;
+  }
+
+
+  const user =
+    await getGrooveDNAUser();
+
+
+  if (!user) {
+
+    console.warn(
+      "No GrooveDNA session."
+    );
+
+    window.location.replace(
+      "index.html"
+    );
+
+    return;
+  }
+
+
+  /*
+   * Make the logged-in creator's
+   * information available throughout
+   * the page.
+   */
+
+  document
+    .querySelectorAll("[data-user-email]")
+    .forEach(element => {
+
+      element.textContent =
+        user.email || "";
+    });
+
+
+  const name =
+    user.user_metadata?.full_name ||
+    user.email?.split("@")[0] ||
+    "Creator";
+
+
+  document
+    .querySelectorAll("[data-user-name]")
+    .forEach(element => {
+
+      element.textContent =
+        name;
+    });
+}
+
+
+/* =========================================================
+   AUTH ERROR TRANSLATOR
+   ========================================================= */
+
+function getGrooveDNAAuthError(error) {
+
+  const message =
+    String(
+      error?.message || ""
+    ).toLowerCase();
+
+
+  if (
+    message.includes(
+      "invalid login credentials"
+    )
+  ) {
+
+    return (
+      "Incorrect email or password."
+    );
+  }
+
+
+  if (
+    message.includes(
+      "email not confirmed"
+    )
+  ) {
+
+    return (
+      "Please confirm your email before signing in."
+    );
+  }
+
+
+  if (
+    message.includes(
+      "user already registered"
+    )
+  ) {
+
+    return (
+      "An account with this email already exists. Please sign in instead."
+    );
+  }
+
+
+  if (
+    message.includes(
+      "rate limit"
+    )
+  ) {
+
+    return (
+      "Too many attempts. Please wait a moment and try again."
+    );
+  }
+
+
+  return (
+    error?.message ||
+    "Authentication failed. Please try again."
+  );
+}
+
+
+/* =========================================================
+   AUTH STATE LISTENER
+   ========================================================= */
+
+supabaseClient.auth.onAuthStateChange(
+  (event, session) => {
+
+    console.log(
+      "GrooveDNA auth event:",
+      event
+    );
+
+    if (event === "SIGNED_IN") {
+
+      console.log(
+        "GrooveDNA creator signed in:",
+        session?.user?.email
+      );
+    }
+
+    if (event === "SIGNED_OUT") {
+
+      console.log(
+        "GrooveDNA creator signed out."
+      );
+    }
+  }
+);
+
+
+/* =========================================================
+   PAGE STARTUP
    ========================================================= */
 
 document.addEventListener(
-    "DOMContentLoaded",
-    async function() {
+  "DOMContentLoaded",
+  async () => {
 
-        initializeAuthPage();
+    await protectGrooveDNAPage();
 
-        initializeLogoutButtons();
-
-        initializeAuthListener();
-
-        await initializeProtectedPage();
-    }
+  }
 );
