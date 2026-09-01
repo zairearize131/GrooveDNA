@@ -1,67 +1,378 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="GrooveDNA — discover music, understand your musical DNA, create beats, and connect with creators.">
+
+<meta
+name="description"
+content="GrooveDNA — discover music, understand your musical DNA, create beats, and connect with creators."
+
+>
+
   <title>GrooveDNA | Find the Sound. Flip the Groove.</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body class="landing-page">
+
   <div class="app-shell">
-    <header class="topbar landing-topbar">
-      <a class="brand" href="index.html" aria-label="GrooveDNA home"><span class="brand-mark">GD</span><span>Groove<span>DNA</span></span></a>
-      <nav id="mainNav"><a href="discover.html">Discover</a><a href="groovedna.html">GrooveDNA</a><a href="beatlab.html">Beat Lab</a><a href="community.html">Community</a></nav>
-      <div class="top-actions"><a class="btn secondary" id="signInLink" href="#auth">Sign In</a><a class="header-action" id="createAccountLink" href="#auth">Create Account</a></div>
-    </header>
 
-    <main>
-      <section class="landing-hero">
-        <div class="landing-copy">
-          <p class="eyebrow">YOUR SOUND. YOUR DNA.</p>
-          <h1>Find the sound.<br><span>Flip the groove.</span></h1>
-          <p class="hero-text">A creative home for discovering records, decoding your musical identity, and turning inspiration into something new.</p>
-          <div class="hero-actions"><a class="btn primary" href="#auth">Start listening</a><a class="btn secondary" href="home.html">Preview GrooveDNA</a></div>
-          <div class="landing-proof"><span><strong>1,284</strong> sounds discovered</span><span><strong>87%</strong> average taste match</span></div>
-        </div>
-        <div class="landing-art" aria-label="GrooveDNA music discovery preview">
-          <div class="landing-ring ring-one"></div><div class="landing-ring ring-two"></div>
-          <div class="landing-record"><span>GD</span></div>
-          <div class="landing-note note-one">FUNK</div><div class="landing-note note-two">SOUL</div><div class="landing-note note-three">R&amp;B</div>
-          <div class="landing-art-caption"><span class="eyebrow">NOW PLAYING</span><strong>Funky Guitar Break</strong><small>96 BPM · E Minor</small></div>
-        </div>
-      </section>
+```
+<!-- HEADER -->
+<header class="topbar landing-topbar">
 
-      <section class="landing-features" aria-label="GrooveDNA features">
-        <article><span class="feature-number">01</span><h2>Discover deeper</h2><p>Find sounds that fit your taste and stretch it in the right direction.</p></article>
-        <article><span class="feature-number">02</span><h2>Know your DNA</h2><p>See the rhythms, moods, and genres that make your listening yours.</p></article>
-        <article><span class="feature-number">03</span><h2>Make it move</h2><p>Build ideas in Beat Lab and connect with creators on the same wavelength.</p></article>
-      </section>
-    </main>
+  <a
+    class="brand"
+    href="index.html"
+    aria-label="GrooveDNA home"
+  >
+    <span class="brand-mark">GD</span>
+    <span>Groove<span>DNA</span></span>
+  </a>
 
-    <footer><strong>GrooveDNA</strong><span>Find the Sound. Flip the Groove. Create Something New.</span><div><a href="discover.html">Explore</a><a href="#auth">Sign in</a></div></footer>
+  <nav id="mainNav" aria-label="Main navigation">
+    <a href="discover.html">Discover</a>
+    <a href="groovedna.html">GrooveDNA</a>
+    <a href="beatlab.html">Beat Lab</a>
+    <a href="community.html">Community</a>
+  </nav>
+
+  <div class="top-actions">
+
+    <button
+      type="button"
+      class="btn secondary"
+      id="signInLink"
+    >
+      Sign In
+    </button>
+
+    <button
+      type="button"
+      class="header-action"
+      id="createAccountLink"
+    >
+      Create Account
+    </button>
+
   </div>
+</header>
 
-  <div class="modal-backdrop auth-modal-backdrop" id="auth">
-    <div class="modal" id="authModal">
-      <a class="modal-close" href="#">×</a>
-      <div class="auth-container">
-        <p class="eyebrow">WELCOME BACK</p>
-        <h2 id="authTitle">Enter your groove.</h2>
-        <form id="authForm">
-          <div class="form-group auth-name-group" id="authNameGroup" style="display:none;"><label for="authName">Display name</label><input type="text" id="authName" placeholder="Your name (optional)"></div>
-          <div class="form-group auth-email-group"><label for="authEmail">Email</label><input type="email" id="authEmail" required placeholder="you@example.com"></div>
-          <div class="form-group auth-password-group"><label for="authPassword">Password</label><input type="password" id="authPassword" required placeholder="Your password"></div>
-          <button type="submit" id="authSubmit" class="btn primary auth-submit">Sign In</button>
-        </form>
-        <p class="auth-toggle-copy" id="authToggleCopy">New to GrooveDNA? <a href="#" id="authModeToggle">Create an account</a></p>
+
+<!-- MAIN -->
+<main>
+
+  <!-- HERO -->
+  <section class="landing-hero">
+
+    <div class="landing-copy">
+
+      <p class="eyebrow">YOUR SOUND. YOUR DNA.</p>
+
+      <h1>
+        Find the sound.<br>
+        <span>Flip the groove.</span>
+      </h1>
+
+      <p class="hero-text">
+        A creative home for discovering records, decoding your musical
+        identity, and turning inspiration into something new.
+      </p>
+
+      <div class="hero-actions">
+
+        <button
+          type="button"
+          class="btn primary"
+          id="startListeningBtn"
+        >
+          Start listening
+        </button>
+
+        <a
+          class="btn secondary"
+          href="home.html"
+        >
+          Preview GrooveDNA
+        </a>
+
       </div>
+
+      <div class="landing-proof">
+        <span>
+          <strong>1,284</strong> sounds discovered
+        </span>
+
+        <span>
+          <strong>87%</strong> average taste match
+        </span>
+      </div>
+
     </div>
+
+
+    <!-- ART -->
+    <div
+      class="landing-art"
+      aria-label="GrooveDNA music discovery preview"
+    >
+
+      <div class="landing-ring ring-one"></div>
+      <div class="landing-ring ring-two"></div>
+
+      <div class="landing-record">
+        <span>GD</span>
+      </div>
+
+      <div class="landing-note note-one">FUNK</div>
+      <div class="landing-note note-two">SOUL</div>
+      <div class="landing-note note-three">R&amp;B</div>
+
+      <div class="landing-art-caption">
+        <span class="eyebrow">NOW PLAYING</span>
+        <strong>Funky Guitar Break</strong>
+        <small>96 BPM · E Minor</small>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- FEATURES -->
+  <section
+    class="landing-features"
+    aria-label="GrooveDNA features"
+  >
+
+    <article>
+      <span class="feature-number">01</span>
+      <h2>Discover deeper</h2>
+      <p>
+        Find sounds that fit your taste and stretch it in the right direction.
+      </p>
+    </article>
+
+    <article>
+      <span class="feature-number">02</span>
+      <h2>Know your DNA</h2>
+      <p>
+        See the rhythms, moods, and genres that make your listening yours.
+      </p>
+    </article>
+
+    <article>
+      <span class="feature-number">03</span>
+      <h2>Make it move</h2>
+      <p>
+        Build ideas in Beat Lab and connect with creators on the same wavelength.
+      </p>
+    </article>
+
+  </section>
+
+</main>
+
+
+<!-- FOOTER -->
+<footer>
+
+  <strong>GrooveDNA</strong>
+
+  <span>
+    Find the Sound. Flip the Groove. Create Something New.
+  </span>
+
+  <div>
+    <a href="discover.html">Explore</a>
+
+    <button
+      type="button"
+      id="footerSignIn"
+    >
+      Sign in
+    </button>
   </div>
+
+</footer>
+```
+
+  </div>
+
+  <!-- =========================================================
+       AUTH MODAL
+       ========================================================= -->
+
+  <div
+    class="modal-backdrop auth-modal-backdrop"
+    id="authBackdrop"
+    aria-hidden="true"
+  >
+
+```
+<div
+  class="modal"
+  id="authModal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="authTitle"
+>
+
+  <button
+    type="button"
+    class="modal-close"
+    id="authClose"
+    aria-label="Close authentication window"
+  >
+    ×
+  </button>
+
+
+  <div class="auth-container">
+
+    <p
+      class="eyebrow"
+      id="authEyebrow"
+    >
+      WELCOME BACK
+    </p>
+
+    <h2 id="authTitle">
+      Enter your groove.
+    </h2>
+
+
+    <!-- AUTH FORM -->
+    <form
+      id="authForm"
+      novalidate
+    >
+
+      <!-- DISPLAY NAME -->
+      <div
+        class="form-group auth-name-group"
+        id="authNameGroup"
+        hidden
+      >
+
+        <label for="authName">
+          Display name
+        </label>
+
+        <input
+          type="text"
+          id="authName"
+          name="name"
+          autocomplete="name"
+          placeholder="Your name"
+          maxlength="80"
+        >
+
+      </div>
+
+
+      <!-- EMAIL -->
+      <div class="form-group auth-email-group">
+
+        <label for="authEmail">
+          Email
+        </label>
+
+        <input
+          type="email"
+          id="authEmail"
+          name="email"
+          autocomplete="email"
+          required
+          placeholder="you@example.com"
+        >
+
+      </div>
+
+
+      <!-- PASSWORD -->
+      <div class="form-group auth-password-group">
+
+        <label for="authPassword">
+          Password
+        </label>
+
+        <input
+          type="password"
+          id="authPassword"
+          name="password"
+          autocomplete="current-password"
+          required
+          minlength="6"
+          placeholder="At least 6 characters"
+        >
+
+      </div>
+
+
+      <!-- AUTH MESSAGE -->
+      <div
+        id="authMessage"
+        class="auth-message"
+        role="alert"
+        aria-live="polite"
+        hidden
+      ></div>
+
+
+      <!-- SUBMIT -->
+      <button
+        type="submit"
+        id="authSubmit"
+        class="btn primary auth-submit"
+      >
+        Sign In
+      </button>
+
+    </form>
+
+
+    <!-- SWITCH LOGIN / CREATE ACCOUNT -->
+    <p
+      class="auth-toggle-copy"
+      id="authToggleCopy"
+    >
+      New to GrooveDNA?
+
+      <button
+        type="button"
+        id="authModeToggle"
+      >
+        Create an account
+      </button>
+
+    </p>
+
+  </div>
+
+</div>
+```
+
+  </div>
+
+  <!-- SUPABASE -->
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- GROOVEDNA JAVASCRIPT -->
+
   <script src="script.js"></script>
+
 </body>
 </html>
