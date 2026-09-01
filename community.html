@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
+>
 
 <meta
 name="description"
@@ -13,15 +20,35 @@ content="Connect with creators in the GrooveDNA community."
 
   <title>GrooveDNA | Community</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- =====================================================
+       FONTS
+       ===================================================== -->
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
 
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="styles.css">
+  <!-- =====================================================
+       GROOVEDNA STYLES
+       ===================================================== -->
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+
 </head>
 
 <body>
@@ -29,17 +56,33 @@ content="Connect with creators in the GrooveDNA community."
   <div class="app-shell">
 
 ```
-<!-- HEADER -->
+<!-- ===================================================
+     HEADER
+     =================================================== -->
+
 <header class="topbar">
+
+
+  <!-- BRAND -->
 
   <a
     class="brand"
     href="home.html"
     aria-label="GrooveDNA home"
   >
-    <span class="brand-mark">GD</span>
-    <span>Groove<span>DNA</span></span>
+
+    <span class="brand-mark">
+      GD
+    </span>
+
+    <span>
+      Groove<span>DNA</span>
+    </span>
+
   </a>
+
+
+  <!-- MOBILE MENU -->
 
   <button
     class="menu-toggle"
@@ -52,15 +95,29 @@ content="Connect with creators in the GrooveDNA community."
     ☰
   </button>
 
-  <nav id="mainNav" aria-label="Main navigation">
 
-    <a href="home.html">Home</a>
+  <!-- MAIN NAVIGATION -->
 
-    <a href="discover.html">Discover</a>
+  <nav
+    id="mainNav"
+    aria-label="Main navigation"
+  >
 
-    <a href="groovedna.html">GrooveDNA</a>
+    <a href="home.html">
+      Home
+    </a>
 
-    <a href="beatlab.html">Beat Lab</a>
+    <a href="discover.html">
+      Discover
+    </a>
+
+    <a href="groovedna.html">
+      GrooveDNA
+    </a>
+
+    <a href="beatlab.html">
+      Beat Lab
+    </a>
 
     <a
       href="community.html"
@@ -70,16 +127,31 @@ content="Connect with creators in the GrooveDNA community."
       Community
     </a>
 
-    <a href="library.html">Library</a>
+    <a href="library.html">
+      Library
+    </a>
+
+    <a href="profile.html">
+      Profile
+    </a>
 
   </nav>
+
+
+  <!-- HEADER ACTIONS -->
 
   <div class="top-actions">
 
     <a
       class="header-action"
+      href="profile.html"
+    >
+      Profile
+    </a>
+
+    <a
+      class="header-action"
       href="index.html"
-      id="signOutBtn"
     >
       Sign out
     </a>
@@ -89,15 +161,23 @@ content="Connect with creators in the GrooveDNA community."
 </header>
 
 
-<!-- MAIN CONTENT -->
+<!-- ===================================================
+     MAIN CONTENT
+     =================================================== -->
+
 <main>
+
 
   <section
     class="community-section"
     id="community"
   >
 
-    <!-- SECTION HEADER -->
+
+    <!-- =================================================
+         SECTION HEADER
+         ================================================= -->
+
     <div class="section-heading">
 
       <div>
@@ -111,10 +191,12 @@ content="Connect with creators in the GrooveDNA community."
         </h1>
 
         <p>
-          Follow creators, share ideas, remix beats and join challenges.
+          Follow creators, share ideas, remix beats and
+          join challenges.
         </p>
 
       </div>
+
 
       <button
         class="btn secondary"
@@ -127,11 +209,21 @@ content="Connect with creators in the GrooveDNA community."
     </div>
 
 
-    <!-- COMMUNITY CARDS -->
+    <!-- =================================================
+         COMMUNITY GRID
+         ================================================= -->
+
     <div class="community-grid">
 
-      <!-- CREATOR POST -->
+
+      <!-- =================================================
+           CREATOR POST
+           ================================================= -->
+
       <article class="post-card panel">
+
+
+        <!-- CREATOR AVATAR -->
 
         <div
           class="avatar"
@@ -140,7 +232,11 @@ content="Connect with creators in the GrooveDNA community."
           JG
         </div>
 
+
         <div class="post-body">
+
+
+          <!-- USER INFORMATION -->
 
           <div class="user-line">
 
@@ -154,20 +250,26 @@ content="Connect with creators in the GrooveDNA community."
 
           </div>
 
+
+          <!-- POST TITLE -->
+
           <h3>
             Found a bass groove that changed the whole beat.
           </h3>
 
 
-          <!-- POST AUDIO PLAYER -->
+          <!-- =================================================
+               POST AUDIO
+               ================================================= -->
+
           <div class="post-player">
 
             <button
               class="mini-play"
               type="button"
-              data-demo-play
-              data-title="Funky Bass Experiment"
-              aria-label="Play Funky Bass Experiment"
+              aria-label="Preview Funky Bass Experiment"
+              data-preview
+              data-id="4"
             >
               ▶
             </button>
@@ -183,26 +285,48 @@ content="Connect with creators in the GrooveDNA community."
           </div>
 
 
-          <!-- POST ACTIONS -->
+          <!-- =================================================
+               POST ACTIONS
+               ================================================= -->
+
           <div class="post-actions">
+
+
+            <!-- LIKE -->
 
             <button
               type="button"
               data-like
               aria-label="Like this post"
             >
+
               ♡
-              <span>124</span>
+
+              <span>
+                124
+              </span>
+
             </button>
+
+
+            <!-- COMMENT -->
 
             <button
               type="button"
               data-comment
               aria-label="View comments"
             >
+
               💬
-              <span>31</span>
+
+              <span>
+                31
+              </span>
+
             </button>
+
+
+            <!-- REMIX -->
 
             <button
               type="button"
@@ -211,9 +335,13 @@ content="Connect with creators in the GrooveDNA community."
               ↻ Remix
             </button>
 
+
+            <!-- FOLLOW -->
+
             <button
               type="button"
               data-follow
+              data-following="false"
             >
               ＋ Follow
             </button>
@@ -225,21 +353,28 @@ content="Connect with creators in the GrooveDNA community."
       </article>
 
 
-      <!-- WEEKLY CHALLENGE -->
+      <!-- =================================================
+           WEEKLY CHALLENGE
+           ================================================= -->
+
       <article class="challenge-card panel">
+
 
         <p class="eyebrow">
           WEEKLY CHALLENGE
         </p>
 
+
         <h3>
           Flip the Funk
         </h3>
 
+
         <p>
-          Build an original instrumental around this week's approved
-          source material.
+          Build an original instrumental around this
+          week's approved source material.
         </p>
+
 
         <div class="challenge-stats">
 
@@ -252,6 +387,7 @@ content="Connect with creators in the GrooveDNA community."
           </span>
 
         </div>
+
 
         <button
           class="btn primary"
@@ -266,11 +402,17 @@ content="Connect with creators in the GrooveDNA community."
     </div>
 
 
-    <!-- SOCIAL AREA -->
+    <!-- =================================================
+         SOCIAL GRID
+         ================================================= -->
+
     <div class="social-grid">
 
 
-      <!-- DNA MATCH -->
+      <!-- =================================================
+           DNA MATCH
+           ================================================= -->
+
       <div class="panel match-card">
 
         <div>
@@ -284,10 +426,12 @@ content="Connect with creators in the GrooveDNA community."
           </h3>
 
           <p>
-            You share 7 favorite artists and a strong love for rhythmic soul.
+            You share 7 favorite artists and a strong love
+            for rhythmic soul.
           </p>
 
         </div>
+
 
         <button
           class="btn secondary"
@@ -300,13 +444,19 @@ content="Connect with creators in the GrooveDNA community."
       </div>
 
 
-      <!-- FRIEND ACTIVITY -->
+      <!-- =================================================
+           FRIEND ACTIVITY
+           ================================================= -->
+
       <div class="panel activity-card">
+
 
         <p class="eyebrow">
           FRIEND ACTIVITY
         </p>
 
+
+        <!-- ACTIVITY 1 -->
 
         <div>
 
@@ -318,9 +468,17 @@ content="Connect with creators in the GrooveDNA community."
           </span>
 
           <span>
-            <strong>@AriMade</strong>
+
+            <strong>
+              @AriMade
+            </strong>
+
             saved
-            <b>Velvet Keys</b>
+
+            <b>
+              Velvet Keys
+            </b>
+
           </span>
 
           <small>
@@ -329,6 +487,8 @@ content="Connect with creators in the GrooveDNA community."
 
         </div>
 
+
+        <!-- ACTIVITY 2 -->
 
         <div>
 
@@ -340,9 +500,17 @@ content="Connect with creators in the GrooveDNA community."
           </span>
 
           <span>
-            <strong>@KLeo</strong>
+
+            <strong>
+              @KLeo
+            </strong>
+
             started
-            <b>Midnight Drive</b>
+
+            <b>
+              Midnight Drive
+            </b>
+
           </span>
 
           <small>
@@ -360,7 +528,10 @@ content="Connect with creators in the GrooveDNA community."
 </main>
 
 
-<!-- FOOTER -->
+<!-- ===================================================
+     FOOTER
+     =================================================== -->
+
 <footer>
 
   <strong>
@@ -371,10 +542,19 @@ content="Connect with creators in the GrooveDNA community."
     Find the Sound. Flip the Groove. Create Something New.
   </span>
 
+
   <div>
+
+    <a href="discover.html">
+      Discover
+    </a>
 
     <a href="library.html">
       Library
+    </a>
+
+    <a href="profile.html">
+      Profile
     </a>
 
     <a href="index.html">
@@ -388,13 +568,29 @@ content="Connect with creators in the GrooveDNA community."
 
   </div>
 
-  <!-- SUPABASE -->
+  <!-- =====================================================
+       TOAST
+       ===================================================== -->
+
+  <div
+    class="toast"
+    id="toast"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+  <!-- =====================================================
+       SUPABASE
+       ===================================================== -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- GROOVEDNA JAVASCRIPT -->
+  <!-- =====================================================
+       GROOVEDNA MASTER JAVASCRIPT
+       ===================================================== -->
 
   <script src="script.js"></script>
 
 </body>
+
 </html>
