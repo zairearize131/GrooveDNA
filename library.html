@@ -1,4 +1,335 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Your GrooveDNA music library."><title>GrooveDNA | Library</title><link rel="stylesheet" href="styles.css"></head>
-<body><div class="app-shell"><header class="topbar"><a class="brand" href="home.html" aria-label="GrooveDNA home"><span class="brand-mark">GD</span><span>Groove<span>DNA</span></span></a><nav id="mainNav"><a href="home.html">Home</a><a href="discover.html">Discover</a><a href="groovedna.html">GrooveDNA</a><a href="beatlab.html">Beat Lab</a><a href="community.html">Community</a><a href="library.html">Library</a></nav></header><main><section class="content-section playlist-section" id="library"><div class="section-heading"><div><p class="eyebrow">YOUR LIBRARY</p><h1>Made for you</h1><p>Save music, playlists, albums and ideas in one place.</p></div><button class="btn secondary" id="newPlaylist">＋ New Playlist</button></div><div class="library-tabs"><button class="library-tab active" data-library="all">All</button><button class="library-tab" data-library="songs">Liked Songs</button><button class="library-tab" data-library="playlists">Playlists</button><button class="library-tab" data-library="albums">Albums</button><button class="library-tab" data-library="history">Recently Played</button></div><div class="playlist-grid" id="playlistGrid"></div></section><section class="artist-section content-section"><div class="section-heading"><div><p class="eyebrow">ARTISTS</p><h2>Artists in your orbit</h2></div><button class="btn ghost" id="viewArtists">View all</button></div><div class="artist-grid" id="artistGrid"></div></section></main><footer><strong>GrooveDNA</strong><span>Find the Sound. Flip the Groove. Create Something New.</span></footer></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="script.js"></script></body></html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="Your GrooveDNA music library."
+  >
+
+  <title>GrooveDNA | Library</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+</head>
+
+
+<body>
+
+  <div class="app-shell">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="topbar">
+
+      <a
+        class="brand"
+        href="home.html"
+        aria-label="GrooveDNA home"
+      >
+        <span class="brand-mark">GD</span>
+
+        <span>
+          Groove<span>DNA</span>
+        </span>
+      </a>
+
+
+      <button
+        class="menu-toggle"
+        id="menuToggle"
+        type="button"
+        aria-label="Open navigation"
+        aria-expanded="false"
+        aria-controls="mainNav"
+      >
+        ☰
+      </button>
+
+
+      <nav
+        id="mainNav"
+        aria-label="Main navigation"
+      >
+
+        <a href="home.html">
+          Home
+        </a>
+
+        <a href="discover.html">
+          Discover
+        </a>
+
+        <a href="groovedna.html">
+          GrooveDNA
+        </a>
+
+        <a href="beatlab.html">
+          Beat Lab
+        </a>
+
+        <a href="community.html">
+          Community
+        </a>
+
+        <a
+          class="active"
+          href="library.html"
+          aria-current="page"
+        >
+          Library
+        </a>
+
+        <a href="profile.html">
+          Profile
+        </a>
+
+      </nav>
+
+    </header>
+
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <main>
+
+      <!-- =========================
+           LIBRARY
+      ========================== -->
+
+      <section
+        class="content-section playlist-section"
+        id="library"
+        aria-labelledby="libraryTitle"
+      >
+
+        <div class="section-heading">
+
+          <div>
+
+            <p class="eyebrow">
+              YOUR LIBRARY
+            </p>
+
+            <h1 id="libraryTitle">
+              Made for you
+            </h1>
+
+            <p>
+              Save music, playlists, albums and ideas in one place.
+            </p>
+
+          </div>
+
+
+          <button
+            class="btn secondary"
+            id="newPlaylist"
+            type="button"
+          >
+            ＋ New Playlist
+          </button>
+
+        </div>
+
+
+        <!-- =========================
+             LIBRARY TABS
+        ========================== -->
+
+        <div
+          class="library-tabs"
+          role="tablist"
+          aria-label="Library categories"
+        >
+
+          <button
+            class="library-tab active"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            data-library="all"
+          >
+            All
+          </button>
+
+
+          <button
+            class="library-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-library="songs"
+          >
+            Liked Songs
+          </button>
+
+
+          <button
+            class="library-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-library="playlists"
+          >
+            Playlists
+          </button>
+
+
+          <button
+            class="library-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-library="albums"
+          >
+            Albums
+          </button>
+
+
+          <button
+            class="library-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-library="history"
+          >
+            Recently Played
+          </button>
+
+        </div>
+
+
+        <!-- =========================
+             PLAYLIST GRID
+        ========================== -->
+
+        <div
+          class="playlist-grid"
+          id="playlistGrid"
+          aria-live="polite"
+        >
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           ARTISTS
+      ========================== -->
+
+      <section
+        class="artist-section content-section"
+        aria-labelledby="artistsTitle"
+      >
+
+        <div class="section-heading">
+
+          <div>
+
+            <p class="eyebrow">
+              ARTISTS
+            </p>
+
+            <h2 id="artistsTitle">
+              Artists in your orbit
+            </h2>
+
+          </div>
+
+
+          <button
+            class="btn ghost"
+            id="viewArtists"
+            type="button"
+          >
+            View all
+          </button>
+
+        </div>
+
+
+        <div
+          class="artist-grid"
+          id="artistGrid"
+          aria-live="polite"
+        >
+        </div>
+
+      </section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+
+      <strong>
+        GrooveDNA
+      </strong>
+
+      <span>
+        Find the Sound. Flip the Groove. Create Something New.
+      </span>
+
+      <div>
+
+        <a href="discover.html">
+          Discover
+        </a>
+
+        <a href="profile.html">
+          Profile
+        </a>
+
+      </div>
+
+    </footer>
+
+  </div>
+
+
+  <!-- Supabase -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+
+  <!-- GrooveDNA JavaScript -->
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
+```
