@@ -4973,6 +4973,404 @@ async function initGrooveDNA() {
 
 
 /* =========================================================
+   MUSICBRAINZ
+   ========================================================= */
+
+const MUSICBRAINZ_API =
+    "https://musicbrainz.org/ws/2";
+
+const MUSICBRAINZ_HEADERS = {
+    Accept: "application/json"
+};
+
+/* =========================================================
+   MUSICBRAINZ SEARCH
+   ========================================================= */
+
+async function searchMusicBrainz(searchTerm) {
+
+    if (!searchTerm || !searchTerm.trim()) {
+        return [];
+    }
+
+    const query =
+        encodeURIComponent(searchTerm.trim());
+
+    const url =
+        `${MUSICBRAINZ_API}/recording/?query=${query}&fmt=json&limit=10`;
+
+    try {
+
+        const response = await fetch(url, {
+            method: "GET",
+            headers: MUSICBRAINZ_HEADERS
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                `MusicBrainz error: ${response.status}`
+            );
+        }
+
+        const data = await response.json();
+
+        return data.recordings || [];
+
+    } catch (error) {
+
+        console.error(
+            "MusicBrainz search failed:",
+            error
+        );
+
+        return [];
+    }
+}
+
+/* =========================================================
+   MUSICBRAINZ ARTISTS
+   ========================================================= */
+
+async function searchMusicBrainzArtists(searchTerm) {
+
+    if (!searchTerm || !searchTerm.trim()) {
+        return [];
+    }
+
+    const query =
+        encodeURIComponent(searchTerm.trim());
+
+    const url =
+        `${MUSICBRAINZ_API}/artist/?query=${query}&fmt=json&limit=10`;
+
+    try {
+
+        const response = await fetch(url, {
+            method: "GET",
+            headers: MUSICBRAINZ_HEADERS
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                `MusicBrainz error: ${response.status}`
+            );
+        }
+
+        const data = await response.json();
+
+        return data.artists || [];
+
+    } catch (error) {
+
+        console.error(
+            "MusicBrainz artist search failed:",
+            error
+        );
+
+        return [];
+    }
+}
+
+/* =========================================================
+   SUPABASE — LOAD TRACKS
+   ========================================================= */
+
+async function fetchTracksFromDatabase() {
+
+    if (!supabaseClient) {
+        return [];
+    }
+
+    const {
+        data: tracks,
+        error
+    } = await supabaseClient
+        .from("tracks")
+        .select("*")
+        .order("created_at", {
+            ascending: false
+        });
+
+    if (error) {
+
+        console.error(
+            "Error fetching tracks:",
+            error
+        );
+
+        return [];
+    }
+
+    return tracks || [];
+}
+
+/* =========================================================
+   SUPABASE — SAVE MUSICBRAINZ TRACK
+   ========================================================= */
+
+async function saveMusicBrainzTrack(recording) {
+
+    if (!recording || !supabaseClient) {
+        return null;
+    }
+
+    const artist =
+        recording["artist-credit"]?.[0]?.name ||
+        "Unknown Artist";
+
+    const title =
+        recording.title ||
+        "Unknown Track";
+
+    const musicbrainzId =
+        recording.id || null;
+
+    const trackData = {
+
+        title,
+
+        artist,
+
+        genre:
+            recording.tags?.[0]?.name ||
+            "Unknown",
+
+        musicbrainz_id:
+            musicbrainzId,
+
+        created_at:
+            new Date().toISOString()
+    };
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("tracks")
+        .insert([trackData])
+        .select();
+
+    if (error) {
+
+        console.error(
+            "Error saving MusicBrainz track:",
+            error
+        );
+
+        return null;
+    }
+
+    return data?.[0] || null;
+}
+
+/* =========================================================
+   DATABASE TRACK UI
+   ========================================================= */
+
+async function loadDatabaseTracksUI() {
+
+    const sampleContainer =
+        document.querySelector(".sample-grid") ||
+        document.querySelector("#sampleGrid");
+
+    if (!sampleContainer) {
+        return;
+    }
+
+    const tracks =
+        await fetchTracksFromDatabase();
+
+    if (!tracks.length) {
+        return;
+    }
+
+    sampleContainer.innerHTML =
+        tracks.map(track => {
+
+            const title =
+                escapeHTML(
+                    track.title ||
+                    "Unknown Track"
+                );
+
+            const artist =
+                escapeHTML(
+                    track.artist ||
+                    "Unknown Artist"
+                );
+
+            const genre =
+                escapeHTML(
+                    track.genre ||
+                    "General"
+                );
+
+            return `
+                <article
+                    class="sample-card"
+                    data-genre="${genre}"
+                >
+
+                    <div class="sample-art">
+
+                        ${
+                            track.cover_art_url
+                            ? `
+                                <img
+                                    src="${escapeAttribute(track.cover_art_url)}"
+                                    alt="${title}"
+                                >
+                            `
+                            : `
+                                <div class="sample-icon">
+                                    🎵
+                                </div>
+                            `
+                        }
+
+                        <span class="genre-tag">
+                            ${genre}
+                        </span>
+
+                    </div>
+
+                    <div class="sample-info">
+
+                        <h3>${title}</h3>
+
+                        <p>
+                            ${artist}
+                            ${
+                                track.bpm
+                                ? ` • ${track.bpm} BPM`
+                                : ""
+                            }
+                            ${
+                                track.key_signature
+                                ? ` • ${escapeHTML(track.key_signature)}`
+                                : ""
+                            }
+                        </p>
+
+                        <div class="sample-actions">
+
+                            <button
+                                class="btn primary play-btn"
+                                onclick="startTrack(
+                                    '${escapeJS(title)}',
+                                    '${escapeJS(artist)}'
+                                )"
+                            >
+                                Play
+                            </button>
+
+                            <button
+                                class="btn secondary"
+                                onclick="saveTrack('${escapeJS(title)}')"
+                            >
+                                Save
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </article>
+            `;
+
+        }).join("");
+}
+
+/* =========================================================
+   MUSIC SEARCH UI
+   ========================================================= */
+
+async function searchMusic(searchTerm) {
+
+    const resultsContainer =
+        document.querySelector("#musicResults");
+
+    if (!resultsContainer) {
+        return;
+    }
+
+    resultsContainer.innerHTML =
+        "<p>Searching MusicBrainz...</p>";
+
+    const results =
+        await searchMusicBrainz(searchTerm);
+
+    if (!results.length) {
+
+        resultsContainer.innerHTML =
+            "<p>No music found.</p>";
+
+        return;
+    }
+
+    resultsContainer.innerHTML =
+        results.map(recording => {
+
+            const artist =
+                recording["artist-credit"]?.[0]?.name ||
+                "Unknown Artist";
+
+            const title =
+                recording.title ||
+                "Unknown Track";
+
+            return `
+                <div class="music-result">
+
+                    <h3>
+                        ${escapeHTML(title)}
+                    </h3>
+
+                    <p>
+                        ${escapeHTML(artist)}
+                    </p>
+
+                    <button
+                        class="btn primary"
+                        onclick='saveMusicBrainzResult(
+                            ${JSON.stringify(recording)}
+                        )'
+                    >
+                        Add to GrooveDNA
+                    </button>
+
+                </div>
+            `;
+
+        }).join("");
+}
+
+/* =========================================================
+   SAVE MUSICBRAINZ RESULT
+   ========================================================= */
+
+async function saveMusicBrainzResult(recording) {
+
+    const saved =
+        await saveMusicBrainzTrack(recording);
+
+    if (saved) {
+
+        alert(
+            "Track added to your GrooveDNA library!"
+        );
+
+        await loadDatabaseTracksUI();
+
+    } else {
+
+        alert(
+            "Could not save this track."
+        );
+    }
+}
+
+/* =========================================================
    START APPLICATION
    ========================================================= */
 
