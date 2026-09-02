@@ -3555,3 +3555,449 @@ document.addEventListener(
     }
   }
 );
+
+```javascript
+  {
+    id: 1,
+    title: "Midnight Guitar Break",
+    artist: "Demo Vault",
+    genre: "Rock",
+    type: "Guitar Riff",
+    bpm: 112,
+    key: "A Minor",
+    rights: "Check Rights",
+    icon: "🎸"
+  },
+
+  {
+    id: 2,
+    title: "Pocket Drums",
+    artist: "Groove Archive",
+    genre: "Funk",
+    type: "Drum Break",
+    bpm: 98,
+    key: "C Minor",
+    rights: "Cleared / Licensed",
+    icon: "🥁"
+  },
+
+  {
+    id: 3,
+    title: "Velvet Keys",
+    artist: "Soul Library",
+    genre: "Soul",
+    type: "Electric Piano",
+    bpm: 84,
+    key: "E♭ Major",
+    rights: "Cleared / Licensed",
+    icon: "🎹"
+  },
+
+  {
+    id: 4,
+    title: "Bassline 74",
+    artist: "Funk Foundry",
+    genre: "Funk",
+    type: "Bassline",
+    bpm: 96,
+    key: "E Minor",
+    rights: "Cleared / Licensed",
+    icon: "🎸"
+  },
+
+  {
+    id: 5,
+    title: "Stadium Riff",
+    artist: "Rock Archive",
+    genre: "Rock",
+    type: "Guitar Riff",
+    bpm: 126,
+    key: "D Major",
+    rights: "Check Rights",
+    icon: "⚡"
+  },
+
+  {
+    id: 6,
+    title: "Sunday Strings",
+    artist: "Soul Library",
+    genre: "Soul",
+    type: "String Melody",
+    bpm: 76,
+    key: "G Major",
+    rights: "Restricted",
+    icon: "🎻"
+  }
+
+];
+
+
+function filteredSamples() {
+
+  return sampleCatalog.filter(sample => {
+
+    const genreMatch =
+      GrooveDNA.selectedGenre === "All" ||
+      sample.genre === GrooveDNA.selectedGenre;
+
+    const term =
+      GrooveDNA.searchTerm.toLowerCase();
+
+    const searchMatch =
+      !term ||
+      [
+        sample.title,
+        sample.artist,
+        sample.genre,
+        sample.type,
+        sample.key
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(term);
+
+    return genreMatch && searchMatch;
+
+  });
+
+}
+
+
+function rightsClass(rights) {
+
+  if (
+    rights &&
+    rights.toLowerCase().startsWith("cleared")
+  ) {
+    return "cleared";
+  }
+
+  if (
+    rights &&
+    rights.toLowerCase() === "restricted"
+  ) {
+    return "restricted";
+  }
+
+  return "caution";
+
+}
+
+
+function renderSamples() {
+
+  const grid =
+    $("#sampleGrid");
+
+  const count =
+    $("#resultCount");
+
+  if (!grid) {
+    return;
+  }
+
+  const results =
+    filteredSamples();
+
+  if (count) {
+    count.textContent =
+      `${results.length} sounds found`;
+  }
+
+  if (!results.length) {
+
+    grid.innerHTML = `
+      <div class="empty-state">
+        <h3>No sounds found</h3>
+        <p>
+          Try another search or genre.
+        </p>
+      </div>
+    `;
+
+    return;
+  }
+
+  grid.innerHTML =
+    results.map(sample => `
+      <article
+        class="sample-card"
+        data-sample-id="${sample.id}"
+      >
+
+        <div class="sample-icon">
+          ${sample.icon}
+        </div>
+
+        <div class="sample-card-content">
+
+          <p class="eyebrow">
+            ${escapeHTML(sample.genre)}
+          </p>
+
+          <h3>
+            ${escapeHTML(sample.title)}
+          </h3>
+
+          <p>
+            ${escapeHTML(sample.artist)}
+          </p>
+
+          <div class="sample-meta">
+            <span>${escapeHTML(sample.type)}</span>
+            <span>${sample.bpm} BPM</span>
+            <span>${escapeHTML(sample.key)}</span>
+          </div>
+
+          <span
+            class="rights-badge ${rightsClass(sample.rights)}"
+          >
+            ${escapeHTML(sample.rights)}
+          </span>
+
+          <div class="sample-actions">
+
+            <button
+              class="btn secondary"
+              type="button"
+              data-preview="${sample.id}"
+            >
+              ▶ Preview
+            </button>
+
+            <button
+              class="btn secondary"
+              type="button"
+              data-save="${sample.id}"
+            >
+              ♡ Save
+            </button>
+
+            <button
+              class="btn primary"
+              type="button"
+              data-add="${sample.id}"
+            >
+              ＋ Add
+            </button>
+
+          </div>
+
+        </div>
+
+      </article>
+    `).join("");
+
+}
+
+
+function setupDiscover() {
+
+  const searchInput =
+    $("#searchInput");
+
+  const searchButton =
+    $("#searchBtn");
+
+  const filters =
+    $$(".filter");
+
+  filters.forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        filters.forEach(item =>
+          item.classList.remove("active")
+        );
+
+        button.classList.add("active");
+
+        GrooveDNA.selectedGenre =
+          button.dataset.genre || "All";
+
+        renderSamples();
+
+      }
+    );
+
+  });
+
+
+  function runSearch() {
+
+    GrooveDNA.searchTerm =
+      searchInput?.value.trim() || "";
+
+    renderSamples();
+
+  }
+
+
+  searchButton?.addEventListener(
+    "click",
+    runSearch
+  );
+
+
+  searchInput?.addEventListener(
+    "keydown",
+    event => {
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+        runSearch();
+      }
+
+    }
+  );
+
+
+  const sampleGrid =
+    $("#sampleGrid");
+
+  sampleGrid?.addEventListener(
+    "click",
+    event => {
+
+      const preview =
+        event.target.closest("[data-preview]");
+
+      const save =
+        event.target.closest("[data-save]");
+
+      const add =
+        event.target.closest("[data-add]");
+
+
+      if (preview) {
+
+        const id =
+          Number(preview.dataset.preview);
+
+        const sample =
+          sampleCatalog.find(
+            item => item.id === id
+          );
+
+        if (sample) {
+
+          showToast(
+            `▶ Previewing "${sample.title}"`
+          );
+
+        }
+
+        return;
+      }
+
+
+      if (save) {
+
+        const id =
+          Number(save.dataset.save);
+
+        const saved =
+          JSON.parse(
+            localStorage.getItem(
+              "grooveDNA_saved"
+            ) || "[]"
+          );
+
+        if (!saved.includes(id)) {
+          saved.push(id);
+        }
+
+        localStorage.setItem(
+          "grooveDNA_saved",
+          JSON.stringify(saved)
+        );
+
+        showToast("✓ Sample saved.");
+
+        return;
+      }
+
+
+      if (add) {
+
+        const id =
+          Number(add.dataset.add);
+
+        const sample =
+          sampleCatalog.find(
+            item => item.id === id
+          );
+
+        if (!sample) {
+          return;
+        }
+
+        const timeline =
+          $("#timeline");
+
+        const empty =
+          $("#labEmpty");
+
+        const melodyTrack =
+          timeline?.querySelector(
+            ".track.melody"
+          );
+
+        if (empty) {
+          empty.style.display = "none";
+        }
+
+        if (melodyTrack) {
+
+          const clip =
+            document.createElement("div");
+
+          clip.className =
+            "clip melody";
+
+          clip.textContent =
+            sample.title;
+
+          clip.title =
+            sample.title;
+
+          clip.style.width =
+            `${Math.floor(
+              120 + Math.random() * 140
+            )}px`;
+
+          melodyTrack.appendChild(
+            clip
+          );
+
+          GrooveDNA.currentBeat.clips.push({
+            sampleId: sample.id,
+            title: sample.title,
+            type: sample.type
+          });
+
+          showToast(
+            `✓ "${sample.title}" added to Beat Lab.`
+          );
+
+        } else {
+
+          showToast(
+            "Beat Lab timeline is not available on this page."
+          );
+
+        }
+
+      }
+
+    }
+  );
+
+  renderSamples();
+
+}
+
+
+```
