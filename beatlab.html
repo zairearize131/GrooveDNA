@@ -1,8 +1,8 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -17,11 +17,13 @@
 
   <title>GrooveDNA | Beat Lab</title>
 
+
   <!-- =========================
        FONTS
        ========================= -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
   <link
     rel="preconnect"
     href="https://fonts.gstatic.com"
@@ -33,6 +35,7 @@
     rel="stylesheet"
   >
 
+
   <!-- =========================
        GROOVEDNA STYLES
        ========================= -->
@@ -41,6 +44,7 @@
     rel="stylesheet"
     href="styles.css"
   >
+
 </head>
 
 
@@ -48,17 +52,22 @@
 
   <div class="app-shell">
 
+
     <!-- =========================
          HEADER
          ========================= -->
 
     <header class="topbar">
 
+
+      <!-- BRAND -->
+
       <a
         class="brand"
         href="home.html"
         aria-label="GrooveDNA home"
       >
+
         <span class="brand-mark">
           GD
         </span>
@@ -66,10 +75,11 @@
         <span>
           Groove<span>DNA</span>
         </span>
+
       </a>
 
 
-      <!-- Mobile menu -->
+      <!-- MOBILE MENU -->
 
       <button
         type="button"
@@ -77,12 +87,13 @@
         id="menuToggle"
         aria-label="Open navigation"
         aria-expanded="false"
+        aria-controls="mainNav"
       >
         ☰
       </button>
 
 
-      <!-- Main navigation -->
+      <!-- MAIN NAVIGATION -->
 
       <nav
         id="mainNav"
@@ -124,7 +135,7 @@
       </nav>
 
 
-      <!-- Header actions -->
+      <!-- HEADER ACTIONS -->
 
       <div class="top-actions">
 
@@ -146,10 +157,12 @@
 
     <main>
 
+
       <section
         class="beatlab-section"
         id="beatlab"
       >
+
 
         <!-- =========================
              SECTION HEADER
@@ -198,14 +211,6 @@
                BEAT MODES
                ========================= -->
 
-          <!--
-            script.js will populate this area with:
-
-            Music Mixer
-            Drum Pad
-            Music Maker
-          -->
-
           <div
             id="beatModes"
             class="beat-modes"
@@ -245,7 +250,8 @@
 
           <div class="lab-toolbar">
 
-            <!-- Play / Pause -->
+
+            <!-- PLAY / PAUSE -->
 
             <button
               type="button"
@@ -283,7 +289,7 @@
             </label>
 
 
-            <!-- Pitch -->
+            <!-- PITCH -->
 
             <label for="pitch">
 
@@ -307,7 +313,7 @@
             </label>
 
 
-            <!-- Loop -->
+            <!-- LOOP -->
 
             <label
               class="toggle-label"
@@ -327,7 +333,7 @@
             </label>
 
 
-            <!-- Save -->
+            <!-- SAVE -->
 
             <button
               type="button"
@@ -338,7 +344,7 @@
             </button>
 
 
-            <!-- Generate -->
+            <!-- GENERATE -->
 
             <button
               type="button"
@@ -349,12 +355,7 @@
             </button>
 
 
-            <!--
-              JavaScript automatically adds:
-
-              Record
-              Collab
-            -->
+            <!-- RECORD -->
 
             <button
               type="button"
@@ -365,6 +366,8 @@
               ● Record
             </button>
 
+
+            <!-- COLLABORATE -->
 
             <button
               type="button"
@@ -378,222 +381,289 @@
           </div>
 
 
-        ```html
-<!-- =========================================================
-     DRUM PAD MACHINE
-     ========================================================= -->
+          <!-- =========================================================
+               DRUM PAD MACHINE
+               ========================================================= -->
 
-<div class="drum-machine panel" id="drumMachine">
+          <div
+            class="drum-machine panel"
+            id="drumMachine"
+          >
 
-    <div class="drum-machine-header">
-        <div>
-            <p class="eyebrow">BEAT LAB</p>
-            <h3>Drum Pad Machine</h3>
-            <p class="drum-machine-description">
-                Tap the pads to create your rhythm. Every pad produces
-                an actual sound and can be recorded into your beat.
-            </p>
-        </div>
+            <div class="drum-machine-header">
 
-        <div class="drum-machine-controls">
+              <div>
 
-            <button
-                class="btn secondary"
-                id="drumRecord"
-                type="button"
-                aria-pressed="false"
-            >
-                ● Record
-            </button>
+                <p class="eyebrow">
+                  BEAT LAB
+                </p>
 
-            <button
-                class="btn secondary"
-                id="drumClear"
-                type="button"
-            >
-                Clear
-            </button>
+                <h3>
+                  Drum Pad Machine
+                </h3>
 
-        </div>
-    </div>
+                <p class="drum-machine-description">
+                  Tap the pads to create your rhythm. Every pad produces
+                  an actual sound and can be recorded into your beat.
+                </p>
+
+              </div>
 
 
-    <!-- DRUM PAD GRID -->
-
-    <div
-        class="drum-pad-grid"
-        id="drumPadGrid"
-        aria-label="Drum pad machine"
-    >
-
-        <button
-            class="drum-pad kick"
-            type="button"
-            data-drum="kick"
-            aria-label="Kick drum"
-        >
-            <span class="pad-icon">●</span>
-            <strong>KICK</strong>
-            <small>1</small>
-        </button>
-
-
-        <button
-            class="drum-pad snare"
-            type="button"
-            data-drum="snare"
-            aria-label="Snare drum"
-        >
-            <span class="pad-icon">◆</span>
-            <strong>SNARE</strong>
-            <small>2</small>
-        </button>
-
-
-        <button
-            class="drum-pad hihat"
-            type="button"
-            data-drum="hihat"
-            aria-label="Closed hi-hat"
-        >
-            <span class="pad-icon">◇</span>
-            <strong>HI-HAT</strong>
-            <small>3</small>
-        </button>
-
-
-        <button
-            class="drum-pad clap"
-            type="button"
-            data-drum="clap"
-            aria-label="Clap"
-        >
-            <span class="pad-icon">✦</span>
-            <strong>CLAP</strong>
-            <small>4</small>
-        </button>
-
-
-        <button
-            class="drum-pad tom"
-            type="button"
-            data-drum="tom"
-            aria-label="Tom drum"
-        >
-            <span class="pad-icon">◉</span>
-            <strong>TOM</strong>
-            <small>Q</small>
-        </button>
-
-
-        <button
-            class="drum-pad open-hat"
-            type="button"
-            data-drum="openhat"
-            aria-label="Open hi-hat"
-        >
-            <span class="pad-icon">○</span>
-            <strong>OPEN HAT</strong>
-            <small>W</small>
-        </button>
-
-
-        <button
-            class="drum-pad crash"
-            type="button"
-            data-drum="crash"
-            aria-label="Crash cymbal"
-        >
-            <span class="pad-icon">✧</span>
-            <strong>CRASH</strong>
-            <small>E</small>
-        </button>
-
-
-        <button
-            class="drum-pad perc"
-            type="button"
-            data-drum="perc"
-            aria-label="Percussion"
-        >
-            <span class="pad-icon">✺</span>
-            <strong>PERC</strong>
-            <small>R</small>
-        </button>
-
-    </div>
-
-
-    <!-- STEP SEQUENCER -->
-
-    <div class="drum-sequencer">
-
-        <div class="drum-sequencer-header">
-            <div>
-                <strong>Pattern Sequencer</strong>
-                <span id="drumPatternStatus">
-                    Tap Record, then play the pads.
-                </span>
-            </div>
-
-            <div class="drum-pattern-controls">
+              <div class="drum-machine-controls">
 
                 <button
+                  class="btn secondary"
+                  id="drumRecord"
+                  type="button"
+                  aria-pressed="false"
+                >
+                  ● Record
+                </button>
+
+                <button
+                  class="btn secondary"
+                  id="drumClear"
+                  type="button"
+                >
+                  Clear
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <!-- DRUM PAD GRID -->
+
+            <div
+              class="drum-pad-grid"
+              id="drumPadGrid"
+              aria-label="Drum pad machine"
+            >
+
+              <button
+                class="drum-pad kick"
+                type="button"
+                data-drum="kick"
+                aria-label="Kick drum"
+              >
+                <span class="pad-icon">
+                  ●
+                </span>
+
+                <strong>
+                  KICK
+                </strong>
+
+                <small>
+                  1
+                </small>
+              </button>
+
+
+              <button
+                class="drum-pad snare"
+                type="button"
+                data-drum="snare"
+                aria-label="Snare drum"
+              >
+                <span class="pad-icon">
+                  ◆
+                </span>
+
+                <strong>
+                  SNARE
+                </strong>
+
+                <small>
+                  2
+                </small>
+              </button>
+
+
+              <button
+                class="drum-pad hihat"
+                type="button"
+                data-drum="hihat"
+                aria-label="Closed hi-hat"
+              >
+                <span class="pad-icon">
+                  ◇
+                </span>
+
+                <strong>
+                  HI-HAT
+                </strong>
+
+                <small>
+                  3
+                </small>
+              </button>
+
+
+              <button
+                class="drum-pad clap"
+                type="button"
+                data-drum="clap"
+                aria-label="Clap"
+              >
+                <span class="pad-icon">
+                  ✦
+                </span>
+
+                <strong>
+                  CLAP
+                </strong>
+
+                <small>
+                  4
+                </small>
+              </button>
+
+
+              <button
+                class="drum-pad tom"
+                type="button"
+                data-drum="tom"
+                aria-label="Tom drum"
+              >
+                <span class="pad-icon">
+                  ◉
+                </span>
+
+                <strong>
+                  TOM
+                </strong>
+
+                <small>
+                  Q
+                </small>
+              </button>
+
+
+              <button
+                class="drum-pad open-hat"
+                type="button"
+                data-drum="openhat"
+                aria-label="Open hi-hat"
+              >
+                <span class="pad-icon">
+                  ○
+                </span>
+
+                <strong>
+                  OPEN HAT
+                </strong>
+
+                <small>
+                  W
+                </small>
+              </button>
+
+
+              <button
+                class="drum-pad crash"
+                type="button"
+                data-drum="crash"
+                aria-label="Crash cymbal"
+              >
+                <span class="pad-icon">
+                  ✧
+                </span>
+
+                <strong>
+                  CRASH
+                </strong>
+
+                <small>
+                  E
+                </small>
+              </button>
+
+
+              <button
+                class="drum-pad perc"
+                type="button"
+                data-drum="perc"
+                aria-label="Percussion"
+              >
+                <span class="pad-icon">
+                  ✺
+                </span>
+
+                <strong>
+                  PERC
+                </strong>
+
+                <small>
+                  R
+                </small>
+              </button>
+
+            </div>
+
+
+            <!-- STEP SEQUENCER -->
+
+            <div class="drum-sequencer">
+
+              <div class="drum-sequencer-header">
+
+                <div>
+
+                  <strong>
+                    Pattern Sequencer
+                  </strong>
+
+                  <span id="drumPatternStatus">
+                    Tap Record, then play the pads.
+                  </span>
+
+                </div>
+
+
+                <div class="drum-pattern-controls">
+
+                  <button
                     class="icon-btn"
                     id="drumPatternPlay"
                     type="button"
                     aria-label="Play drum pattern"
-                >
+                  >
                     ▶
-                </button>
+                  </button>
 
-                <button
+                  <button
                     class="icon-btn"
                     id="drumPatternStop"
                     type="button"
                     aria-label="Stop drum pattern"
-                >
+                  >
                     ■
-                </button>
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              <div
+                class="drum-step-grid"
+                id="drumStepGrid"
+                aria-label="Drum pattern step sequencer"
+              >
+
+              </div>
 
             </div>
-        </div>
 
-
-        <div
-            class="drum-step-grid"
-            id="drumStepGrid"
-            aria-label="Drum pattern step sequencer"
-        >
-
-            <!-- JavaScript will generate the 16-step grid here -->
-
-        </div>
-
-    </div>
-
-</div>
-```
+          </div>
 
 
           <!-- =========================
                INSTRUMENT BROWSER
                ========================= -->
-
-          <!--
-            script.js uses this area to display:
-
-            Drums
-            Bass
-            Piano
-            Guitar
-            Synth
-            Strings
-            Brass
-            Vocals
-
-            Clicking an instrument opens its sounds.
-          -->
 
           <aside
             id="instrumentBrowser"
@@ -624,10 +694,6 @@
               aria-label="Available instruments"
             >
 
-              <!--
-                JavaScript populates instruments here.
-              -->
-
             </div>
 
 
@@ -655,51 +721,27 @@
             id="timeline"
           >
 
-            <!-- Timeline ruler -->
+
+            <!-- TIMELINE RULER -->
 
             <div
               class="timeline-ruler"
               aria-hidden="true"
             >
 
-              <span>
-                1
-              </span>
-
-              <span>
-                2
-              </span>
-
-              <span>
-                3
-              </span>
-
-              <span>
-                4
-              </span>
-
-              <span>
-                5
-              </span>
-
-              <span>
-                6
-              </span>
-
-              <span>
-                7
-              </span>
-
-              <span>
-                8
-              </span>
+              <span>1</span>
+              <span>2</span>
+              <span>3</span>
+              <span>4</span>
+              <span>5</span>
+              <span>6</span>
+              <span>7</span>
+              <span>8</span>
 
             </div>
 
 
-            <!-- =========================
-                 DRUMS TRACK
-                 ========================= -->
+            <!-- DRUMS TRACK -->
 
             <div class="track">
 
@@ -716,9 +758,7 @@
             </div>
 
 
-            <!-- =========================
-                 BASS TRACK
-                 ========================= -->
+            <!-- BASS TRACK -->
 
             <div class="track">
 
@@ -735,9 +775,7 @@
             </div>
 
 
-            <!-- =========================
-                 MELODY TRACK
-                 ========================= -->
+            <!-- MELODY TRACK -->
 
             <div class="track">
 
@@ -754,9 +792,7 @@
             </div>
 
 
-            <!-- =========================
-                 SAMPLES TRACK
-                 ========================= -->
+            <!-- SAMPLES TRACK -->
 
             <div class="track">
 
@@ -774,9 +810,7 @@
             </div>
 
 
-            <!-- =========================
-                 EMPTY STATE
-                 ========================= -->
+            <!-- EMPTY STATE -->
 
             <div
               class="empty-state"
@@ -892,7 +926,6 @@
         Create Something New.
       </span>
 
-
       <div>
 
         <a href="discover.html">
@@ -930,16 +963,6 @@
        SUPABASE
        ========================= -->
 
-  <!--
-    IMPORTANT:
-
-    This loads the Supabase JavaScript library.
-
-    Your actual Supabase project URL and
-    publishable/anon key belong in script.js,
-    NOT in this HTML file.
-  -->
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
@@ -947,9 +970,10 @@
        GROOVEDNA MASTER SCRIPT
        ========================= -->
 
-  <script src="script.js"></script>
+  <script src="GrooveDNA_script_updated.js"></script>
 
 </body>
 
 </html>
 ```
+
