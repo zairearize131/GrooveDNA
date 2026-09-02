@@ -484,7 +484,133 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<!-- =========================================================
+     CREATE ACCOUNT PAGE / MODAL
+     ========================================================= -->
 
+<div
+  id="createAccountModal"
+  class="modal-backdrop"
+  hidden
+>
+
+  <div class="modal auth-modal">
+
+    <button
+      type="button"
+      class="modal-close"
+      id="closeCreateAccount"
+      aria-label="Close Create Account"
+    >
+      ×
+    </button>
+
+    <p class="eyebrow">JOIN GROOVEDNA</p>
+
+    <h2>Create Your Account</h2>
+
+    <p>
+      Create your individual GrooveDNA account and build your
+      personal creator profile.
+    </p>
+
+    <form id="createAccountForm">
+
+      <label for="accountName">
+        Display Name
+      </label>
+
+      <input
+        type="text"
+        id="accountName"
+        data-display-name
+        placeholder="Your name"
+        required
+      >
+
+      <label for="accountEmail">
+        Email Address
+      </label>
+
+      <input
+        type="email"
+        id="accountEmail"
+        data-auth-email
+        placeholder="you@example.com"
+        required
+      >
+
+      <label for="accountPassword">
+        Password
+      </label>
+
+      <input
+        type="password"
+        id="accountPassword"
+        data-auth-password
+        placeholder="Create a password"
+        minlength="6"
+        required
+      >
+
+      <label for="accountUsername">
+        Username
+      </label>
+
+      <input
+        type="text"
+        id="accountUsername"
+        placeholder="Choose a username"
+      >
+
+      <div class="modal-actions">
+
+        <button
+          type="submit"
+          class="primary-button"
+        >
+          Create Account
+        </button>
+
+        <button
+          type="button"
+          class="secondary-button"
+          id="cancelCreateAccount"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </form>
+
+    <div
+      id="accountSuccess"
+      hidden
+    >
+
+      <h3>✓ Account Created Successfully!</h3>
+
+      <p>
+        Welcome to GrooveDNA. Your individual profile has been
+        created successfully.
+      </p>
+
+      <button
+        type="button"
+        class="primary-button"
+        id="goToProfile"
+      >
+        Go To My Profile
+      </button>
+
+    </div>
+
+  </div>
+
+</div> 
+
+  
   <!-- =========================
        GROOVEDNA JAVASCRIPT
   ========================== -->
