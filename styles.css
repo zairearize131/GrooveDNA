@@ -1726,6 +1726,287 @@ h3 {
   font-size: 0.85rem;
 }
 
+
+/* =========================================================
+   DRUM PAD MACHINE
+   ========================================================= */
+
+.drum-machine {
+    margin: 20px 0;
+    padding: 22px;
+    overflow: hidden;
+}
+
+.drum-machine-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+.drum-machine-header h3 {
+    margin: 4px 0 6px;
+    font-size: 1.35rem;
+}
+
+.drum-machine-description {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+    max-width: 600px;
+}
+
+.drum-machine-controls {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+
+/* ---------------------------------------------------------
+   PAD GRID
+   --------------------------------------------------------- */
+
+.drum-pad-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.drum-pad {
+    position: relative;
+
+    min-height: 125px;
+
+    border: 1px solid var(--line);
+    border-radius: 16px;
+
+    background: #17171d;
+    color: var(--text);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    cursor: pointer;
+
+    user-select: none;
+
+    transition:
+        transform 0.08s ease,
+        border-color 0.12s ease,
+        background 0.12s ease,
+        box-shadow 0.12s ease;
+}
+
+.drum-pad:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+}
+
+.drum-pad:active,
+.drum-pad.active {
+    transform: scale(0.96);
+
+    border-color: var(--accent);
+
+    background: #29241c;
+
+    box-shadow:
+        0 0 0 2px rgba(242, 181, 68, 0.12),
+        0 0 30px rgba(242, 181, 68, 0.12);
+}
+
+.drum-pad .pad-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+.drum-pad strong {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+}
+
+.drum-pad small {
+    color: var(--muted);
+    font-size: 0.62rem;
+}
+
+
+/* ---------------------------------------------------------
+   PAD TYPES
+   --------------------------------------------------------- */
+
+.drum-pad.kick {
+    border-top: 3px solid #d86b5c;
+}
+
+.drum-pad.snare {
+    border-top: 3px solid #d9a441;
+}
+
+.drum-pad.hihat {
+    border-top: 3px solid #c9c5be;
+}
+
+.drum-pad.clap {
+    border-top: 3px solid #8f78d9;
+}
+
+.drum-pad.tom {
+    border-top: 3px solid #5f9ed6;
+}
+
+.drum-pad.open-hat {
+    border-top: 3px solid #72bca2;
+}
+
+.drum-pad.crash {
+    border-top: 3px solid #d4b36a;
+}
+
+.drum-pad.perc {
+    border-top: 3px solid #bd76a8;
+}
+
+
+/* ---------------------------------------------------------
+   SEQUENCER
+   --------------------------------------------------------- */
+
+.drum-sequencer {
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+}
+
+.drum-sequencer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 14px;
+}
+
+.drum-sequencer-header > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.drum-sequencer-header strong {
+    font-size: 0.85rem;
+}
+
+.drum-sequencer-header span {
+    color: var(--muted);
+    font-size: 0.7rem;
+}
+
+.drum-pattern-controls {
+    display: flex;
+    gap: 7px;
+}
+
+.icon-btn {
+    width: 34px;
+    height: 34px;
+
+    border: 1px solid var(--line);
+    border-radius: 9px;
+
+    background: #19191f;
+    color: var(--text);
+
+    cursor: pointer;
+}
+
+.icon-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+
+/* ---------------------------------------------------------
+   STEP GRID
+   --------------------------------------------------------- */
+
+.drum-step-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(16, minmax(20px, 1fr));
+
+    gap: 5px;
+
+    min-height: 44px;
+}
+
+.drum-step {
+    height: 34px;
+
+    border: 1px solid var(--line);
+    border-radius: 6px;
+
+    background: #111116;
+
+    cursor: pointer;
+
+    transition:
+        background 0.1s ease,
+        border-color 0.1s ease,
+        transform 0.1s ease;
+}
+
+.drum-step:hover {
+    border-color: var(--accent);
+}
+
+.drum-step.active {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.drum-step.current {
+    box-shadow:
+        0 0 0 2px rgba(255,255,255,0.15);
+}
+
+
+/* ---------------------------------------------------------
+   RECORDING STATE
+   --------------------------------------------------------- */
+
+#drumRecord.recording {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+@media (max-width: 800px) {
+
+    .drum-machine-header {
+        flex-direction: column;
+    }
+
+    .drum-machine-controls {
+        width: 100%;
+    }
+
+    .drum-pad-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .drum-step-grid {
+        overflow-x: auto;
+    }
+
+}
+```
+
 /* =========================================================
    LIBRARY
    ========================================================= */
