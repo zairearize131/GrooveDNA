@@ -5283,3 +5283,1004 @@ function generateBeat() {
 
 }
 ```
+
+  GrooveDNA.currentBeat.instruments.push({
+    instrument:
+      instrument.name,
+    sound
+  });
+
+  GrooveDNA.currentBeat.clips.push({
+    type: "instrument",
+    instrument:
+      instrument.name,
+    sound
+  });
+
+  showToast(
+    `${sound} added to ${GrooveDNA.beatMode}.`
+  );
+
+  renderBeatClip(
+    instrument,
+    sound
+  );
+}
+
+
+function renderBeatClip(
+  instrument,
+  sound
+) {
+
+  const timeline =
+    $("#timeline");
+
+  if (!timeline) {
+    return;
+  }
+
+  const lanes =
+    $$(".track-lane");
+
+  const target =
+    lanes[0];
+
+  if (!target) {
+    return;
+  }
+
+  const clip =
+    document.createElement("div");
+
+  clip.className =
+    "clip";
+
+  clip.textContent =
+    `${instrument.icon} ${sound}`;
+
+  target.appendChild(
+    clip
+  );
+}
+
+
+/* =========================================================
+   19. BEAT LAB MODES
+   ========================================================= */
+
+function setupBeatLabModes() {
+
+  let modeContainer =
+    $("#beatModes");
+
+  if (!modeContainer) {
+
+    modeContainer =
+      document.createElement("div");
+
+    modeContainer.id =
+      "beatModes";
+
+    modeContainer.className =
+      "beat-modes";
+
+    const lab =
+      $(".beatlab");
+
+    if (lab) {
+      lab.prepend(
+        modeContainer
+      );
+    }
+  }
+
+  modeContainer.innerHTML = `
+    <button
+      class="beat-mode active"
+      data-mode="mixer">
+      🎚 Music Mixer
+    </button>
+
+    <button
+      class="beat-mode"
+      data-mode="drumpad">
+      🥁 Drum Pad
+    </button>
+
+    <button
+      class="beat-mode"
+      data-mode="maker">
+      🎼 Music Maker
+    </button>
+  `;
+
+
+  modeContainer.addEventListener(
+    "click",
+    event => {
+
+      const button =
+        event.target.closest(
+          "[data-mode]"
+        );
+
+      if (!button) {
+        return;
+      }
+
+      $$(".beat-mode")
+        .forEach(item =>
+          item.classList.remove(
+            "active"
+          )
+        );
+
+      button.classList.add(
+        "active"
+      );
+
+      GrooveDNA.beatMode =
+        button.dataset.mode;
+
+      showBeatMode(
+        GrooveDNA.beatMode
+      );
+    }
+  );
+}
+
+
+function showBeatMode(mode) {
+  const label = mode === "mixer" ? "Music Mixer" : mode === "drumpad" ? "Drum Pad" : "Music Maker";
+  renderBeatMode(mode);
+  showToast(`Beat Lab switched to ${label}.`);
+}
+
+
+/* =========================================================
+   BEAT LAB — INTERACTIVE MODE INTERFACES
+   ========================================================= */
+
+function getBeatModeHost() { const lab = $(".beatlab"); if (!lab) return null; let host = $("#beatModeWorkspace", lab); if (!host) { host = document.createElement("div"); host.id = "beatModeWorkspace"; host.className = "beat-mode-workspace"; lab.appendChild(host); } return host; }
+
+function renderMixerInterface() {
+  const host=getBeatModeHost(); if(!host)return; const channels=[["Drums","🥁","drums"],["Bass","🎸","bass"],["Keys","🎹","keys"],["Melody","🎷","melody"],["Samples","🎛","samples"]];
+  host.innerHTML=`<section class="mixer-panel" aria-label="Music Mixer"><div class="mixer-header"><div><p class="eyebrow">MIX</p><h3>Music Mixer</h3><p>Control volume, pan, mute and sound previews.</p></div><button class="btn secondary" type="button" id="mixerStopAll">Stop All</button></div><div class="mixer-channels">${channels.map(([name,icon,id])=>`<div class="mixer-channel"><div class="mixer-channel-top"><span class="mixer-icon">${icon}</span><strong>${name}</strong></div><button class="mixer-preview" type="button" data-mixer-preview="${id}">▶ Preview</button><label>Volume <input type="range" min="0" max="1" step="0.01" value="0.8" data-mixer-volume="${id}"></label><label>Pan <input type="range" min="-1" max="1" step="0.01" value="0" data-mixer-pan="${id}"></label><button type="button" class="icon-btn" data-mixer-mute="${id}">M</button></div>`).join("")}</div></section>`;
+  channels.forEach(([name,icon,id])=>createMixerChannel(id,{volume:.8,pan:0}));
+  host.querySelectorAll("[data-mixer-volume]").forEach(i=>i.addEventListener("input",()=>setChannelVolume(i.dataset.mixerVolume,i.value)));
+  host.querySelectorAll("[data-mixer-pan]").forEach(i=>i.addEventListener("input",()=>setChannelPan(i.dataset.mixerPan,i.value)));
+  host.querySelectorAll("[data-mixer-mute]").forEach(b=>b.addEventListener("click",()=>{muteChannel(b.dataset.mixerMute);b.classList.toggle("active");}));
+  host.querySelectorAll("[data-mixer-preview]").forEach(b=>b.addEventListener("click",()=>previewMixerChannel(b.dataset.mixerPreview,b)));
+  $("#mixerStopAll")?.addEventListener("click",()=>showToast("Mixer previews stopped."));
+}
+
+function previewMixerChannel(id,button){resumeAudio();const channel=mixerChannels.get(id)||createMixerChannel(id,{volume:.8});const now=audioContext.currentTime;const osc=audioContext.createOscillator();const gain=audioContext.createGain();const f={drums:110,bass:55,keys:220,melody:330,samples:165}[id]||220;osc.type=id==="bass"?"sawtooth":id==="keys"?"triangle":"sine";osc.frequency.value=f;gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.25,now+.02);gain.gain.exponentialRampToValueAtTime(.0001,now+.5);osc.connect(gain);gain.connect(channel.gain);osc.start(now);osc.stop(now+.55);button.classList.add("active");setTimeout(()=>button.classList.remove("active"),250);}
+
+function setupDrumKeyboardControls() {
+  if (window.__grooveDrumKeyboardBound) return;
+  window.__grooveDrumKeyboardBound = true;
+  const keyMap = { q: "kick", w: "snare", e: "hihat", r: "clap", a: "tom", s: "open-hat", d: "crash", f: "perc" };
+  document.addEventListener("keydown", event => {
+    if (event.target.matches("input, textarea, select")) return;
+    const type = keyMap[event.key.toLowerCase()];
+    if (!type || GrooveDNA.beatMode !== "drumpad") return;
+    const button = document.querySelector(`[data-drum-pad="${type}"]`);
+    triggerDrumPad(type, button);
+  });
+}
+
+function renderDrumPadInterface(){const host=getBeatModeHost();if(!host)return;const pads=[["kick","🥁","Kick","Q"],["snare","🪘","Snare","W"],["hihat","✳","Hi-Hat","E"],["clap","👏","Clap","R"],["tom","◉","Tom","A"],["open-hat","○","Open Hat","S"],["crash","💥","Crash","D"],["perc","◈","Perc","F"]];host.innerHTML=`<section class="drum-machine panel" aria-label="Drum Pad Machine"><div class="drum-machine-header"><div><p class="eyebrow">RHYTHM</p><h3>Drum Pad Machine</h3><p class="drum-machine-description">Tap pads or use Q–F keyboard keys. Program a 16-step pattern.</p></div><div class="drum-machine-controls"><button class="btn secondary" type="button" id="drumRecord">● Record</button><button class="btn secondary" type="button" id="drumClear">Clear</button><button class="btn primary" type="button" id="drumPlayPattern">▶ Play Pattern</button></div></div><div class="drum-pad-grid">${pads.map(([type,icon,name,key])=>`<button class="drum-pad ${type}" type="button" data-drum-pad="${type}"><span class="pad-icon">${icon}</span><strong>${name}</strong><small>${key}</small></button>`).join("")}</div><div class="drum-sequencer"><div class="drum-sequencer-header"><div><strong>16-Step Pattern</strong><span>Tap steps to program.</span></div></div><div class="drum-step-grid" id="drumStepGrid">${Array.from({length:16},(_,i)=>`<button type="button" class="drum-step" data-step="${i}" aria-label="Step ${i+1}"></button>`).join("")}</div></div></section>`;host.querySelectorAll("[data-drum-pad]").forEach(b=>b.addEventListener("click",()=>triggerDrumPad(b.dataset.drumPad,b)));$("#drumRecord")?.addEventListener("click",()=>{drumState.recording=!drumState.recording;if(drumState.recording)drumState.pattern=[];showToast(drumState.recording?"Drum recording started.":"Drum recording stopped.");});$("#drumClear")?.addEventListener("click",()=>{drumState.pattern=[];host.querySelectorAll(".drum-step").forEach(s=>s.classList.remove("active"));});$("#drumPlayPattern")?.addEventListener("click",playDrumPattern);host.querySelectorAll(".drum-step").forEach(s=>s.addEventListener("click",()=>s.classList.toggle("active")));}
+
+function playDrumPattern(){const steps=[...document.querySelectorAll("#drumStepGrid .drum-step.active")];if(!steps.length){showToast("Activate some drum steps first.");return;}const ms=(60/Math.max(40,Number(GrooveDNA.currentBeat.bpm||96))/4)*1000;steps.forEach((step,i)=>setTimeout(()=>{triggerDrumPad(["kick","snare","hihat","clap"][i%4]);step.classList.add("current");setTimeout(()=>step.classList.remove("current"),ms*.8);},i*ms));}
+
+function renderMusicMakerInterface(){const host=getBeatModeHost();if(!host)return;const notes=[["C4",261.63],["D4",293.66],["E4",329.63],["F4",349.23],["G4",392],["A4",440],["B4",493.88],["C5",523.25]];host.innerHTML=`<section class="music-maker panel" aria-label="Music Maker"><div class="maker-header"><div><p class="eyebrow">MELODY</p><h3>Music Maker</h3><p>Create a melody by placing notes on a 16-step grid.</p></div><div class="maker-actions"><button class="btn secondary" type="button" id="makerClear">Clear</button><button class="btn primary" type="button" id="makerPlay">▶ Play Melody</button></div></div><div class="maker-grid" id="makerGrid">${notes.map(([n])=>`<div class="maker-row"><strong>${n}</strong>${Array.from({length:16},(_,i)=>`<button type="button" class="maker-step" data-note="${n}" data-step="${i}" aria-label="${n}, step ${i+1}"></button>`).join("")}</div>`).join("")}</div></section>`;host.querySelectorAll(".maker-step").forEach(b=>b.addEventListener("click",()=>{b.classList.toggle("active");if(b.classList.contains("active")){const f=notes.find(n=>n[0]===b.dataset.note)?.[1]||440;addSequencerNote({pitch:f,time:Number(b.dataset.step),duration:1,velocity:.8});previewMakerNote(f);}}));$("#makerClear")?.addEventListener("click",()=>{clearSequencer();renderMusicMakerInterface();});$("#makerPlay")?.addEventListener("click",playMakerGrid);}
+
+function previewMakerNote(frequency,duration=.28){resumeAudio();const now=audioContext.currentTime;const osc=audioContext.createOscillator();const gain=audioContext.createGain();osc.type="triangle";osc.frequency.value=frequency;gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.18,now+.02);gain.gain.exponentialRampToValueAtTime(.0001,now+duration);osc.connect(gain);gain.connect(masterGain);osc.start(now);osc.stop(now+duration+.03);}
+
+function playMakerGrid(){const cells=[...document.querySelectorAll("#makerGrid .maker-step.active")];if(!cells.length){showToast("Place some notes on the Music Maker grid first.");return;}const bpm=Math.max(40,Number(GrooveDNA.currentBeat.bpm||96));const ms=(60/bpm/4)*1000;cells.forEach(c=>{const f=({C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,C5:523.25})[c.dataset.note]||440;setTimeout(()=>{previewMakerNote(f);c.classList.add("current");setTimeout(()=>c.classList.remove("current"),ms*.8)},Number(c.dataset.step)*ms);});showToast(`Playing melody at ${bpm} BPM.`);}
+
+function renderBeatMode(mode){if(mode==="mixer")renderMixerInterface();else if(mode==="drumpad")renderDrumPadInterface();else renderMusicMakerInterface();}
+
+/* =========================================================
+   20. BEAT PLAYBACK
+   ========================================================= */
+
+function playBeat() {
+
+  const clips =
+    GrooveDNA.currentBeat.clips;
+
+  if (!clips.length) {
+
+    showToast(
+      "Add sounds to your beat first."
+    );
+
+    return;
+  }
+
+  showToast(
+    `Playing beat at ${GrooveDNA.currentBeat.bpm} BPM.`
+  );
+}
+
+
+function stopBeat() {
+
+  showToast(
+    "Beat paused."
+  );
+}
+
+
+// =======================================================
+// BEAT LAB PLAYBACK
+// =======================================================
+
+let beatLabPlaying = false;
+let beatLabTimer = null;
+
+function startBeatLab() {
+    resumeAudio();
+
+    if (beatLabPlaying) return;
+
+    beatLabPlaying = true;
+
+    if ($("#labPlay")) {
+        $("#labPlay").textContent = "⏸";
+    }
+
+    scheduleBeatLab();
+}
+
+function stopBeatLab() {
+    beatLabPlaying = false;
+
+    if (beatLabTimer) {
+        clearTimeout(beatLabTimer);
+        beatLabTimer = null;
+    }
+
+    if ($("#labPlay")) {
+        $("#labPlay").textContent = "▶";
+    }
+}
+
+function scheduleBeatLab() {
+    if (!beatLabPlaying) return;
+
+    const bpm = Number($("#bpm")?.value || 96);
+    const beatLength = 60000 / bpm;
+
+    // This is the timing foundation.
+    // Actual clips/patterns will be scheduled here.
+
+    beatLabTimer = setTimeout(
+        scheduleBeatLab,
+        beatLength
+    );
+}
+
+if ($("#labPlay")) {
+    $("#labPlay").addEventListener("click", () => {
+        if (beatLabPlaying) {
+            stopBeatLab();
+        } else {
+            startBeatLab();
+        }
+    });
+}
+
+/* =========================================================
+   21. RECORDING
+   ========================================================= */
+
+function setupBeatRecording() {
+
+  let recordButton =
+    $("#recordBeat");
+
+  if (!recordButton) {
+
+    recordButton =
+      document.createElement("button");
+
+    recordButton.id =
+      "recordBeat";
+
+    recordButton.className =
+      "btn primary";
+
+    recordButton.textContent =
+      "● Record";
+
+    const toolbar =
+      $(".lab-toolbar");
+
+    if (toolbar) {
+      toolbar.appendChild(
+        recordButton
+      );
+    }
+  }
+
+  recordButton.addEventListener(
+    "click",
+    toggleRecording
+  );
+}
+
+
+async function toggleRecording() {
+
+  if (GrooveDNA.isRecording) {
+
+    GrooveDNA.mediaRecorder?.stop();
+
+    return;
+  }
+
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
+
+    showToast(
+      "Your browser does not support microphone recording."
+    );
+
+    return;
+  }
+
+  try {
+
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
+        audio: true
+      });
+
+    GrooveDNA.recordedChunks =
+      [];
+
+    const recorder =
+      new MediaRecorder(stream);
+
+    GrooveDNA.mediaRecorder =
+      recorder;
+
+    recorder.ondataavailable =
+      event => {
+
+        if (event.data.size > 0) {
+          GrooveDNA.recordedChunks.push(
+            event.data
+          );
+        }
+      };
+
+    recorder.onstop =
+      () => {
+
+        stream
+          .getTracks()
+          .forEach(track =>
+            track.stop()
+          );
+
+        const blob =
+          new Blob(
+            GrooveDNA.recordedChunks,
+            {
+              type:
+                recorder.mimeType ||
+                "audio/webm"
+            }
+          );
+
+        const url =
+          URL.createObjectURL(blob);
+
+        GrooveDNA.recordedAudio =
+          url;
+
+        GrooveDNA.isRecording =
+          false;
+
+        const button =
+          $("#recordBeat");
+
+        if (button) {
+          button.textContent =
+            "● Record";
+        }
+
+        showToast(
+          "Recording saved to this Beat Lab session."
+        );
+      };
+
+    recorder.start();
+
+    GrooveDNA.isRecording =
+      true;
+
+    const button =
+      $("#recordBeat");
+
+    if (button) {
+      button.textContent =
+        "■ Stop Recording";
+    }
+
+    showToast(
+      "Recording started."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Recording error:",
+      error
+    );
+
+    showToast(
+      "Microphone permission was not granted."
+    );
+  }
+}
+
+
+/* =========================================================
+   22. SAVE / CLEAR / GENERATE BEAT
+   ========================================================= */
+
+function saveBeat() {
+
+  const beats =
+    JSON.parse(
+      localStorage.getItem(
+        "grooveDNA_beats"
+      ) || "[]"
+    );
+
+  beats.push({
+    id: Date.now(),
+    createdAt:
+      new Date().toISOString(),
+    beat:
+      GrooveDNA.currentBeat
+  });
+
+  localStorage.setItem(
+    "grooveDNA_beats",
+    JSON.stringify(beats)
+  );
+
+  showToast(
+    "✓ Beat idea saved!"
+  );
+}
+
+
+function clearBeatLab() {
+
+  $$("#timeline .clip")
+    .forEach(clip =>
+      clip.remove()
+    );
+
+  GrooveDNA.currentBeat.clips =
+    [];
+
+  GrooveDNA.currentBeat.instruments =
+    [];
+
+  const empty =
+    $("#labEmpty");
+
+  if (empty) {
+    empty.style.display =
+      "block";
+  }
+
+  showToast(
+    "Beat Lab cleared."
+  );
+}
+
+
+function generateBeat() {
+
+  const generated =
+    instrumentCatalog[
+      Math.floor(
+        Math.random() *
+        instrumentCatalog.length
+      )
+    ];
+
+  const sound =
+    generated.sounds[
+      Math.floor(
+        Math.random() *
+        generated.sounds.length
+      )
+    ];
+
+  addInstrumentSound(
+    generated,
+    sound
+  );
+
+  showToast(
+    "GrooveDNA generated a new idea."
+  );
+}
+
+
+// =======================================================
+// PROJECT SAVE / LOAD
+// =======================================================
+
+const PROJECT_STORAGE_KEY = "grooveDNA_project";
+
+function getCurrentProject() {
+    return {
+        bpm: Number($("#bpm")?.value || 96),
+        pitch: Number($("#pitch")?.value || 0),
+        notes: [...sequencerState.notes],
+        drumPattern: [...drumState.pattern],
+        savedAt: new Date().toISOString()
+    };
+}
+
+function saveProject() {
+    const project = getCurrentProject();
+
+    localStorage.setItem(
+        PROJECT_STORAGE_KEY,
+        JSON.stringify(project)
+    );
+
+    showToast("✓ GrooveDNA project saved.");
+}
+
+function loadProject() {
+    const saved =
+        localStorage.getItem(PROJECT_STORAGE_KEY);
+
+    if (!saved) {
+        showToast("No saved GrooveDNA project found.");
+        return null;
+    }
+
+    try {
+        const project = JSON.parse(saved);
+
+        if ($("#bpm")) {
+            $("#bpm").value = project.bpm;
+            $("#bpmValue").textContent = project.bpm;
+        }
+
+        if ($("#pitch")) {
+            $("#pitch").value = project.pitch;
+            $("#pitchValue").textContent =
+                project.pitch > 0
+                    ? `+${project.pitch}`
+                    : project.pitch;
+        }
+
+        sequencerState.notes =
+            project.notes || [];
+
+        drumState.pattern =
+            project.drumPattern || [];
+
+        showToast("✓ GrooveDNA project loaded.");
+
+        return project;
+
+    } catch (error) {
+        console.error("Project load error:", error);
+        showToast("⚠ Saved project could not be loaded.");
+        return null;
+    }
+}
+
+
+/* =========================================================
+   23. COLLABORATION
+   ========================================================= */
+
+function setupCollaboration() {
+
+  let button =
+    $("#collabBtn");
+
+  if (!button) {
+
+    button =
+      document.createElement("button");
+
+    button.id =
+      "collabBtn";
+
+    button.className =
+      "btn secondary";
+
+    button.textContent =
+      "👥 Collab";
+
+    const toolbar =
+      $(".lab-toolbar");
+
+    if (toolbar) {
+      toolbar.appendChild(
+        button
+      );
+    }
+  }
+
+  button.addEventListener(
+    "click",
+    openCollabPanel
+  );
+}
+
+
+async function openCollabPanel() {
+
+  const existing =
+    $("#collabPanel");
+
+  if (existing) {
+    existing.remove();
+  }
+
+  const panel =
+    document.createElement("div");
+
+  panel.id =
+    "collabPanel";
+
+  panel.className =
+    "modal-backdrop";
+
+  panel.innerHTML = `
+    <div class="modal">
+
+      <button
+        class="modal-close"
+        id="closeCollab">
+        ×
+      </button>
+
+      <p class="eyebrow">
+        COLLABORATE
+      </p>
+
+      <h2>
+        Invite a creator
+      </h2>
+
+      <div id="collabUsers">
+        Loading creators...
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(panel);
+
+  $("#closeCollab").onclick =
+    () => panel.remove();
+
+  await loadCollabUsers();
+}
+
+
+async function loadCollabUsers() {
+
+  const container =
+    $("#collabUsers");
+
+  if (!container) {
+    return;
+  }
+
+  if (!supabaseClient) {
+
+    container.innerHTML =
+      "<p>Supabase is not configured.</p>";
+
+    return;
+  }
+
+  try {
+
+    const {
+      data,
+      error
+    } = await supabaseClient
+      .from("profiles")
+      .select("id, username, display_name")
+      .limit(20);
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.length) {
+
+      container.innerHTML =
+        "<p>No creators found yet.</p>";
+
+      return;
+    }
+
+    container.innerHTML =
+      data.map(user => `
+        <div class="collab-user">
+
+          <span>
+            @${escapeHTML(
+              user.username ||
+              user.display_name ||
+              "creator"
+            )}
+          </span>
+
+          <button
+            class="btn primary"
+            data-invite-user="${user.id}">
+            Add
+          </button>
+
+        </div>
+      `).join("");
+
+    container
+      .addEventListener(
+        "click",
+        event => {
+
+          const button =
+            event.target.closest(
+              "[data-invite-user]"
+            );
+
+          if (!button) {
+            return;
+          }
+
+          sendCollaborationInvite(
+            button.dataset.inviteUser
+          );
+        }
+      );
+
+  } catch (error) {
+
+    console.error(
+      "Collab users:",
+      error
+    );
+
+    container.innerHTML =
+      "<p>Unable to load creators.</p>";
+  }
+}
+
+
+async function sendCollaborationInvite(
+  recipientId
+) {
+
+  if (!supabaseClient ||
+      !GrooveDNA.user) {
+
+    showToast(
+      "Please sign in first."
+    );
+
+    return;
+  }
+
+  /*
+    Recommended Supabase table:
+
+    collaboration_invites
+
+    id
+    sender_id
+    recipient_id
+    status
+    created_at
+  */
+
+  try {
+
+    const {
+      error
+    } = await supabaseClient
+      .from("collaboration_invites")
+      .insert({
+        sender_id:
+          GrooveDNA.user.id,
+        recipient_id:
+          recipientId,
+        status:
+          "pending"
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    showToast(
+      "Collaboration invitation sent."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Invite error:",
+      error
+    );
+
+    showToast(
+      "Unable to send invitation."
+    );
+  }
+}
+
+
+/* =========================================================
+   24. GROOVEDNA PAGE
+   ========================================================= */
+
+function setupGrooveDNA() {
+
+  $("#shareDNA")?.addEventListener(
+    "click",
+    async () => {
+
+      const shareText =
+        "Check out my GrooveDNA musical profile.";
+
+      if (
+        navigator.share
+      ) {
+
+        await navigator.share({
+          title:
+            "My GrooveDNA",
+          text:
+            shareText,
+          url:
+            window.location.href
+        });
+
+      } else {
+
+        await navigator.clipboard.writeText(
+          window.location.href
+        );
+
+        showToast(
+          "GrooveDNA link copied."
+        );
+      }
+    }
+  );
+
+
+  $$(".mood-card")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const mood =
+            button.dataset.mood;
+
+          showToast(
+            `${mood} sounds selected.`
+          );
+
+          localStorage.setItem(
+            "grooveDNA_mood",
+            mood
+          );
+        }
+      );
+    });
+}
+
+
+/* =========================================================
+   25. COMMUNITY
+   ========================================================= */
+
+function setupCommunity() {
+
+  $$("#community [data-like]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const count =
+            button.querySelector(
+              "span"
+            );
+
+          if (count) {
+
+            const current =
+              Number(
+                count.textContent
+              ) || 0;
+
+            count.textContent =
+              current + 1;
+          }
+
+          button.classList.toggle(
+            "liked"
+          );
+        }
+      );
+    });
+
+
+  $$("#community [data-remix]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          showToast(
+            "Remix idea added to Beat Lab."
+          );
+
+          navigate(
+            "beatlab.html"
+          );
+        }
+      );
+    });
+
+
+  $$("#community [data-follow]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        async () => {
+
+          const following =
+            button.dataset.following ===
+            "true";
+
+          button.dataset.following =
+            String(!following);
+
+          button.textContent =
+            following
+              ? "＋ Follow"
+              : "✓ Following";
+
+          showToast(
+            following
+              ? "Unfollowed creator."
+              : "Following creator."
+          );
+        }
+      );
+    });
