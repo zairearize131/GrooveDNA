@@ -1442,7 +1442,7 @@ if (uploadInput) {
    ========================================================= */
 
 /*
-   Supabase Authentication is implemented here.
+   Supabase Authentication
 
    Create Account:
    supabase.auth.signUp()
@@ -1459,6 +1459,7 @@ if (uploadInput) {
 
 
 async function getCurrentSession() {
+
   if (!supabaseClient) {
     return null;
   }
@@ -1469,51 +1470,97 @@ async function getCurrentSession() {
   } = await supabaseClient.auth.getSession();
 
   if (error) {
-    console.error("Session error:", error);
+
+    console.error(
+      "Session error:",
+      error
+    );
+
     return null;
   }
 
-  GrooveDNA.session = data.session;
-  GrooveDNA.user = data.session?.user || null;
+  GrooveDNA.session =
+    data.session;
+
+  GrooveDNA.user =
+    data.session?.user || null;
 
   return data.session;
 }
 
 
-async function createAccount(email, password, displayName) {
+/* =========================================================
+   CREATE ACCOUNT
+   ========================================================= */
+
+async function createAccount(
+  email,
+  password,
+  displayName
+) {
+
   if (!supabaseClient) {
-    showToast("Supabase is not configured yet.");
+
+    showToast(
+      "Supabase is not configured yet."
+    );
+
     return false;
   }
 
   try {
+
     const {
       data,
       error
     } = await supabaseClient.auth.signUp({
+
       email,
+
       password,
+
       options: {
+
         data: {
-          display_name: displayName || email.split("@")[0]
+
+          display_name:
+            displayName ||
+            email.split("@")[0]
+
         },
-        emailRedirectTo: window.location.origin + "/index.html"
+
+        emailRedirectTo:
+          window.location.origin +
+          "/index.html"
+
       }
+
     });
+
 
     if (error) {
       throw error;
     }
 
-    GrooveDNA.user = data.user;
-    GrooveDNA.session = data.session;
+
+    GrooveDNA.user =
+      data.user;
+
+    GrooveDNA.session =
+      data.session;
+
 
     /*
-      If email confirmation is enabled in Supabase,
-      session can initially be null.
+      Supabase may require
+      email confirmation.
+
+      In that case the user
+      exists but session is
+      initially null.
     */
 
     if (!data.session) {
+
       showToast(
         "Account created. Check your email to confirm your account."
       );
@@ -1521,93 +1568,125 @@ async function createAccount(email, password, displayName) {
       return true;
     }
 
-    await createUserProfile(data.user, displayName);
 
-    showToast("Account created successfully!");
+    /*
+      Create the user's
+      individual profile.
+    */
 
-    navigate("home.html");
+    await createUserProfile(
+      data.user,
+      displayName
+    );
+
+
+    showToast(
+      "Account created successfully!"
+    );
+
+
+    navigate(
+      "home.html"
+    );
+
 
     return true;
 
   } catch (error) {
-    console.error("Create account error:", error);
+
+    console.error(
+      "Create account error:",
+      error
+    );
+
     showToast(
-      error.message || "Unable to create account."
+      error.message ||
+      "Unable to create your account."
     );
 
     return false;
   }
 }
-```
-
-```javascript
-    source.connect(gain);
-    gain.connect(masterGain);
-
-    if (options.loop) {
-        source.loop = true;
-    }
-
-    source.start(0);
-
-    return {
-        source,
-        gain,
-        stop() {
-            try {
-                source.stop();
-            } catch (error) {
-                // Already stopped.
-            }
-        }
-    };
-}
-
-function setMasterVolume(value) {
-    if (!masterGain) initAudioEngine();
-
-    masterGain.gain.setTargetAtTime(
-        Number(value),
-        audioContext.currentTime,
-        0.01
-    );
-}
 
 
-```javascript
-async function signIn(email, password) {
+/* =========================================================
+   SIGN IN
+   ========================================================= */
+
+async function signIn(
+  email,
+  password
+) {
+
   if (!supabaseClient) {
-    showToast("Supabase is not configured yet.");
+
+    showToast(
+      "Supabase is not configured yet."
+    );
+
     return false;
   }
 
   try {
+
     const {
       data,
       error
-    } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
+    } = await supabaseClient.auth
+      .signInWithPassword({
+
+        email,
+
+        password
+
+      });
+
 
     if (error) {
       throw error;
     }
 
-    GrooveDNA.user = data.user;
-    GrooveDNA.session = data.session;
 
-    showToast("✓ Signed in successfully!");
+    GrooveDNA.user =
+      data.user;
 
-    await getCurrentSession();
+    GrooveDNA.session =
+      data.session;
+
+
+    /*
+      Make sure this user
+      has an individual profile.
+    */
+
+    await createUserProfile(
+      data.user,
+      data.user.user_metadata?.display_name
+    );
+
+
+    showToast(
+      "Welcome back!"
+    );
+
+
+    navigate(
+      "home.html"
+    );
+
 
     return true;
 
   } catch (error) {
-    console.error("Sign in error:", error);
+
+    console.error(
+      "Sign in error:",
+      error
+    );
 
     showToast(
-      error.message || "Unable to sign in."
+      error.message ||
+      "Unable to sign in."
     );
 
     return false;
@@ -1615,79 +1694,447 @@ async function signIn(email, password) {
 }
 
 
+/* =========================================================
+   SIGN OUT
+   ========================================================= */
+
 async function signOut() {
+
   if (!supabaseClient) {
-    showToast("Supabase is not configured yet.");
-    return false;
+
+    navigate(
+      "index.html"
+    );
+
+    return;
   }
 
   try {
+
     const {
       error
     } = await supabaseClient.auth.signOut();
 
+
     if (error) {
       throw error;
     }
 
-    GrooveDNA.user = null;
-    GrooveDNA.session = null;
 
-    showToast("✓ Signed out.");
+    GrooveDNA.user =
+      null;
 
-    return true;
+    GrooveDNA.session =
+      null;
 
-  } catch (error) {
-    console.error("Sign out error:", error);
 
     showToast(
-      error.message || "Unable to sign out."
+      "Signed out."
     );
 
-    return false;
+
+    setTimeout(
+      () => {
+
+        navigate(
+          "index.html"
+        );
+
+      },
+      400
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Sign out error:",
+      error
+    );
+
+    showToast(
+      error.message ||
+      "Unable to sign out."
+    );
   }
 }
 
+/* =========================================================
+   USER PROFILE CREATION
+   ========================================================= */
 
-async function resetPassword(email) {
-  if (!supabaseClient) {
-    showToast("Supabase is not configured yet.");
-    return false;
+async function createUserProfile(
+  user,
+  displayName = ""
+) {
+
+  if (
+    !supabaseClient ||
+    !user
+  ) {
+    return;
   }
 
+
+  /*
+    Supabase table:
+
+    profiles
+
+    Recommended columns:
+
+    id UUID PRIMARY KEY
+    username TEXT
+    display_name TEXT
+    avatar_url TEXT
+    bio TEXT
+    created_at TIMESTAMP
+  */
+
+
   try {
+
     const {
+      data: existing,
+      error: lookupError
+    } = await supabaseClient
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+
+    if (lookupError) {
+
+      console.warn(
+        "Profile lookup:",
+        lookupError.message
+      );
+
+      return;
+    }
+
+
+    /*
+      Only create the profile
+      if this user does not
+      already have one.
+    */
+
+    if (!existing) {
+
+      const username =
+        displayName ||
+        user.user_metadata?.display_name ||
+        user.email?.split("@")[0] ||
+        `creator_${user.id.slice(0, 6)}`;
+
+
+      const {
+        error
+      } = await supabaseClient
+        .from("profiles")
+        .insert({
+
+          id:
+            user.id,
+
+          username:
+            username,
+
+          display_name:
+            username
+
+        });
+
+
+      if (error) {
+
+        console.warn(
+          "Profile creation:",
+          error.message
+        );
+
+      }
+    }
+
+  } catch (error) {
+
+    console.warn(
+      "Profile setup error:",
       error
-    } = await supabaseClient.auth.resetPasswordForEmail(
-      email,
-      {
-        redirectTo:
-          window.location.origin + "/reset-password.html"
+    );
+  }
+}
+
+/* =========================================================
+   6. AUTH FORM
+   ========================================================= */
+
+function setupAuthForm() {
+
+const GrooveDNA = {
+
+  user: null,
+
+  session: null,
+
+  authMode: "signin",
+
+  // ...the rest of your existing state
+
+};
+
+  const form =
+    $("#authForm");
+
+  if (!form) {
+    return;
+  }
+
+
+  const title =
+    $("#authTitle");
+
+  const submit =
+    $("#authSubmit");
+
+  const nameGroup =
+    $("#authNameGroup");
+
+  const toggleCopy =
+    $("#authToggleCopy");
+
+
+  function updateAuthUI() {
+
+    const signup =
+      GrooveDNA.authMode ===
+      "signup";
+
+
+    if (title) {
+
+      title.textContent =
+        signup
+          ? "Create your groove."
+          : "Enter your groove.";
+
+    }
+
+
+    if (submit) {
+
+      submit.textContent =
+        signup
+          ? "Create Account"
+          : "Sign In";
+
+    }
+
+
+    if (nameGroup) {
+
+      nameGroup.style.display =
+        signup
+          ? "block"
+          : "none";
+
+    }
+
+
+    if (toggleCopy) {
+
+      toggleCopy.innerHTML =
+        signup
+
+          ? `
+              Already have an account?
+              <a
+                href="#"
+                id="authModeToggle"
+              >
+                Sign in
+              </a>
+            `
+
+          : `
+              New to GrooveDNA?
+              <a
+                href="#"
+                id="authModeToggle"
+              >
+                Create an account
+              </a>
+            `;
+
+
+      const newToggle =
+        $("#authModeToggle");
+
+
+      if (newToggle) {
+
+        newToggle.addEventListener(
+          "click",
+          event => {
+
+            event.preventDefault();
+
+
+            GrooveDNA.authMode =
+              signup
+                ? "signin"
+                : "signup";
+
+
+            updateAuthUI();
+
+          }
+        );
+      }
+    }
+  }
+
+
+  updateAuthUI();
+
+
+  /* =======================================================
+     FORM SUBMISSION
+     ======================================================= */
+
+  form.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+
+      const email =
+        $("#authEmail")
+          ?.value
+          .trim();
+
+
+      const password =
+        $("#authPassword")
+          ?.value;
+
+
+      const displayName =
+        $("#authName")
+          ?.value
+          .trim() || "";
+
+
+      if (
+        !email ||
+        !password
+      ) {
+
+        showToast(
+          "Enter your email and password."
+        );
+
+        return;
+      }
+
+
+      if (
+        password.length < 6
+      ) {
+
+        showToast(
+          "Password must be at least 6 characters."
+        );
+
+        return;
+      }
+
+
+      submit.disabled =
+        true;
+
+
+      if (
+        GrooveDNA.authMode ===
+        "signup"
+      ) {
+
+        await createAccount(
+          email,
+          password,
+          displayName
+        );
+
+      } else {
+
+        await signIn(
+          email,
+          password
+        );
+      }
+
+
+      submit.disabled =
+        false;
+
+    }
+  );
+
+
+  /* =======================================================
+     SIGN IN LINK
+     ======================================================= */
+
+  $("#signInLink")
+    ?.addEventListener(
+      "click",
+      event => {
+
+        event.preventDefault();
+
+
+        GrooveDNA.authMode =
+          "signin";
+
+
+        updateAuthUI();
+
+
+        window.location.hash =
+          "auth";
+
       }
     );
 
-    if (error) {
-      throw error;
-    }
 
-    showToast(
-      "✓ Password reset email sent."
+ /* =======================================================
+     CREATE ACCOUNT LINK
+     ======================================================= */
+
+  $("#createAccountLink")
+    ?.addEventListener(
+      "click",
+      event => {
+
+        event.preventDefault();
+
+
+        GrooveDNA.authMode =
+          "signup";
+
+
+        updateAuthUI();
+
+
+        window.location.hash =
+          "auth";
+
+      }
     );
 
-    return true;
-
-  } catch (error) {
-    console.error("Password reset error:", error);
-
-    showToast(
-      error.message || "Unable to send password reset email."
-    );
-
-    return false;
-  }
 }
-
-
 /* =========================================================
    28. AUTH STATE LISTENER
    ========================================================= */
