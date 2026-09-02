@@ -1,8 +1,8 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -12,16 +12,24 @@
 
   <meta
     name="description"
-    content="Your GrooveDNA music library."
+    content="GrooveDNA — discover music, understand your musical DNA, create beats, and connect with creators."
   >
 
-  <title>GrooveDNA | Library</title>
+  <title>GrooveDNA | Find the Sound. Flip the Groove.</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <!-- =========================
+       FONTS
+  ========================== -->
 
   <link
     rel="preconnect"
-    href="https://fonts.gstatic.com"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
     crossorigin
   >
 
@@ -30,16 +38,23 @@
     rel="stylesheet"
   >
 
+
+  <!-- =========================
+       GROOVEDNA STYLES
+  ========================== -->
+
   <link
     rel="stylesheet"
     href="styles.css"
   >
+
 </head>
 
 
 <body>
 
   <div class="app-shell">
+
 
     <!-- =========================
          HEADER
@@ -49,9 +64,10 @@
 
       <a
         class="brand"
-        href="home.html"
+        href="index.html"
         aria-label="GrooveDNA home"
       >
+
         <span class="brand-mark">
           GD
         </span>
@@ -59,13 +75,16 @@
         <span>
           Groove<span>DNA</span>
         </span>
+
       </a>
 
 
+      <!-- MOBILE MENU -->
+
       <button
+        type="button"
         class="menu-toggle"
         id="menuToggle"
-        type="button"
         aria-label="Open navigation"
         aria-expanded="false"
         aria-controls="mainNav"
@@ -73,6 +92,8 @@
         ☰
       </button>
 
+
+      <!-- NAVIGATION -->
 
       <nav
         id="mainNav"
@@ -99,11 +120,7 @@
           Community
         </a>
 
-        <a
-          class="active"
-          href="library.html"
-          aria-current="page"
-        >
+        <a href="library.html">
           Library
         </a>
 
@@ -113,399 +130,291 @@
 
       </nav>
 
+
+      <!-- HEADER ACTION -->
+
+      <div class="top-actions">
+
+        <button
+          type="button"
+          class="header-action"
+          id="uploadBtn"
+        >
+          ＋ Upload Audio
+        </button>
+
+      </div>
+
     </header>
 
 
     <!-- =========================
-         MAIN
+         MAIN CONTENT
     ========================== -->
 
     <main>
 
+
       <!-- =========================
-           LIBRARY
+           HERO
       ========================== -->
 
       <section
-        class="content-section playlist-section"
-        id="library"
-        aria-labelledby="libraryTitle"
+        class="hero"
+        id="home"
       >
 
-        <div class="section-heading">
+        <div class="hero-copy">
 
-          <div>
 
-            <p class="eyebrow">
-              YOUR LIBRARY
-            </p>
+          <p class="eyebrow">
+            ROCK • FUNK • SOUL
+          </p>
 
-            <h1 id="libraryTitle">
-              Made for you
-            </h1>
+
+          <h1>
+
+            Find the sound.
+
+            <br>
+
+            <span>
+              Flip the groove.
+            </span>
+
+          </h1>
+
+
+          <p class="hero-text">
+            Discover sounds that fit your taste, understand your
+            musical DNA, build original ideas, and connect with creators.
+          </p>
+
+
+          <!-- HERO ACTIONS -->
+
+          <div class="hero-actions">
+
+            <a
+              class="btn primary"
+              href="discover.html"
+            >
+              Explore Sounds
+            </a>
+
+
+            <a
+              class="btn secondary"
+              href="beatlab.html"
+            >
+              Open Beat Lab
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <!-- =========================
+             HERO CONSOLE
+        ========================== -->
+
+        <div class="hero-console">
+
+          <div class="record"></div>
+
+
+          <div class="console-card">
 
             <p>
-              Save music, playlists, albums and ideas
-              in one place.
+              NOW EXPLORING
             </p>
 
-          </div>
+
+            <h3>
+              Funky Guitar Break
+            </h3>
 
 
-          <button
-            class="btn secondary"
-            id="newPlaylist"
-            type="button"
-          >
-            ＋ New Playlist
-          </button>
+            <!-- DEMO WAVEFORM -->
 
-        </div>
+            <div
+              class="waveform"
+              aria-hidden="true"
+            >
 
-
-        <!-- =========================
-             LIBRARY TABS
-        ========================== -->
-
-        <div
-          class="library-tabs"
-          role="tablist"
-          aria-label="Library categories"
-        >
-
-          <button
-            class="library-tab active"
-            type="button"
-            role="tab"
-            aria-selected="true"
-            data-library="all"
-          >
-            All
-          </button>
-
-
-          <button
-            class="library-tab"
-            type="button"
-            role="tab"
-            aria-selected="false"
-            data-library="songs"
-          >
-            Liked Songs
-          </button>
-
-
-          <button
-            class="library-tab"
-            type="button"
-            role="tab"
-            aria-selected="false"
-            data-library="playlists"
-          >
-            Playlists
-          </button>
-
-
-          <button
-            class="library-tab"
-            type="button"
-            role="tab"
-            aria-selected="false"
-            data-library="albums"
-          >
-            Albums
-          </button>
-
-
-          <button
-            class="library-tab"
-            type="button"
-            role="tab"
-            aria-selected="false"
-            data-library="history"
-          >
-            Recently Played
-          </button>
-
-        </div>
-
-
-        <!-- =========================
-             LIBRARY CONTENT
-        ========================== -->
-
-        <div
-          class="playlist-grid"
-          id="playlistGrid"
-          aria-live="polite"
-        >
-        </div>
-
-
-        <!-- =========================
-             SAVED SOUNDS
-        ========================== -->
-
-        <section
-          class="library-subsection"
-          id="savedSoundsSection"
-          aria-labelledby="savedSoundsTitle"
-        >
-
-          <div class="section-heading">
-
-            <div>
-
-              <p class="eyebrow">
-                SAVED SOUNDS
-              </p>
-
-              <h2 id="savedSoundsTitle">
-                Your saved sounds
-              </h2>
-
-              <p>
-                Sounds you've saved from Discover
-                will appear here.
-              </p>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
 
             </div>
 
-          </div>
 
+            <!-- TRACK META -->
 
-          <div
-            class="sample-grid"
-            id="savedSoundsGrid"
-            aria-live="polite"
-          >
-          </div>
+            <div class="track-meta">
 
-        </section>
+              <span>
+                96 BPM
+              </span>
 
+              <span>
+                E Minor
+              </span>
 
-        <!-- =========================
-             LIKED / MOST PLAYED SONGS
-        ========================== -->
-
-        <section
-          class="library-subsection"
-          id="likedSongsSection"
-          aria-labelledby="likedSongsTitle"
-        >
-
-          <div class="section-heading">
-
-            <div>
-
-              <p class="eyebrow">
-                YOUR FAVORITES
-              </p>
-
-              <h2 id="likedSongsTitle">
-                Songs you love
-              </h2>
-
-              <p>
-                Your most liked and frequently used
-                songs will appear here.
-              </p>
+              <span>
+                Funk
+              </span>
 
             </div>
 
-          </div>
 
-
-          <div
-            class="playlist-grid"
-            id="likedSongsGrid"
-            aria-live="polite"
-          >
-          </div>
-
-        </section>
-
-
-        <!-- =========================
-             RECENTLY PLAYED
-        ========================== -->
-
-        <section
-          class="library-subsection"
-          id="recentlyPlayedSection"
-          aria-labelledby="recentlyPlayedTitle"
-        >
-
-          <div class="section-heading">
-
-            <div>
-
-              <p class="eyebrow">
-                LISTENING HISTORY
-              </p>
-
-              <h2 id="recentlyPlayedTitle">
-                Recently played
-              </h2>
-
-              <p>
-                Pick up where you left off.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div
-            class="playlist-grid"
-            id="recentlyPlayedGrid"
-            aria-live="polite"
-          >
-          </div>
-
-        </section>
-
-
-        <!-- =========================
-             PLAYLISTS
-        ========================== -->
-
-        <section
-          class="library-subsection"
-          id="playlistsSection"
-          aria-labelledby="playlistsTitle"
-        >
-
-          <div class="section-heading">
-
-            <div>
-
-              <p class="eyebrow">
-                PLAYLISTS
-              </p>
-
-              <h2 id="playlistsTitle">
-                Your playlists
-              </h2>
-
-              <p>
-                Organize your favorite sounds and songs.
-              </p>
-
-            </div>
-
+            <!-- DEMO PLAY BUTTON -->
 
             <button
-              class="btn secondary"
-              id="newPlaylistSecondary"
               type="button"
+              class="play-btn"
+              data-demo-play
+              data-title="Funky Guitar Break"
+              aria-label="Play Funky Guitar Break"
             >
-              ＋ New Playlist
+              ▶ Play Preview
             </button>
 
           </div>
 
-
-          <div
-            class="playlist-grid"
-            id="userPlaylistGrid"
-            aria-live="polite"
-          >
-          </div>
-
-        </section>
-
-
-        <!-- =========================
-             ALBUMS
-        ========================== -->
-
-        <section
-          class="library-subsection"
-          id="albumsSection"
-          aria-labelledby="albumsTitle"
-        >
-
-          <div class="section-heading">
-
-            <div>
-
-              <p class="eyebrow">
-                ALBUMS
-              </p>
-
-              <h2 id="albumsTitle">
-                Saved albums
-              </h2>
-
-              <p>
-                Albums you've saved or listened to.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div
-            class="playlist-grid"
-            id="albumGrid"
-            aria-live="polite"
-          >
-          </div>
-
-        </section>
+        </div>
 
       </section>
 
 
       <!-- =========================
-           ARTISTS
+           QUICK ACTIONS
       ========================== -->
 
-      <section
-        class="artist-section content-section"
-        aria-labelledby="artistsTitle"
-      >
+      <section class="quick-grid">
 
-        <div class="section-heading">
+
+        <!-- DISCOVER -->
+
+        <a
+          class="quick-card"
+          href="discover.html"
+        >
+
+          <span aria-hidden="true">
+            ⌕
+          </span>
 
           <div>
 
-            <p class="eyebrow">
-              ARTISTS
-            </p>
+            <strong>
+              Discover
+            </strong>
 
-            <h2 id="artistsTitle">
-              Artists in your orbit
-            </h2>
-
-            <p>
-              Creators connected to the music
-              you're discovering.
-            </p>
+            <small>
+              Find your next obsession
+            </small>
 
           </div>
 
-
-          <button
-            class="btn ghost"
-            id="viewArtists"
-            type="button"
-          >
-            View all
-          </button>
-
-        </div>
+        </a>
 
 
-        <div
-          class="artist-grid"
-          id="artistGrid"
-          aria-live="polite"
+        <!-- GROOVEDNA -->
+
+        <a
+          class="quick-card"
+          href="groovedna.html"
         >
-        </div>
+
+          <span aria-hidden="true">
+            🧬
+          </span>
+
+          <div>
+
+            <strong>
+              Your GrooveDNA
+            </strong>
+
+            <small>
+              See what makes your taste unique
+            </small>
+
+          </div>
+
+        </a>
+
+
+        <!-- BEAT LAB -->
+
+        <a
+          class="quick-card"
+          href="beatlab.html"
+        >
+
+          <span aria-hidden="true">
+            ✦
+          </span>
+
+          <div>
+
+            <strong>
+              Create
+            </strong>
+
+            <small>
+              Turn inspiration into a beat
+            </small>
+
+          </div>
+
+        </a>
+
+
+        <!-- COMMUNITY -->
+
+        <a
+          class="quick-card"
+          href="community.html"
+        >
+
+          <span aria-hidden="true">
+            ◎
+          </span>
+
+          <div>
+
+            <strong>
+              Connect
+            </strong>
+
+            <small>
+              Meet creators with your taste
+            </small>
+
+          </div>
+
+        </a>
 
       </section>
 
@@ -522,15 +431,16 @@
         GrooveDNA
       </strong>
 
+
       <span>
-        Find the Sound. Flip the Groove.
-        Create Something New.
+        Find the Sound. Flip the Groove. Create Something New.
       </span>
+
 
       <div>
 
-        <a href="discover.html">
-          Discover
+        <a href="library.html">
+          Library
         </a>
 
         <a href="profile.html">
@@ -545,32 +455,41 @@
 
 
   <!-- =========================
+       AUDIO UPLOAD
+  ========================== -->
+
+  <input
+    type="file"
+    id="audioUpload"
+    accept="audio/*"
+    hidden
+  >
+
+
+  <!-- =========================
        TOAST
   ========================== -->
 
   <div
-    id="toast"
     class="toast"
+    id="toast"
     role="status"
     aria-live="polite"
-  >
-  </div>
+  ></div>
 
 
   <!-- =========================
        SUPABASE
   ========================== -->
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-  ></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
   <!-- =========================
-       GROOVEDNA JAVASCRIPT
+       GROOVEDNA MASTER JAVASCRIPT
   ========================== -->
 
-  <script src="script.js"></script>
+  <script src="GrooveDNA_script_updated.js"></script>
 
 </body>
 
