@@ -3803,3 +3803,43 @@ function renderBeatMode(mode) {
 }
 
 
+/* =========================================================
+   44. INITIALIZE PRODUCTION UX
+   ========================================================= */
+
+function initializeProductionUX() {
+
+  setupNetworkUX();
+
+  setupGlobalErrorHandling();
+
+  setupGlobalButtonUX();
+
+  setupAccessibilityUX();
+}
+
+
+// =======================================================
+// 45. START APPLICATION
+// =======================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+    try {
+        initAudioEngine();
+
+        renderSamples();
+        renderStretch();
+        renderPlaylists();
+        renderSettings();
+
+        console.log(
+            "GrooveDNA complete frontend loaded."
+        );
+
+    } catch (error) {
+        console.error(
+            "GrooveDNA startup error:",
+            error
+        );
+    }
+});
