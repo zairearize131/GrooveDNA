@@ -1841,6 +1841,78 @@ function setupBeatLab() {
 }
 
 
+// =======================================================
+// DRUM PAD MACHINE
+// =======================================================
+
+const drumState = {
+    recording: false,
+    pattern: [],
+    bpm: 96
+};
+
+function playDrumSynth(type) {
+    initAudioEngine();
+
+    const now = audioContext.currentTime;
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.connect(gain);
+    gain.connect(masterGain);
+
+    if (type === "kick") {
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(150, now);
+        oscillator.frequency.exponentialRampToValueAtTime(45, now + 0.15);
+
+        gain.gain.setValueAtTime(1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+    } else if (type === "snare") {
+        oscillator.type = "triangle";
+        oscillator.frequency.setValueAtTime(180, now);
+
+        gain.gain.setValueAtTime(0.5, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+    } else if (type === "hihat") {
+        oscillator.type = "square";
+        oscillator.frequency.setValueAtTime(5000, now);
+
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+    } else if (type === "clap") {
+        oscillator.type = "sawtooth";
+        oscillator.frequency.setValueAtTime(900, now);
+
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+    }
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.6);
+}
+
+function triggerDrumPad(type, button) {
+    playDrumSynth(type);
+
+    if (button) {
+        button.classList.add("active");
+
+        setTimeout(() => {
+            button.classList.remove("active");
+        }, 100);
+    }
+
+    if (drumState.recording) {
+        drumState.pattern.push({
+            type,
+            time: performance.now()
+        });
+    }
+}
 /* =========================================================
    16. BEAT LAB CONTROLS
    ========================================================= */
