@@ -4001,3 +4001,1285 @@ function setupDiscover() {
 
 
 ```
+
+```javascript
+function setChannelMute(name, muted = true) {
+
+    const channel =
+        mixerChannels.get(name);
+
+    if (!channel) {
+        return;
+    }
+
+    channel.muted = Boolean(muted);
+
+    channel.gain.gain.setTargetAtTime(
+        channel.muted
+            ? 0
+            : 1,
+        audioContext.currentTime,
+        0.01
+    );
+}
+
+
+function setChannelSolo(name, solo = true) {
+
+    const channel =
+        mixerChannels.get(name);
+
+    if (!channel) {
+        return;
+    }
+
+    channel.solo = Boolean(solo);
+
+    const anySolo =
+        [...mixerChannels.values()]
+            .some(item => item.solo);
+
+    mixerChannels.forEach(item => {
+
+        const shouldMute =
+            anySolo &&
+            !item.solo;
+
+        item.gain.gain.setTargetAtTime(
+            shouldMute || item.muted
+                ? 0
+                : 1,
+            audioContext.currentTime,
+            0.01
+        );
+
+    });
+}
+
+
+function resetMixerChannel(name) {
+
+    const channel =
+        mixerChannels.get(name);
+
+    if (!channel) {
+        return;
+    }
+
+    channel.muted = false;
+    channel.solo = false;
+
+    channel.gain.gain.setTargetAtTime(
+        1,
+        audioContext.currentTime,
+        0.01
+    );
+
+    channel.pan.pan.setTargetAtTime(
+        0,
+        audioContext.currentTime,
+        0.01
+    );
+}
+
+
+function setupMixer() {
+
+    const mixer =
+        $("#musicMixer") ||
+        $(".music-mixer") ||
+        $("#mixer");
+
+    if (!mixer) {
+        return;
+    }
+
+    const channelElements =
+        $$(
+            "[data-mixer-channel]",
+            mixer
+        );
+
+    channelElements.forEach(element => {
+
+        const name =
+            element.dataset.mixerChannel;
+
+        if (!name) {
+            return;
+        }
+
+        createMixerChannel(name);
+
+        const volume =
+            element.querySelector(
+                "[data-mixer-volume]"
+            );
+
+        const pan =
+            element.querySelector(
+                "[data-mixer-pan]"
+            );
+
+        const mute =
+            element.querySelector(
+                "[data-mixer-mute]"
+            );
+
+        const solo =
+            element.querySelector(
+                "[data-mixer-solo]"
+            );
+
+        volume?.addEventListener(
+            "input",
+            event => {
+
+                setChannelVolume(
+                    name,
+                    event.target.value
+                );
+
+            }
+        );
+
+        pan?.addEventListener(
+            "input",
+            event => {
+
+                setChannelPan(
+                    name,
+                    event.target.value
+                );
+
+            }
+        );
+
+        mute?.addEventListener(
+            "click",
+            () => {
+
+                const channel =
+                    mixerChannels.get(name);
+
+                if (!channel) {
+                    return;
+                }
+
+                setChannelMute(
+                    name,
+                    !channel.muted
+                );
+
+                mute.classList.toggle(
+                    "active",
+                    channel.muted
+                );
+
+            }
+        );
+
+        solo?.addEventListener(
+            "click",
+            () => {
+
+                const channel =
+                    mixerChannels.get(name);
+
+                if (!channel) {
+                    return;
+                }
+
+                setChannelSolo(
+                    name,
+                    !channel.solo
+                );
+
+                solo.classList.toggle(
+                    "active",
+                    channel.solo
+                );
+
+            }
+        );
+
+    });
+
+
+    $("#resetMixer")?.addEventListener(
+        "click",
+        () => {
+
+            mixerChannels.forEach(
+                (_, name) => {
+                    resetMixerChannel(name);
+                }
+            );
+
+            $$(
+                "[data-mixer-mute]",
+                mixer
+            ).forEach(button => {
+                button.classList.remove(
+                    "active"
+                );
+            });
+
+            $$(
+                "[data-mixer-solo]",
+                mixer
+            ).forEach(button => {
+                button.classList.remove(
+                    "active"
+                );
+            });
+
+            $$(
+                "[data-mixer-volume]",
+                mixer
+            ).forEach(input => {
+                input.value = 1;
+            });
+
+            $$(
+                "[data-mixer-pan]",
+                mixer
+            ).forEach(input => {
+                input.value = 0;
+            });
+
+            showToast(
+                "Mixer reset."
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   16. BEAT LAB — DRUM PAD INTERACTION
+   ========================================================= */
+
+function setupDrumPadMachine() {
+
+    const padContainer =
+        $("#drumPadMachine") ||
+        $(".drum-pad-machine") ||
+        $("#drumPads");
+
+    if (!padContainer) {
+        return;
+    }
+
+
+    const pads =
+        $$(
+            "[data-drum-pad]",
+            padContainer
+        );
+
+    pads.forEach(pad => {
+
+        const type =
+            pad.dataset.drumPad;
+
+        if (!type) {
+            return;
+        }
+
+        pad.addEventListener(
+            "pointerdown",
+            event => {
+
+                event.preventDefault();
+
+                triggerDrumPad(
+                    type,
+                    pad
+                );
+
+            }
+        );
+
+        pad.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key === "Enter" ||
+                    event.key === " "
+                ) {
+
+                    event.preventDefault();
+
+                    triggerDrumPad(
+                        type,
+                        pad
+                    );
+
+                }
+
+            }
+        );
+
+    });
+
+
+    const recordButton =
+        $(
+            "[data-drum-record]",
+            padContainer
+        );
+
+    recordButton?.addEventListener(
+        "click",
+        () => {
+
+            drumState.recording =
+                !drumState.recording;
+
+            if (
+                drumState.recording
+            ) {
+
+                drumState.pattern = [];
+
+                recordButton.classList.add(
+                    "active"
+                );
+
+                recordButton.textContent =
+                    "⏹ Stop Recording";
+
+                showToast(
+                    "Drum recording started."
+                );
+
+            } else {
+
+                recordButton.classList.remove(
+                    "active"
+                );
+
+                recordButton.textContent =
+                    "● Record";
+
+                showToast(
+                    `${drumState.pattern.length} drum hits recorded.`
+                );
+
+            }
+
+        }
+    );
+
+
+    const clearButton =
+        $(
+            "[data-drum-clear]",
+            padContainer
+        );
+
+    clearButton?.addEventListener(
+        "click",
+        () => {
+
+            drumState.pattern = [];
+
+            showToast(
+                "Drum pattern cleared."
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   17. BEAT LAB — KEYBOARD DRUM CONTROLS
+   ========================================================= */
+
+function setupDrumKeyboardControls() {
+
+    if (
+        window.__grooveDNADrumKeyboard
+    ) {
+        return;
+    }
+
+    window.__grooveDNADrumKeyboard =
+        true;
+
+
+    const keyMap = {
+        a: "kick",
+        s: "snare",
+        d: "hihat",
+        f: "clap",
+        g: "tom",
+        h: "open-hat",
+        j: "crash",
+        k: "perc"
+    };
+
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.ctrlKey ||
+                event.metaKey ||
+                event.altKey
+            ) {
+                return;
+            }
+
+            const target =
+                event.target;
+
+            if (
+                target instanceof
+                    HTMLInputElement ||
+                target instanceof
+                    HTMLTextAreaElement ||
+                target instanceof
+                    HTMLSelectElement ||
+                target?.isContentEditable
+            ) {
+                return;
+            }
+
+            const key =
+                event.key.toLowerCase();
+
+            const type =
+                keyMap[key];
+
+            if (!type) {
+                return;
+            }
+
+            const pad =
+                document.querySelector(
+                    `[data-drum-pad="${type}"]`
+                );
+
+            triggerDrumPad(
+                type,
+                pad
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   18. BEAT LAB — MUSIC MAKER
+   ========================================================= */
+
+const musicMakerState = {
+
+    playing: false,
+
+    bpm: 96,
+
+    step: 0,
+
+    timer: null,
+
+    sequence: Array.from(
+        { length: 16 },
+        () => ({
+            kick: false,
+            snare: false,
+            hihat: false,
+            bass: false
+        })
+    )
+
+};
+
+
+function setupMusicMaker() {
+
+    const maker =
+        $("#musicMaker") ||
+        $(".music-maker") ||
+        $("#beatMaker");
+
+    if (!maker) {
+        return;
+    }
+
+
+    const steps =
+        $$(
+            "[data-step]",
+            maker
+        );
+
+
+    steps.forEach(step => {
+
+        step.addEventListener(
+            "click",
+            () => {
+
+                const index =
+                    Number(
+                        step.dataset.step
+                    );
+
+                const instrument =
+                    step.dataset.instrument;
+
+                if (
+                    !Number.isInteger(index) ||
+                    !instrument ||
+                    !musicMakerState
+                        .sequence[index]
+                ) {
+                    return;
+                }
+
+                const current =
+                    musicMakerState
+                        .sequence[index][
+                            instrument
+                        ];
+
+                musicMakerState
+                    .sequence[index][
+                        instrument
+                    ] =
+                    !current;
+
+                step.classList.toggle(
+                    "active",
+                    !current
+                );
+
+            }
+        );
+
+    });
+
+
+    const bpmInput =
+        $(
+            "[data-maker-bpm]",
+            maker
+        );
+
+    const bpmValue =
+        $(
+            "[data-maker-bpm-value]",
+            maker
+        );
+
+
+    bpmInput?.addEventListener(
+        "input",
+        event => {
+
+            const value =
+                Number(
+                    event.target.value
+                );
+
+            if (
+                Number.isFinite(value)
+            ) {
+
+                musicMakerState.bpm =
+                    value;
+
+                if (bpmValue) {
+                    bpmValue.textContent =
+                        String(value);
+                }
+
+            }
+
+        }
+    );
+
+
+    const playButton =
+        $(
+            "[data-maker-play]",
+            maker
+        );
+
+
+    playButton?.addEventListener(
+        "click",
+        () => {
+
+            if (
+                musicMakerState.playing
+            ) {
+
+                stopMusicMaker();
+
+            } else {
+
+                startMusicMaker();
+
+            }
+
+        }
+    );
+
+
+    const clearButton =
+        $(
+            "[data-maker-clear]",
+            maker
+        );
+
+
+    clearButton?.addEventListener(
+        "click",
+        () => {
+
+            musicMakerState
+                .sequence
+                .forEach(step => {
+
+                    Object.keys(step)
+                        .forEach(key => {
+                            step[key] = false;
+                        });
+
+                });
+
+
+            steps.forEach(step => {
+                step.classList.remove(
+                    "active"
+                );
+            });
+
+
+            showToast(
+                "Music Maker pattern cleared."
+            );
+
+        }
+    );
+
+}
+
+
+function playMusicMakerStep(stepIndex) {
+
+    const step =
+        musicMakerState
+            .sequence[stepIndex];
+
+    if (!step) {
+        return;
+    }
+
+
+    if (step.kick) {
+        playDrumSynth("kick");
+    }
+
+    if (step.snare) {
+        playDrumSynth("snare");
+    }
+
+    if (step.hihat) {
+        playDrumSynth("hihat");
+    }
+
+    if (step.bass) {
+        playBassNote();
+    }
+
+
+    $$(
+        "[data-step]"
+    ).forEach(element => {
+
+        element.classList.toggle(
+            "playing",
+            Number(
+                element.dataset.step
+            ) === stepIndex
+        );
+
+    });
+
+}
+
+
+function startMusicMaker() {
+
+    initAudioEngine();
+
+    if (
+        musicMakerState.playing
+    ) {
+        return;
+    }
+
+    musicMakerState.playing =
+        true;
+
+    musicMakerState.step =
+        0;
+
+
+    const interval =
+        60000 /
+        musicMakerState.bpm /
+        4;
+
+
+    musicMakerState.timer =
+        setInterval(
+            () => {
+
+                playMusicMakerStep(
+                    musicMakerState.step
+                );
+
+                musicMakerState.step =
+                    (
+                        musicMakerState.step +
+                        1
+                    ) % 16;
+
+            },
+            interval
+        );
+
+
+    $$(
+        "[data-maker-play]"
+    ).forEach(button => {
+        button.textContent =
+            "⏸ Stop";
+    });
+
+
+    showToast(
+        "Music Maker playing."
+    );
+
+}
+
+
+function stopMusicMaker() {
+
+    musicMakerState.playing =
+        false;
+
+
+    if (
+        musicMakerState.timer
+    ) {
+
+        clearInterval(
+            musicMakerState.timer
+        );
+
+        musicMakerState.timer =
+            null;
+
+    }
+
+
+    $$(
+        "[data-step]"
+    ).forEach(element => {
+        element.classList.remove(
+            "playing"
+        );
+    });
+
+
+    $$(
+        "[data-maker-play]"
+    ).forEach(button => {
+        button.textContent =
+            "▶ Play";
+    });
+
+}
+
+
+function playBassNote() {
+
+    initAudioEngine();
+
+    const now =
+        audioContext.currentTime;
+
+    const oscillator =
+        audioContext.createOscillator();
+
+    const gain =
+        audioContext.createGain();
+
+
+    oscillator.type =
+        "sawtooth";
+
+    oscillator.frequency
+        .setValueAtTime(
+            55,
+            now
+        );
+
+
+    gain.gain.setValueAtTime(
+        0.18,
+        now
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        now + 0.3
+    );
+
+
+    oscillator.connect(gain);
+
+    gain.connect(masterGain);
+
+
+    oscillator.start(now);
+
+    oscillator.stop(
+        now + 0.35
+    );
+
+}
+
+
+/* =========================================================
+   19. BEAT LAB — MODE SWITCHING
+   ========================================================= */
+
+function setupBeatLabModes() {
+
+    const buttons =
+        $$(
+            "[data-beat-mode]"
+        );
+
+    if (!buttons.length) {
+        return;
+    }
+
+
+    buttons.forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const mode =
+                    button.dataset.beatMode;
+
+                if (!mode) {
+                    return;
+                }
+
+                GrooveDNA.beatMode =
+                    mode;
+
+                buttons.forEach(item => {
+                    item.classList.toggle(
+                        "active",
+                        item === button
+                    );
+                });
+
+                renderBeatMode(
+                    mode
+                );
+
+            }
+        );
+
+    });
+
+}
+
+
+function renderBeatMode(mode) {
+
+    const modes = [
+        "mixer",
+        "drumpad",
+        "musicmaker"
+    ];
+
+
+    modes.forEach(name => {
+
+        const panel =
+            document.querySelector(
+                `[data-beat-panel="${name}"]`
+            );
+
+        if (!panel) {
+            return;
+        }
+
+        panel.hidden =
+            name !== mode;
+
+    });
+
+
+    const modeButton =
+        document.querySelector(
+            `[data-beat-mode="${mode}"]`
+        );
+
+    if (modeButton) {
+
+        $$(
+            "[data-beat-mode]"
+        ).forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                button === modeButton
+            );
+
+        });
+
+    }
+
+}
+
+
+/* =========================================================
+   20. BEAT LAB — SAMPLE TO TRACK
+   ========================================================= */
+
+function addSampleToBeatLab(sample) {
+
+    if (!sample) {
+        return;
+    }
+
+
+    const timeline =
+        $("#timeline");
+
+    if (!timeline) {
+        showToast(
+            "Beat Lab timeline is unavailable."
+        );
+        return;
+    }
+
+
+    const empty =
+        $("#labEmpty");
+
+    if (empty) {
+        empty.style.display =
+            "none";
+    }
+
+
+    let track =
+        timeline.querySelector(
+            ".track.melody"
+        );
+
+
+    if (!track) {
+
+        track =
+            document.createElement(
+                "div"
+            );
+
+        track.className =
+            "track melody";
+
+        track.innerHTML = `
+            <span class="track-label">
+                MELODY
+            </span>
+        `;
+
+        timeline.appendChild(
+            track
+        );
+
+    }
+
+
+    const clip =
+        document.createElement(
+            "div"
+        );
+
+    clip.className =
+        "clip melody";
+
+    clip.textContent =
+        sample.title;
+
+    clip.title =
+        `${sample.title} — ${sample.artist}`;
+
+    clip.dataset.sampleId =
+        sample.id;
+
+
+    const width =
+        Math.floor(
+            Math.random() * 120
+        ) + 120;
+
+
+    clip.style.width =
+        `${width}px`;
+
+
+    clip.addEventListener(
+        "click",
+        () => {
+
+            playSample(sample);
+
+        }
+    );
+
+
+    track.appendChild(
+        clip
+    );
+
+
+    GrooveDNA.beatLabSamples =
+        GrooveDNA.beatLabSamples ||
+        [];
+
+    GrooveDNA.beatLabSamples.push(
+        sample
+    );
+
+
+    showToast(
+        `${sample.title} added to Beat Lab.`
+    );
+
+}
+
+
+/* =========================================================
+   21. BEAT LAB — SAVE / CLEAR
+   ========================================================= */
+
+function saveBeat() {
+
+    try {
+
+        const saved =
+            safeStorageGet(
+                "grooveDNA_beatProjects",
+                []
+            );
+
+
+        const project = {
+
+            id:
+                `beat-${Date.now()}`,
+
+            name:
+                `GrooveDNA Beat ${new Date().toLocaleDateString()}`,
+
+            bpm:
+                GrooveDNA.bpm ||
+                musicMakerState.bpm ||
+                96,
+
+            mode:
+                GrooveDNA.beatMode ||
+                "mixer",
+
+            samples:
+                GrooveDNA.beatLabSamples ||
+                [],
+
+            createdAt:
+                new Date().toISOString()
+
+        };
+
+
+        saved.push(
+            project
+        );
+
+
+        safeStorageSet(
+            "grooveDNA_beatProjects",
+            saved
+        );
+
+        safeStorageSet(
+            "grooveDNA_beatSaved",
+            true
+        );
+
+
+        showToast(
+            "✓ Beat idea saved!"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Beat save error:",
+            error
+        );
+
+        showToast(
+            "Unable to save this beat."
+        );
+
+    }
+
+}
+
+
+function clearBeatLab() {
+
+    const timeline =
+        $("#timeline");
+
+    if (timeline) {
+
+        timeline
+            .querySelectorAll(
+                ".clip"
+            )
+            .forEach(clip => {
+                clip.remove();
+            });
+
+    }
+
+
+    const empty =
+        $("#labEmpty");
+
+    if (empty) {
+        empty.style.display =
+            "block";
+    }
+
+
+    GrooveDNA.beatLabSamples =
+        [];
+
+
+    showToast(
+        "Beat Lab cleared."
+    );
+
+}
+
+
+/* =========================================================
+   22. BEAT LAB — GENERATED BEAT
+   ========================================================= */
+
+function generateBeat() {
+
+    initAudioEngine();
+
+
+    const maker =
+        $("#musicMaker") ||
+        $(".music-maker") ||
+        $("#beatMaker");
+
+
+    if (maker) {
+
+        const steps =
+            $$(
+                "[data-step]",
+                maker
+            );
+
+
+        musicMakerState
+            .sequence
+            .forEach((step, index) => {
+
+                step.kick =
+                    index % 4 === 0;
+
+                step.snare =
+                    index % 8 === 4;
+
+                step.hihat =
+                    index % 2 === 0;
+
+                step.bass =
+                    index % 4 === 0;
+
+            });
+
+
+        steps.forEach(element => {
+
+            const index =
+                Number(
+                    element.dataset.step
+                );
+
+            const instrument =
+                element.dataset.instrument;
+
+            if (
+                !Number.isInteger(index) ||
+                !instrument
+            ) {
+                return;
+            }
+
+            element.classList.toggle(
+                "active",
+                Boolean(
+                    musicMakerState
+                        .sequence[index][
+                            instrument
+                        ]
+                )
+            );
+
+        });
+
+    }
+
+
+    showToast(
+        "A new groove has been generated."
+    );
+
+}
+```
