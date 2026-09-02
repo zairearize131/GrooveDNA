@@ -378,6 +378,204 @@
           </div>
 
 
+        ```html
+<!-- =========================================================
+     DRUM PAD MACHINE
+     ========================================================= -->
+
+<div class="drum-machine panel" id="drumMachine">
+
+    <div class="drum-machine-header">
+        <div>
+            <p class="eyebrow">BEAT LAB</p>
+            <h3>Drum Pad Machine</h3>
+            <p class="drum-machine-description">
+                Tap the pads to create your rhythm. Every pad produces
+                an actual sound and can be recorded into your beat.
+            </p>
+        </div>
+
+        <div class="drum-machine-controls">
+
+            <button
+                class="btn secondary"
+                id="drumRecord"
+                type="button"
+                aria-pressed="false"
+            >
+                ● Record
+            </button>
+
+            <button
+                class="btn secondary"
+                id="drumClear"
+                type="button"
+            >
+                Clear
+            </button>
+
+        </div>
+    </div>
+
+
+    <!-- DRUM PAD GRID -->
+
+    <div
+        class="drum-pad-grid"
+        id="drumPadGrid"
+        aria-label="Drum pad machine"
+    >
+
+        <button
+            class="drum-pad kick"
+            type="button"
+            data-drum="kick"
+            aria-label="Kick drum"
+        >
+            <span class="pad-icon">●</span>
+            <strong>KICK</strong>
+            <small>1</small>
+        </button>
+
+
+        <button
+            class="drum-pad snare"
+            type="button"
+            data-drum="snare"
+            aria-label="Snare drum"
+        >
+            <span class="pad-icon">◆</span>
+            <strong>SNARE</strong>
+            <small>2</small>
+        </button>
+
+
+        <button
+            class="drum-pad hihat"
+            type="button"
+            data-drum="hihat"
+            aria-label="Closed hi-hat"
+        >
+            <span class="pad-icon">◇</span>
+            <strong>HI-HAT</strong>
+            <small>3</small>
+        </button>
+
+
+        <button
+            class="drum-pad clap"
+            type="button"
+            data-drum="clap"
+            aria-label="Clap"
+        >
+            <span class="pad-icon">✦</span>
+            <strong>CLAP</strong>
+            <small>4</small>
+        </button>
+
+
+        <button
+            class="drum-pad tom"
+            type="button"
+            data-drum="tom"
+            aria-label="Tom drum"
+        >
+            <span class="pad-icon">◉</span>
+            <strong>TOM</strong>
+            <small>Q</small>
+        </button>
+
+
+        <button
+            class="drum-pad open-hat"
+            type="button"
+            data-drum="openhat"
+            aria-label="Open hi-hat"
+        >
+            <span class="pad-icon">○</span>
+            <strong>OPEN HAT</strong>
+            <small>W</small>
+        </button>
+
+
+        <button
+            class="drum-pad crash"
+            type="button"
+            data-drum="crash"
+            aria-label="Crash cymbal"
+        >
+            <span class="pad-icon">✧</span>
+            <strong>CRASH</strong>
+            <small>E</small>
+        </button>
+
+
+        <button
+            class="drum-pad perc"
+            type="button"
+            data-drum="perc"
+            aria-label="Percussion"
+        >
+            <span class="pad-icon">✺</span>
+            <strong>PERC</strong>
+            <small>R</small>
+        </button>
+
+    </div>
+
+
+    <!-- STEP SEQUENCER -->
+
+    <div class="drum-sequencer">
+
+        <div class="drum-sequencer-header">
+            <div>
+                <strong>Pattern Sequencer</strong>
+                <span id="drumPatternStatus">
+                    Tap Record, then play the pads.
+                </span>
+            </div>
+
+            <div class="drum-pattern-controls">
+
+                <button
+                    class="icon-btn"
+                    id="drumPatternPlay"
+                    type="button"
+                    aria-label="Play drum pattern"
+                >
+                    ▶
+                </button>
+
+                <button
+                    class="icon-btn"
+                    id="drumPatternStop"
+                    type="button"
+                    aria-label="Stop drum pattern"
+                >
+                    ■
+                </button>
+
+            </div>
+        </div>
+
+
+        <div
+            class="drum-step-grid"
+            id="drumStepGrid"
+            aria-label="Drum pattern step sequencer"
+        >
+
+            <!-- JavaScript will generate the 16-step grid here -->
+
+        </div>
+
+    </div>
+
+</div>
+```
+
+
           <!-- =========================
                INSTRUMENT BROWSER
                ========================= -->
