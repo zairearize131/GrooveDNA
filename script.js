@@ -199,6 +199,141 @@ function navigate(page) {
 }
 
 
+// =======================================================
+// GROOVEDNA AUDIO ENGINE
+// =======================================================
+
+let audioContext = null;
+let masterGain = null;
+let audioBuffers = new Map();
+
+function initAudioEngine() {
+    if (audioContext) return;
+
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    masterGain = audioContext.createGain();
+    masterGain.gain.value = 1;
+
+    masterGain.connect(audioContext.destination);
+}
+
+async function resumeAudio() {
+    initAudioEngine();
+
+    if (audioContext.state === "suspended") {
+        await audioContext.resume();
+    }
+}
+
+async function loadAudioFile(file) {
+    await resumeAudio();
+
+    const arrayBuffer = await file.arrayBuffer();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+    const id = `upload-${Date.now()}`;
+    audioBuffers.set(id, audioBuffer);
+
+    return {
+        id,
+        name: file.name,
+        buffer: audioBuffer,
+        duration: audioBuffer.duration
+    };
+}
+
+function playAudioBuffer(buffer, options = {}) {
+    if (!buffer) return null;
+
+    initAudioEngine();
+
+    const source = audioContext.createBufferSource();
+    const gain = audioContext.createGain();
+
+    source.buffer = buffer;
+
+    gain.gain.value =
+        typeof options.volume === "number"
+            ? options.volume
+            : 1;
+
+    source.connect(gain);
+    gain.connect(masterGain);
+
+    if (options.loop) {
+        source.loop = true;
+    }
+
+    source.start(0);
+
+    return {
+        source,
+        gain,
+        stop() {
+            try {
+                source.stop();
+            } catch (error) {
+                // Already stopped.
+            }
+        }
+    };
+}
+
+function setMasterVolume(value) {
+    if (!masterGain) initAudioEngine();
+
+    masterGain.gain.setTargetAtTime(
+        Number(value),
+        audioContext.currentTime,
+        0.01
+    );
+}
+
+
+// =======================================================
+// AUDIO UPLOAD
+// =======================================================
+
+const uploadInput = $("#audioUpload");
+
+function openUpload() {
+    if (uploadInput) {
+        uploadInput.click();
+    }
+}
+
+if ($("#uploadBtn")) {
+    $("#uploadBtn").addEventListener("click", openUpload);
+}
+
+if ($("#uploadBtn2")) {
+    $("#uploadBtn2").addEventListener("click", openUpload);
+}
+
+if (uploadInput) {
+    uploadInput.addEventListener("change", async () => {
+        const file = uploadInput.files[0];
+
+        if (!file) return;
+
+        try {
+            const audio = await loadAudioFile(file);
+
+            showToast(
+                `✓ "${file.name}" loaded • ${audio.duration.toFixed(1)} sec`
+            );
+
+            window.grooveDNAUploadedAudio = audio;
+
+        } catch (error) {
+            console.error("Audio loading error:", error);
+            showToast("⚠ Unable to load that audio file.");
+        }
+    });
+}
+
+
 /* =========================================================
    4. SUPABASE AUTHENTICATION
    ========================================================= */
