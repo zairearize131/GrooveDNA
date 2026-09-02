@@ -1987,6 +1987,46 @@ function muteChannel(name) {
         channel.muted ? 0 : 1;
 }
 
+// =======================================================
+// MUSIC MAKER / SEQUENCER
+// =======================================================
+
+const sequencerState = {
+    bpm: 96,
+    playing: false,
+    notes: []
+};
+
+function addSequencerNote(note) {
+    sequencerState.notes.push({
+        pitch: note.pitch,
+        time: note.time,
+        duration: note.duration,
+        velocity: note.velocity ?? 1
+    });
+}
+
+function removeSequencerNote(index) {
+    sequencerState.notes.splice(index, 1);
+}
+
+function clearSequencer() {
+    sequencerState.notes = [];
+}
+
+function setSequencerBPM(value) {
+    const bpm = Number(value);
+
+    if (!Number.isFinite(bpm)) return;
+
+    sequencerState.bpm =
+        Math.max(40, Math.min(240, bpm));
+}
+
+function getBeatDuration() {
+    return 60 / sequencerState.bpm;
+}
+
 
 /* =========================================================
    16. BEAT LAB CONTROLS
@@ -2529,6 +2569,65 @@ function stopBeat() {
 }
 
 
+// =======================================================
+// BEAT LAB PLAYBACK
+// =======================================================
+
+let beatLabPlaying = false;
+let beatLabTimer = null;
+
+function startBeatLab() {
+    resumeAudio();
+
+    if (beatLabPlaying) return;
+
+    beatLabPlaying = true;
+
+    if ($("#labPlay")) {
+        $("#labPlay").textContent = "⏸";
+    }
+
+    scheduleBeatLab();
+}
+
+function stopBeatLab() {
+    beatLabPlaying = false;
+
+    if (beatLabTimer) {
+        clearTimeout(beatLabTimer);
+        beatLabTimer = null;
+    }
+
+    if ($("#labPlay")) {
+        $("#labPlay").textContent = "▶";
+    }
+}
+
+function scheduleBeatLab() {
+    if (!beatLabPlaying) return;
+
+    const bpm = Number($("#bpm")?.value || 96);
+    const beatLength = 60000 / bpm;
+
+    // This is the timing foundation.
+    // Actual clips/patterns will be scheduled here.
+
+    beatLabTimer = setTimeout(
+        scheduleBeatLab,
+        beatLength
+    );
+}
+
+if ($("#labPlay")) {
+    $("#labPlay").addEventListener("click", () => {
+        if (beatLabPlaying) {
+            stopBeatLab();
+        } else {
+            startBeatLab();
+        }
+    });
+}
+
 /* =========================================================
    21. RECORDING
    ========================================================= */
@@ -2773,6 +2872,76 @@ function generateBeat() {
   showToast(
     "GrooveDNA generated a new idea."
   );
+}
+
+
+// =======================================================
+// PROJECT SAVE / LOAD
+// =======================================================
+
+const PROJECT_STORAGE_KEY = "grooveDNA_project";
+
+function getCurrentProject() {
+    return {
+        bpm: Number($("#bpm")?.value || 96),
+        pitch: Number($("#pitch")?.value || 0),
+        notes: [...sequencerState.notes],
+        drumPattern: [...drumState.pattern],
+        savedAt: new Date().toISOString()
+    };
+}
+
+function saveProject() {
+    const project = getCurrentProject();
+
+    localStorage.setItem(
+        PROJECT_STORAGE_KEY,
+        JSON.stringify(project)
+    );
+
+    showToast("✓ GrooveDNA project saved.");
+}
+
+function loadProject() {
+    const saved =
+        localStorage.getItem(PROJECT_STORAGE_KEY);
+
+    if (!saved) {
+        showToast("No saved GrooveDNA project found.");
+        return null;
+    }
+
+    try {
+        const project = JSON.parse(saved);
+
+        if ($("#bpm")) {
+            $("#bpm").value = project.bpm;
+            $("#bpmValue").textContent = project.bpm;
+        }
+
+        if ($("#pitch")) {
+            $("#pitch").value = project.pitch;
+            $("#pitchValue").textContent =
+                project.pitch > 0
+                    ? `+${project.pitch}`
+                    : project.pitch;
+        }
+
+        sequencerState.notes =
+            project.notes || [];
+
+        drumState.pattern =
+            project.drumPattern || [];
+
+        showToast("✓ GrooveDNA project loaded.");
+
+        return project;
+
+    } catch (error) {
+        console.error("Project load error:", error);
+        showToast("⚠ Saved project could not be loaded.");
+        return null;
+    }
 }
 
 
@@ -5265,6 +5434,65 @@ const MUSICBRAINZ_HEADERS = {
     Accept: "application/json"
 };
 
+
+// =======================================================
+// MUSICBRAINZ
+// =======================================================
+
+const MUSICBRAINZ_BASE =
+    "https://musicbrainz.org/ws/2";
+
+const MUSICBRAINZ_HEADERS = {
+    "Accept": "application/json"
+};
+
+async function searchMusicBrainz(query, type = "recording") {
+    const cleanQuery = String(query || "").trim();
+
+    if (!cleanQuery) {
+        return [];
+    }
+
+    const url =
+        `${MUSICBRAINZ_BASE}/${type}` +
+        `?query=${encodeURIComponent(cleanQuery)}` +
+        `&limit=10` +
+        `&fmt=json`;
+
+    try {
+        const response = await fetch(url, {
+            headers: MUSICBRAINZ_HEADERS
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                `MusicBrainz request failed: ${response.status}`
+            );
+        }
+
+        const data = await response.json();
+
+        return data.recordings ||
+               data.artists ||
+               data.releases ||
+               [];
+
+    } catch (error) {
+        console.error("MusicBrainz error:", error);
+        showToast("⚠ MusicBrainz search failed.");
+        return [];
+    }
+}
+
+async function searchMusicBrainzArtist(name) {
+    return searchMusicBrainz(name, "artist");
+}
+
+async function searchMusicBrainzRecording(title) {
+    return searchMusicBrainz(title, "recording");
+}
+
+
 /* =========================================================
    MUSICBRAINZ SEARCH
    ========================================================= */
@@ -5653,21 +5881,835 @@ async function saveMusicBrainzResult(recording) {
 }
 
 /* =========================================================
-   START APPLICATION
+   PRODUCTION HARDENING — ERROR HANDLING + UI/UX
+   =========================================================
+
+   This layer improves:
+   - graceful error handling
+   - loading states
+   - network/offline feedback
+   - duplicate-click protection
+   - safe localStorage access
+   - Supabase request timeouts
+   - MusicBrainz request retries
+   - global JavaScript error reporting
+   - accessible status feedback
+*/
+
+const GrooveDNAUX = {
+  busyButtons: new WeakSet(),
+  requestTimeout: 15000,
+  retryCount: 2,
+  online: navigator.onLine
+};
+
+
+/* =========================================================
+   SAFE LOCAL STORAGE
    ========================================================= */
 
-if (
-  document.readyState ===
-  "loading"
+function safeLocalStorageGet(key, fallback = null) {
+  try {
+    const value = localStorage.getItem(key);
+    return value === null ? fallback : value;
+  } catch (error) {
+    console.warn("localStorage read failed:", error);
+    return fallback;
+  }
+}
+
+
+function safeLocalStorageSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (error) {
+    console.warn("localStorage write failed:", error);
+    showToast("⚠ Your browser could not save that change.");
+    return false;
+  }
+}
+
+
+function safeLocalStorageRemove(key) {
+  try {
+    localStorage.removeItem(key);
+    return true;
+  } catch (error) {
+    console.warn("localStorage remove failed:", error);
+    return false;
+  }
+}
+
+
+/* =========================================================
+   BUTTON LOADING / DOUBLE-CLICK PROTECTION
+   ========================================================= */
+
+function setButtonBusy(button, busy, busyText = "Working…") {
+  if (!button) return;
+
+  if (busy) {
+
+    if (GrooveDNAUX.busyButtons.has(button)) {
+      return;
+    }
+
+    GrooveDNAUX.busyButtons.add(button);
+
+    button.dataset.originalText = button.textContent;
+
+    button.disabled = true;
+
+    button.setAttribute(
+      "aria-busy",
+      "true"
+    );
+
+    button.textContent = busyText;
+
+  } else {
+
+    GrooveDNAUX.busyButtons.delete(button);
+
+    button.disabled = false;
+
+    button.removeAttribute(
+      "aria-busy"
+    );
+
+    if (
+      button.dataset.originalText !== undefined
+    ) {
+
+      button.textContent =
+        button.dataset.originalText;
+
+      delete button.dataset.originalText;
+    }
+  }
+}
+
+
+/* =========================================================
+   GENERAL LOADING STATE
+   ========================================================= */
+
+function setLoadingState(
+  element,
+  loading,
+  text = "Loading…"
 ) {
 
-  document.addEventListener(
-    "DOMContentLoaded",
-    initGrooveDNA
+  if (!element) return;
+
+  if (loading) {
+
+    element.setAttribute(
+      "aria-busy",
+      "true"
+    );
+
+    element.dataset.originalContent =
+      element.innerHTML;
+
+    element.innerHTML = `
+      <div
+        class="groove-loading"
+        role="status"
+        aria-live="polite"
+      >
+        <span aria-hidden="true">◌</span>
+        <span>${escapeHTML(text)}</span>
+      </div>
+    `;
+
+  } else {
+
+    element.removeAttribute(
+      "aria-busy"
+    );
+  }
+}
+
+
+/* =========================================================
+   ERROR NORMALIZATION
+   ========================================================= */
+
+function normalizeError(
+  error,
+  fallback = "Something went wrong."
+) {
+
+  if (!error) {
+    return fallback;
+  }
+
+  const message =
+    typeof error === "string"
+      ? error
+      : error.message ||
+        error.error_description ||
+        fallback;
+
+  return String(message)
+    .slice(0, 300) || fallback;
+}
+
+
+/* =========================================================
+   USER-FRIENDLY ERROR MESSAGES
+   ========================================================= */
+
+function userFriendlyError(
+  error,
+  fallback = "Something went wrong."
+) {
+
+  const message =
+    normalizeError(
+      error,
+      fallback
+    );
+
+  if (
+    /network|failed to fetch|fetch/i
+      .test(message)
+  ) {
+
+    return (
+      "Network connection problem. " +
+      "Check your connection and try again."
+    );
+  }
+
+  if (
+    /timeout|timed out/i
+      .test(message)
+  ) {
+
+    return (
+      "That request took too long. " +
+      "Please try again."
+    );
+  }
+
+  if (
+    /duplicate|unique/i
+      .test(message)
+  ) {
+
+    return (
+      "That item is already in GrooveDNA."
+    );
+  }
+
+  if (
+    /row-level security|permission denied|not authorized|forbidden/i
+      .test(message)
+  ) {
+
+    return (
+      "You do not have permission " +
+      "to perform that action."
+    );
+  }
+
+  return message;
+}
+
+
+/* =========================================================
+   REQUEST TIMEOUT
+   ========================================================= */
+
+async function withTimeout(
+  promise,
+  timeout = GrooveDNAUX.requestTimeout
+) {
+
+  let timer;
+
+  const timeoutPromise =
+    new Promise((_, reject) => {
+
+      timer = setTimeout(() => {
+
+        reject(
+          new Error(
+            "Request timed out."
+          )
+        );
+
+      }, timeout);
+
+    });
+
+  try {
+
+    return await Promise.race([
+      promise,
+      timeoutPromise
+    ]);
+
+  } finally {
+
+    clearTimeout(timer);
+  }
+}
+
+
+/* =========================================================
+   RETRY FAILED REQUESTS
+   ========================================================= */
+
+async function withRetry(
+  operation,
+  options = {}
+) {
+
+  const retries =
+    Number.isInteger(options.retries)
+      ? options.retries
+      : GrooveDNAUX.retryCount;
+
+  let lastError;
+
+  for (
+    let attempt = 0;
+    attempt <= retries;
+    attempt++
+  ) {
+
+    try {
+
+      return await operation(
+        attempt
+      );
+
+    } catch (error) {
+
+      lastError = error;
+
+      if (
+        attempt >= retries
+      ) {
+        break;
+      }
+
+      const delay =
+        Math.min(
+          1000 * 2 ** attempt,
+          4000
+        );
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            delay
+          )
+      );
+    }
+  }
+
+  throw lastError;
+}
+
+
+/* =========================================================
+   SAFE SUPABASE REQUESTS
+   ========================================================= */
+
+async function safeSupabaseQuery(
+  operation,
+  options = {}
+) {
+
+  if (!supabaseClient) {
+
+    throw new Error(
+      "Supabase is not configured yet."
+    );
+  }
+
+  return withRetry(
+    async () => {
+
+      const result =
+        await withTimeout(
+          operation()
+        );
+
+      if (result?.error) {
+        throw result.error;
+      }
+
+      return result;
+
+    },
+    options
+  );
+}
+
+
+/* =========================================================
+   SAFE MUSICBRAINZ REQUESTS
+   ========================================================= */
+
+async function safeMusicBrainzFetch(
+  url,
+  options = {}
+) {
+
+  if (!GrooveDNAUX.online) {
+
+    throw new Error(
+      "You appear to be offline."
+    );
+  }
+
+  return withRetry(
+    async () => {
+
+      const response =
+        await withTimeout(
+
+          fetch(
+            url,
+            {
+              method: "GET",
+              headers:
+                MUSICBRAINZ_HEADERS,
+              signal:
+                options.signal
+            }
+          )
+
+        );
+
+      if (!response.ok) {
+
+        const error =
+          new Error(
+            `MusicBrainz request failed (${response.status}).`
+          );
+
+        error.status =
+          response.status;
+
+        throw error;
+      }
+
+      return response;
+    },
+
+    {
+      retries: 2
+    }
+  );
+}
+
+
+/* =========================================================
+   ACCESSIBLE STATUS ANNOUNCER
+   ========================================================= */
+
+function announceStatus(
+  message,
+  type = "info"
+) {
+
+  let region =
+    document.querySelector(
+      "#grooveStatusRegion"
+    );
+
+  if (!region) {
+
+    region =
+      document.createElement(
+        "div"
+      );
+
+    region.id =
+      "grooveStatusRegion";
+
+    region.setAttribute(
+      "role",
+      "status"
+    );
+
+    region.setAttribute(
+      "aria-live",
+      "polite"
+    );
+
+    region.style.position =
+      "fixed";
+
+    region.style.left =
+      "50%";
+
+    region.style.bottom =
+      "20px";
+
+    region.style.transform =
+      "translateX(-50%)";
+
+    region.style.zIndex =
+      "99999";
+
+    region.style.pointerEvents =
+      "none";
+
+    document.body.appendChild(
+      region
+    );
+  }
+
+  region.dataset.type =
+    type;
+
+  region.textContent =
+    message;
+
+  clearTimeout(
+    window.__grooveStatusTimer
   );
 
-} else {
+  window.__grooveStatusTimer =
+    setTimeout(() => {
 
-  initGrooveDNA();
+      region.textContent = "";
+
+    }, 4000);
 }
-```
+
+
+/* =========================================================
+   NETWORK STATUS
+   ========================================================= */
+
+function updateNetworkStatus(
+  isOnline
+) {
+
+  GrooveDNAUX.online =
+    isOnline;
+
+  if (isOnline) {
+
+    announceStatus(
+      "Connection restored.",
+      "success"
+    );
+
+  } else {
+
+    announceStatus(
+      "You are offline. Local features remain available; online features may be unavailable.",
+      "warning"
+    );
+  }
+}
+
+
+function setupNetworkUX() {
+
+  window.addEventListener(
+    "online",
+    () =>
+      updateNetworkStatus(true)
+  );
+
+  window.addEventListener(
+    "offline",
+    () =>
+      updateNetworkStatus(false)
+  );
+
+  if (!navigator.onLine) {
+
+    updateNetworkStatus(
+      false
+    );
+  }
+}
+
+
+/* =========================================================
+   GLOBAL JAVASCRIPT ERROR HANDLING
+   ========================================================= */
+
+function setupGlobalErrorHandling() {
+
+  window.addEventListener(
+    "error",
+    event => {
+
+      console.error(
+        "GrooveDNA runtime error:",
+        event.error ||
+        event.message
+      );
+
+      announceStatus(
+        "GrooveDNA encountered an unexpected error. Please try again.",
+        "error"
+      );
+    }
+  );
+
+
+  window.addEventListener(
+    "unhandledrejection",
+    event => {
+
+      console.error(
+        "GrooveDNA unhandled promise rejection:",
+        event.reason
+      );
+
+      announceStatus(
+        "A GrooveDNA action could not be completed. Please try again.",
+        "error"
+      );
+    }
+  );
+}
+
+
+/* =========================================================
+   GLOBAL BUTTON UX
+   ========================================================= */
+
+function setupGlobalButtonUX() {
+
+  document.addEventListener(
+    "click",
+    event => {
+
+      const button =
+        event.target.closest(
+          "button"
+        );
+
+      if (
+        !button ||
+        button.disabled
+      ) {
+        return;
+      }
+
+      if (
+        button.dataset.confirm &&
+        button.dataset.confirm === "true"
+      ) {
+
+        button.setAttribute(
+          "aria-describedby",
+          "grooveConfirmHint"
+        );
+      }
+    }
+  );
+}
+
+
+/* =========================================================
+   ACCESSIBILITY UX
+   ========================================================= */
+
+function setupAccessibilityUX() {
+
+  $$(
+    'button:not([type])'
+  ).forEach(button => {
+
+    if (
+      button.closest("form")
+    ) {
+
+      button.type =
+        "button";
+    }
+  });
+
+
+  $$(
+    "input, textarea, select"
+  ).forEach(field => {
+
+    if (
+      !field.hasAttribute(
+        "autocomplete"
+      ) &&
+      field.id
+    ) {
+
+      if (
+        /email/i.test(
+          field.id
+        )
+      ) {
+
+        field.autocomplete =
+          "email";
+      }
+
+      if (
+        /password/i.test(
+          field.id
+        )
+      ) {
+
+        field.autocomplete =
+          "current-password";
+      }
+
+      if (
+        /name/i.test(
+          field.id
+        )
+      ) {
+
+        field.autocomplete =
+          "name";
+      }
+    }
+  });
+}
+
+
+/* =========================================================
+   SAFE NAVIGATION
+   ========================================================= */
+
+function safeNavigate(
+  page
+) {
+
+  if (!page) {
+    return;
+  }
+
+  try {
+
+    navigate(page);
+
+  } catch (error) {
+
+    console.error(
+      "Navigation error:",
+      error
+    );
+
+    showToast(
+      "Unable to open that page."
+    );
+  }
+}
+
+
+/* =========================================================
+   SAFE BUTTON ACTION WRAPPER
+   ========================================================= */
+
+async function runAction(
+  button,
+  action,
+  busyText = "Working…"
+) {
+
+  if (
+    !button ||
+    typeof action !==
+      "function"
+  ) {
+
+    return null;
+  }
+
+  if (
+    GrooveDNAUX.busyButtons
+      .has(button)
+  ) {
+
+    return null;
+  }
+
+  setButtonBusy(
+    button,
+    true,
+    busyText
+  );
+
+  try {
+
+    return await action();
+
+  } catch (error) {
+
+    console.error(
+      "GrooveDNA action error:",
+      error
+    );
+
+    showToast(
+      `⚠ ${userFriendlyError(error)}`
+    );
+
+    return null;
+
+  } finally {
+
+    setButtonBusy(
+      button,
+      false
+    );
+  }
+}
+
+
+/* =========================================================
+   INITIALIZE PRODUCTION UX
+   ========================================================= */
+
+function initializeProductionUX() {
+
+  setupNetworkUX();
+
+  setupGlobalErrorHandling();
+
+  setupGlobalButtonUX();
+
+  setupAccessibilityUX();
+}
+
+
+// =======================================================
+// START APPLICATION
+// =======================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+    try {
+        initAudioEngine();
+
+        renderSamples();
+        renderStretch();
+        renderPlaylists();
+        renderSettings();
+
+        console.log(
+            "GrooveDNA complete frontend loaded."
+        );
+
+    } catch (error) {
+        console.error(
+            "GrooveDNA startup error:",
+            error
+        );
+    }
+});
