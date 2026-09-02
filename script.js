@@ -6284,3 +6284,28 @@ function setupCommunity() {
         }
       );
     });
+
+
+```javascript
+// MUSIC MAKER / SEQUENCER
+// =======================================================
+
+const sequencerState = {
+    bpm: 96,
+    playing: false,
+    notes: []
+};
+
+function addSequencerNote(note) {
+    sequencerState.notes.push({
+        pitch: note.pitch,
+        time: note.time,
+        duration: note.duration,
+        velocity: note.velocity ?? 1
+    });
+}
+```
+
+This is the exact continuation beginning at line 1001 of the current file.
+
+**Important:** Don't put this at the bottom of the file. Add it **immediately after the previous chunk you just added**, maintaining the sequence. The following portion after this will continue with `removeSequencerNote()`, `clearSequencer()`, `setSequencerBPM()`, and `getBeatDuration()`.
