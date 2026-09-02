@@ -1913,6 +1913,81 @@ function triggerDrumPad(type, button) {
         });
     }
 }
+
+// =======================================================
+// MUSIC MIXER
+// =======================================================
+
+const mixerChannels = new Map();
+
+function createMixerChannel(name, options = {}) {
+    initAudioEngine();
+
+    const gain = audioContext.createGain();
+    const pan = audioContext.createStereoPanner();
+
+    gain.gain.value =
+        typeof options.volume === "number"
+            ? options.volume
+            : 1;
+
+    pan.pan.value =
+        typeof options.pan === "number"
+            ? options.pan
+            : 0;
+
+    gain.connect(pan);
+    pan.connect(masterGain);
+
+    const channel = {
+        name,
+        gain,
+        pan,
+        muted: false,
+        solo: false
+    };
+
+    mixerChannels.set(name, channel);
+
+    return channel;
+}
+
+function setChannelVolume(name, value) {
+    const channel = mixerChannels.get(name);
+
+    if (!channel) return;
+
+    channel.gain.gain.setTargetAtTime(
+        Number(value),
+        audioContext.currentTime,
+        0.01
+    );
+}
+
+function setChannelPan(name, value) {
+    const channel = mixerChannels.get(name);
+
+    if (!channel) return;
+
+    channel.pan.pan.setTargetAtTime(
+        Number(value),
+        audioContext.currentTime,
+        0.01
+    );
+}
+
+function muteChannel(name) {
+    const channel = mixerChannels.get(name);
+
+    if (!channel) return;
+
+    channel.muted = !channel.muted;
+
+    channel.gain.gain.value =
+        channel.muted ? 0 : 1;
+}
+
+
 /* =========================================================
    16. BEAT LAB CONTROLS
    ========================================================= */
