@@ -1358,30 +1358,7 @@ document.addEventListener(
   "DOMContentLoaded",
   initGrooveDNA
 );
-
-
-    source.connect(gain);
-    gain.connect(masterGain);
-
-    if (options.loop) {
-        source.loop = true;
-    }
-
-    source.start(0);
-
-    return {
-        source,
-        gain,
-        stop() {
-            try {
-                source.stop();
-            } catch (error) {
-                // Already stopped.
-            }
-        }
-    };
-}
-
+  
 function setMasterVolume(value) {
     if (!masterGain) initAudioEngine();
 
