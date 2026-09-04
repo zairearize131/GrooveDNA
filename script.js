@@ -1504,6 +1504,27 @@ document.addEventListener("DOMContentLoaded", async function () {
     await requireAuthentication();
 }); 
 
+// After successfully creating an account:
+localStorage.setItem("grooveDNA_session", JSON.stringify({
+    email: email,
+    signedIn: true
+}));
+
+// Send the user into the GrooveDNA app
+window.location.href = "index.html";
+
+// After successfully signing in:
+localStorage.setItem("grooveDNA_session", JSON.stringify({
+    email: email,
+    signedIn: true
+}));
+
+// Send the user into the GrooveDNA app
+window.location.href = "index.html";
+
+localStorage.setItem("grooveDNA_session", ...);
+
+
 /* =========================================================
    CREATE ACCOUNT
    ========================================================= */
