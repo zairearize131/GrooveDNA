@@ -1981,7 +1981,6 @@ const GrooveDNA = {
       toggleCopy.innerHTML =
         signup
 
-          ? `
               Already have an account?
               <a
                 href="#"
@@ -1999,8 +1998,7 @@ const GrooveDNA = {
               >
                 Create an account
               </a>
-            `;
-
+            
 
       const newToggle =
         $("#authModeToggle");
@@ -2554,7 +2552,6 @@ function handleDatabaseError(
     fallbackMessage
   );
 }
-```
 
 /* =========================================================
    33. BEAT LAB CONTROLS
@@ -2688,7 +2685,7 @@ function createBeatLabBrowser() {
   }
 
 
-  browser.innerHTML = `
+  browser.innerHTML = 
     <div class="instrument-browser-header">
 
       <p class="eyebrow">
@@ -2704,7 +2701,7 @@ function createBeatLabBrowser() {
     <div class="instrument-list">
 
       ${instrumentCatalog.map(
-        instrument => `
+        instrument => 
 
           <button
             class="instrument-button"
@@ -2719,7 +2716,7 @@ function createBeatLabBrowser() {
             </strong>
 
           </button>
-        `
+        
       ).join("")}
 
     </div>
@@ -2728,8 +2725,7 @@ function createBeatLabBrowser() {
       class="sound-list"
       id="soundList">
     </div>
-  `;
-
+  
 
   browser.addEventListener(
     "click",
@@ -2779,13 +2775,13 @@ function showInstrumentSounds(
   }
 
 
-  soundList.innerHTML = `
+  soundList.innerHTML = 
     <p class="eyebrow">
       ${escapeHTML(instrument.name)}
     </p>
 
     ${instrument.sounds.map(
-      sound => `
+      sound => 
 
         <div class="sound-item">
 
@@ -2806,9 +2802,9 @@ function showInstrumentSounds(
           </button>
 
         </div>
-      `
+      
     ).join("")}
-  `;
+  ;
 
 
   soundList.addEventListener(
@@ -2837,7 +2833,7 @@ function handleSoundListClick(
   if (preview) {
 
     showToast(
-      `Previewing ${preview.dataset.soundPreview}`
+      Previewing ${preview.dataset.soundPreview}
     );
   }
 
@@ -2979,7 +2975,7 @@ function setupBeatLabModes() {
     }
   }
 
-  modeContainer.innerHTML = `
+  modeContainer.innerHTML = 
     <button
       class="beat-mode active"
       data-mode="mixer">
@@ -2997,9 +2993,9 @@ function setupBeatLabModes() {
       data-mode="maker">
       🎼 Music Maker
     </button>
-  `;
+  
 
-  modeContainer.addEventListener(
+   modeContainer.addEventListener(
     "click",
     event => {
 
@@ -3046,7 +3042,7 @@ function showBeatMode(mode) {
   renderBeatMode(mode);
 
   showToast(
-    `Beat Lab switched to ${label}.`
+    Beat Lab switched to ${label}.
   );
 }
 
@@ -3100,7 +3096,7 @@ function renderMixerInterface() {
     ["Samples", "🎛", "samples"]
   ];
 
-  host.innerHTML = `
+  host.innerHTML = 
     <section
       class="mixer-panel"
       aria-label="Music Mixer">
@@ -3135,7 +3131,7 @@ function renderMixerInterface() {
       <div class="mixer-channels">
 
         ${channels.map(
-          ([name, icon, id]) => `
+          ([name, icon, id]) => 
 
             <div class="mixer-channel">
 
@@ -3190,13 +3186,13 @@ function renderMixerInterface() {
               </button>
 
             </div>
-          `
+          
         ).join("")}
 
       </div>
 
     </section>
-  `;
+  
 
   channels.forEach(
     ([name, icon, id]) =>
@@ -3669,7 +3665,7 @@ function createDrumPadInterface() {
     return;
   }
 
-  host.innerHTML = `
+  host.innerHTML = 
     <section
       class="drumpad-panel"
       aria-label="Drum Pad Machine">
@@ -3756,7 +3752,7 @@ function createDrumPadInterface() {
       </div>
 
     </section>
-  `;
+  
 
   const grid =
     $("#drumPadGrid");
@@ -3924,7 +3920,7 @@ function createMusicMakerInterface() {
     return;
   }
 
-  host.innerHTML = `
+  host.innerHTML = 
     <section
       class="music-maker-panel"
       aria-label="Music Maker">
@@ -3972,7 +3968,7 @@ function createMusicMakerInterface() {
         id="sequencer">
 
         ${sequencerRows.map(
-          row => `
+          row => 
 
             <div
               class="sequencer-row"
@@ -3989,7 +3985,7 @@ function createMusicMakerInterface() {
                     length:
                       sequencerSteps
                   },
-                  (_, index) => `
+                  (_, index) => 
 
                     <button
                       type="button"
@@ -3999,20 +3995,20 @@ function createMusicMakerInterface() {
                       aria-label="${row} step ${index + 1}">
                     </button>
 
-                  `
+                  
                 ).join("")}
 
               </div>
 
             </div>
 
-          `
+          
         ).join("")}
 
       </div>
 
     </section>
-  `;
+  
 
   setupSequencerEvents();
 }
@@ -4766,7 +4762,6 @@ function initializeGrooveDNACompatibility() {
 
 
 initializeGrooveDNACompatibility();
-```
 
 
 // =======================================================
