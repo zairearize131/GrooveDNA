@@ -726,10 +726,25 @@
 
           } else {
 
-            if (typeof window.signIn !== "function") {
-              throw new Error("The GrooveDNA sign-in function is not available.");
-            }
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: email,
+    password: password
+});
 
+if (error) {
+    console.error("GrooveDNA sign-in error:", error);
+    throw new Error(error.message);
+}
+
+if (data && data.session) {
+    localStorage.setItem("grooveDNA_session", JSON.stringify({
+        email: email,
+        signedIn: true
+    }));
+
+    window.location.href = "index.html";
+}
+  
             success = await window.signIn(
               email,
               password
