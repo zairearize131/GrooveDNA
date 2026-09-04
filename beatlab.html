@@ -45,6 +45,18 @@
     href="styles.css"
   >
 
+  <script>
+    // Require the user to be signed in before accessing the GrooveDNA app
+    document.addEventListener("DOMContentLoaded", async function () {
+        const session = localStorage.getItem("grooveDNA_session");
+
+        if (!session) {
+            window.location.href = "groovedna-account.html";
+            return;
+        }
+    });
+</script>
+
 </head>
 
 
