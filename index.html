@@ -615,9 +615,21 @@
        GROOVEDNA JAVASCRIPT
   ========================== -->
 
-  <script src="script.js"></script>
+<script src="script.js"></script>
+  
+<script>
+    // Require users to be signed in before accessing GrooveDNA
+    document.addEventListener("DOMContentLoaded", async () => {
+        const authenticated = await requireAuthentication();
+
+        if (!authenticated) {
+            return;
+        }
+
+        document.body.classList.add("authenticated");
+    });
+</script>
 
 </body>
-
 </html>
 ```
