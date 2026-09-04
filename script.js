@@ -1488,6 +1488,21 @@ async function getCurrentSession() {
   return data.session;
 }
 
+async function requireAuthentication() {
+    const session = await getCurrentSession();
+
+    if (!session) {
+        window.location.href = "groovedna-account.html";
+        return false;
+    }
+
+    return true;
+} 
+
+// Protect GrooveDNA pages that require authentication
+document.addEventListener("DOMContentLoaded", async function () {
+    await requireAuthentication();
+}); 
 
 /* =========================================================
    CREATE ACCOUNT
