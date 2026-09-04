@@ -1,4 +1,28 @@
 /* =========================================================
+   SUPABASE & GLOBAL CONFIGURATION
+   ========================================================= */
+
+// 1. Initialize your GrooveDNA global container to match your functions
+window.GrooveDNA = {
+  user: null,
+  session: null
+};
+
+// 2. Initialize the Supabase client using your project details
+// (Replace with your actual Supabase URL and Anon/Public Key)
+const SUPABASE_URL = 'NEEDS TO BE REPLACED';
+const SUPABASE_ANON_KEY = 'NEEDS TO BE REPLACED';
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// 3. Define a basic navigate helper if you don't already have one
+function navigate(url) {
+  window.location.href = url;
+}
+
+
+
+/* =========================================================
    GROOVEDNA — COMPLETE APPLICATION SCRIPT
    ========================================================= */
 
@@ -970,7 +994,7 @@ async function toggleBeatLabPlayback() {
   }
 }
 
-let beatLabTimer = null;
+//let beatLabTimer = null;
 
 function startBeatLabClock() {
   stopBeatLabClock();
@@ -1014,14 +1038,14 @@ function saveCurrentBeat() {
     pitch: appState.pitch,
     clips: timeline
       ? $$(".clip", timeline).map(
-          (clip) => ({
-            sampleId:
-              clip.dataset.sampleId ||
-              null,
-            title:
-              clip.textContent.trim(),
-          })
-        )
+        (clip) => ({
+          sampleId:
+            clip.dataset.sampleId ||
+            null,
+          title:
+            clip.textContent.trim(),
+        })
+      )
       : [],
   };
 
@@ -1358,578 +1382,576 @@ document.addEventListener(
   "DOMContentLoaded",
   initGrooveDNA
 );
-  
+
 function setMasterVolume(value) {
-   
-if (uploadInput) {
+
+  if (uploadInput) {
     uploadInput.addEventListener("change", async () => {
-        const file = uploadInput.files[0];
+      const file = uploadInput.files[0];
 
-        if (!file) return;
+      if (!file) return;
 
-        try {
-            const audio = await loadAudioFile(file);
+      try {
+        const audio = await loadAudioFile(file);
 
-            showToast(
-                `✓ "${file.name}" loaded • ${audio.duration.toFixed(1)} sec`
-            );
+        showToast(
+          `✓ "${file.name}" loaded • ${audio.duration.toFixed(1)} sec`
+        );
 
-            window.grooveDNAUploadedAudio = audio;
+        window.grooveDNAUploadedAudio = audio;
 
-        } catch (error) {
-            console.error("Audio loading error:", error);
-            showToast("⚠ Unable to load that audio file.");
-        }
+      } catch (error) {
+        console.error("Audio loading error:", error);
+        showToast("⚠ Unable to load that audio file.");
+      }
     });
-}
-
-
-/* =========================================================
-   27. SUPABASE AUTHENTICATION
-   ========================================================= */
-
-/*
-   Supabase Authentication
-
-   Create Account:
-   supabase.auth.signUp()
-
-   Sign In:
-   supabase.auth.signInWithPassword()
-
-   Sign Out:
-   supabase.auth.signOut()
-
-   Session:
-   supabase.auth.getSession()
-*/
-
-
-async function getCurrentSession() {
-
-  if (!supabaseClient) {
-    return null;
   }
 
-  const {
-    data,
-    error
-  } = await supabaseClient.auth.getSession();
 
-  if (error) {
+  /* =========================================================
+     27. SUPABASE AUTHENTICATION
+     ========================================================= */
 
-    console.error(
-      "Session error:",
-      error
-    );
+  /*
+     Supabase Authentication
+  
+     Create Account:
+     supabase.auth.signUp()
+  
+     Sign In:
+     supabase.auth.signInWithPassword()
+  
+     Sign Out:
+     supabase.auth.signOut()
+  
+     Session:
+     supabase.auth.getSession()
+  */
 
-    return null;
-  }
 
-  GrooveDNA.session =
-    data.session;
+  async function getCurrentSession() {
 
-  GrooveDNA.user =
-    data.session?.user || null;
-
-  return data.session;
-}
-
-async function requireAuthentication() {
-    const session = await getCurrentSession();
-
-    if (!session) {
-        window.location.href = "groovedna-account.html";
-        return false;
+    if (!supabaseClient) {
+      return null;
     }
-
-    return true;
-} 
-
-// Protect GrooveDNA pages that require authentication
-document.addEventListener("DOMContentLoaded", async function () {
-    await requireAuthentication();
-}); 
-
-// After successfully creating an account:
-localStorage.setItem("grooveDNA_session", JSON.stringify({
-    email: email,
-    signedIn: true
-}));
-
-// Send the user into the GrooveDNA app
-window.location.href = "index.html";
-
-// After successfully signing in:
-localStorage.setItem("grooveDNA_session", JSON.stringify({
-    email: email,
-    signedIn: true
-}));
-
-// Send the user into the GrooveDNA app
-window.location.href = "index.html";
-
-
-
-/* =========================================================
-   CREATE ACCOUNT
-   ========================================================= */
-
-async function createAccount(
-  email,
-  password,
-  displayName
-) {
-
-  if (!supabaseClient) {
-
-    showToast(
-      "Supabase is not configured yet."
-    );
-
-    return false;
-  }
-
-  try {
 
     const {
       data,
       error
-    } = await supabaseClient.auth.signUp({
-
-      email,
-
-      password,
-
-      options: {
-
-        data: {
-
-          display_name:
-            displayName ||
-            email.split("@")[0]
-
-        },
-
-        emailRedirectTo:
-          window.location.origin +
-          "/index.html"
-
-      }
-
-    });
-
+    } = await supabaseClient.auth.getSession();
 
     if (error) {
-      throw error;
+
+      console.error(
+        "Session error:",
+        error
+      );
+
+      return null;
     }
-
-
-    GrooveDNA.user =
-      data.user;
 
     GrooveDNA.session =
       data.session;
 
+    GrooveDNA.user =
+      data.session?.user || null;
 
-    /*
-      Supabase may require
-      email confirmation.
+    return data.session;
+  }
 
-      In that case the user
-      exists but session is
-      initially null.
-    */
+  async function requireAuthentication() {
+    const session = await getCurrentSession();
 
-    if (!data.session) {
-
-      showToast(
-        "Account created. Check your email to confirm your account."
-      );
-
-      return true;
+    if (!session) {
+      window.location.href = "groovedna-account.html";
+      return false;
     }
 
-
-    /*
-      Create the user's
-      individual profile.
-    */
-
-    await createUserProfile(
-      data.user,
-      displayName
-    );
-
-
-    showToast(
-      "Account created successfully!"
-    );
-
-
-    navigate(
-      "home.html"
-    );
-
-
     return true;
-
-  } catch (error) {
-
-    console.error(
-      "Create account error:",
-      error
-    );
-
-    showToast(
-      error.message ||
-      "Unable to create your account."
-    );
-
-    return false;
-  }
-}
-
-
-/* =========================================================
-   SIGN IN
-   ========================================================= */
-
-async function signIn(
-  email,
-  password
-) {
-
-  if (!supabaseClient) {
-
-    showToast(
-      "Supabase is not configured yet."
-    );
-
-    return false;
   }
 
-  try {
+  // Protect GrooveDNA pages that require authentication
+  document.addEventListener("DOMContentLoaded", async function () {
+    await requireAuthentication();
+  });
 
-    const {
-      data,
-      error
-    } = await supabaseClient.auth
-      .signInWithPassword({
+  // After successfully creating an account:
+  localStorage.setItem("grooveDNA_session", JSON.stringify({
+    email: email,
+    signedIn: true
+  }));
+
+  // Send the user into the GrooveDNA app
+  window.location.href = "index.html";
+
+  // After successfully signing in:
+  localStorage.setItem("grooveDNA_session", JSON.stringify({
+    email: email,
+    signedIn: true
+  }));
+
+  // Send the user into the GrooveDNA app
+  window.location.href = "index.html";
+
+
+
+  /* =========================================================
+     CREATE ACCOUNT
+     ========================================================= */
+
+  async function createAccount(
+    email,
+    password,
+    displayName
+  ) {
+
+    if (!supabaseClient) {
+
+      showToast(
+        "Supabase is not configured yet."
+      );
+
+      return false;
+    }
+
+    try {
+
+      const {
+        data,
+        error
+      } = await supabaseClient.auth.signUp({
 
         email,
 
-        password
+        password,
+
+        options: {
+
+          data: {
+
+            display_name:
+              displayName ||
+              email.split("@")[0]
+
+          },
+
+          emailRedirectTo:
+            window.location.origin +
+            "/index.html"
+
+        }
 
       });
 
 
-    if (error) {
-      throw error;
-    }
+      if (error) {
+        throw error;
+      }
 
 
-    GrooveDNA.user =
-      data.user;
+      GrooveDNA.user =
+        data.user;
 
-    GrooveDNA.session =
-      data.session;
-
-
-    /*
-      Make sure this user
-      has an individual profile.
-    */
-
-    await createUserProfile(
-      data.user,
-      data.user.user_metadata?.display_name
-    );
+      GrooveDNA.session =
+        data.session;
 
 
-    showToast(
-      "Welcome back!"
-    );
+      /*
+        Supabase may require
+        email confirmation.
+  
+        In that case the user
+        exists but session is
+        initially null.
+      */
 
+      if (!data.session) {
 
-    navigate(
-      "home.html"
-    );
-
-
-    return true;
-
-  } catch (error) {
-
-    console.error(
-      "Sign in error:",
-      error
-    );
-
-    showToast(
-      error.message ||
-      "Unable to sign in."
-    );
-
-    return false;
-  }
-}
-
-
-/* =========================================================
-   SIGN OUT
-   ========================================================= */
-
-async function signOut() {
-
-  if (!supabaseClient) {
-
-    navigate(
-      "index.html"
-    );
-
-    return;
-  }
-
-  try {
-
-    const {
-      error
-    } = await supabaseClient.auth.signOut();
-
-
-    if (error) {
-      throw error;
-    }
-
-
-    GrooveDNA.user =
-      null;
-
-    GrooveDNA.session =
-      null;
-
-
-    showToast(
-      "Signed out."
-    );
-
-
-    setTimeout(
-      () => {
-
-        navigate(
-          "index.html"
+        showToast(
+          "Account created. Check your email to confirm your account."
         );
 
-      },
-      400
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Sign out error:",
-      error
-    );
-
-    showToast(
-      error.message ||
-      "Unable to sign out."
-    );
-  }
-}
-
-/* =========================================================
-   USER PROFILE CREATION
-   ========================================================= */
-
-async function createUserProfile(
-  user,
-  displayName = ""
-) {
-
-  if (
-    !supabaseClient ||
-    !user
-  ) {
-    return;
-  }
+        return true;
+      }
 
 
-  /*
-    Supabase table:
+      /*
+        Create the user's
+        individual profile.
+      */
 
-    profiles
-
-    Recommended columns:
-
-    id UUID PRIMARY KEY
-    username TEXT
-    display_name TEXT
-    avatar_url TEXT
-    bio TEXT
-    created_at TIMESTAMP
-  */
-
-
-  try {
-
-    const {
-      data: existing,
-      error: lookupError
-    } = await supabaseClient
-      .from("profiles")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle();
-
-
-    if (lookupError) {
-
-      console.warn(
-        "Profile lookup:",
-        lookupError.message
+      await createUserProfile(
+        data.user,
+        displayName
       );
 
-      return;
+
+      showToast(
+        "Account created successfully!"
+      );
+
+
+      navigate(
+        "home.html"
+      );
+
+
+      return true;
+
+    } catch (error) {
+
+      console.error(
+        "Create account error:",
+        error
+      );
+
+      showToast(
+        error.message ||
+        "Unable to create your account."
+      );
+
+      return false;
+    }
+  }
+
+
+  /* =========================================================
+     SIGN IN
+     ========================================================= */
+
+  async function signIn(
+    email,
+    password
+  ) {
+
+    if (!supabaseClient) {
+
+      showToast(
+        "Supabase is not configured yet."
+      );
+
+      return false;
     }
 
-
-    /*
-      Only create the profile
-      if this user does not
-      already have one.
-    */
-
-    if (!existing) {
-
-      const username =
-        displayName ||
-        user.user_metadata?.display_name ||
-        user.email?.split("@")[0] ||
-        `creator_${user.id.slice(0, 6)}`;
-
+    try {
 
       const {
+        data,
         error
-      } = await supabaseClient
-        .from("profiles")
-        .insert({
+      } = await supabaseClient.auth
+        .signInWithPassword({
 
-          id:
-            user.id,
+          email,
 
-          username:
-            username,
-
-          display_name:
-            username
+          password
 
         });
 
 
       if (error) {
+        throw error;
+      }
+
+
+      GrooveDNA.user =
+        data.user;
+
+      GrooveDNA.session =
+        data.session;
+
+
+      /*
+        Make sure this user
+        has an individual profile.
+      */
+
+      await createUserProfile(
+        data.user,
+        data.user.user_metadata?.display_name
+      );
+
+
+      showToast(
+        "Welcome back!"
+      );
+
+
+      navigate(
+        "home.html"
+      );
+
+
+      return true;
+
+    } catch (error) {
+
+      console.error(
+        "Sign in error:",
+        error
+      );
+
+      showToast(
+        error.message ||
+        "Unable to sign in."
+      );
+
+      return false;
+    }
+  }
+
+
+  /* =========================================================
+     SIGN OUT
+     ========================================================= */
+
+  async function signOut() {
+
+    if (!supabaseClient) {
+
+      navigate(
+        "index.html"
+      );
+
+      return;
+    }
+
+    try {
+
+      const {
+        error
+      } = await supabaseClient.auth.signOut();
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      GrooveDNA.user =
+        null;
+
+      GrooveDNA.session =
+        null;
+
+
+      showToast(
+        "Signed out."
+      );
+
+
+      setTimeout(
+        () => {
+
+          navigate(
+            "index.html"
+          );
+
+        },
+        400
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Sign out error:",
+        error
+      );
+
+      showToast(
+        error.message ||
+        "Unable to sign out."
+      );
+    }
+  }
+
+  /* =========================================================
+     USER PROFILE CREATION
+     ========================================================= */
+
+  async function createUserProfile(
+    user,
+    displayName = ""
+  ) {
+
+    if (
+      !supabaseClient ||
+      !user
+    ) {
+      return;
+    }
+
+
+    /*
+      Supabase table:
+  
+      profiles
+  
+      Recommended columns:
+  
+      id UUID PRIMARY KEY
+      username TEXT
+      display_name TEXT
+      avatar_url TEXT
+      bio TEXT
+      created_at TIMESTAMP
+    */
+
+
+    try {
+
+      const {
+        data: existing,
+        error: lookupError
+      } = await supabaseClient
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+
+      if (lookupError) {
 
         console.warn(
-          "Profile creation:",
-          error.message
+          "Profile lookup:",
+          lookupError.message
         );
 
+        return;
       }
+
+
+      /*
+        Only create the profile
+        if this user does not
+        already have one.
+      */
+
+      if (!existing) {
+
+        const username =
+          displayName ||
+          user.user_metadata?.display_name ||
+          user.email?.split("@")[0] ||
+          `creator_${user.id.slice(0, 6)}`;
+
+
+        const {
+          error
+        } = await supabaseClient
+          .from("profiles")
+          .insert({
+
+            id:
+              user.id,
+
+            username:
+              username,
+
+            display_name:
+              username
+
+          });
+
+
+        if (error) {
+
+          console.warn(
+            "Profile creation:",
+            error.message
+          );
+
+        }
+      }
+
+    } catch (error) {
+
+      console.warn(
+        "Profile setup error:",
+        error
+      );
     }
-
-  } catch (error) {
-
-    console.warn(
-      "Profile setup error:",
-      error
-    );
   }
-}
 
-/* =========================================================
-   6. AUTH FORM
-   ========================================================= */
+  /* =========================================================
+     6. AUTH FORM
+     ========================================================= */
 
-function setupAuthForm() {
+  function setupAuthForm() {
 
-const GrooveDNA = {
+    const GrooveDNA = {
 
-  user: null,
+      user: null,
 
-  session: null,
+      session: null,
 
-  authMode: "signin",
+      authMode: "signin",
 
-  // ...the rest of your existing state
+      // ...the rest of your existing state
 
-};
+    };
 
-  const form =
-    $("#authForm");
+    const form =
+      $("#authForm");
 
-  if (!form) {
-    return;
-  }
-
-
-  const title =
-    $("#authTitle");
-
-  const submit =
-    $("#authSubmit");
-
-  const nameGroup =
-    $("#authNameGroup");
-
-  const toggleCopy =
-    $("#authToggleCopy");
-
-
-  function updateAuthUI() {
-
-    const signup =
-      GrooveDNA.authMode ===
-      "signup";
-
-
-    if (title) {
-
-      title.textContent =
-        signup
-          ? "Create your groove."
-          : "Enter your groove.";
-
+    if (!form) {
+      return;
     }
 
 
-    if (submit) {
+    const title =
+      $("#authTitle");
 
-      submit.textContent =
-        signup
-          ? "Create Account"
-          : "Sign In";
+    const submit =
+      $("#authSubmit");
 
-    }
+    const nameGroup =
+      $("#authNameGroup");
 
-
-    if (nameGroup) {
-
-      nameGroup.style.display =
-        signup
-          ? "block"
-          : "none";
-
-    }
+    const toggleCopy =
+      $("#authToggleCopy");
 
 
-    if (toggleCopy) {
+    function updateAuthUI() {
 
-      toggleCopy.innerHTML =
-        signup
+      const signup =
+        GrooveDNA.authMode ===
+        "signup";
 
-              Already have an account?
+
+      if (title) {
+
+        title.textContent =
+          signup
+            ? "Create your groove."
+            : "Enter your groove.";
+
+      }
+
+
+      if (submit) {
+
+        submit.textContent =
+          signup
+            ? "Create Account"
+            : "Sign In";
+
+      }
+
+
+      if (nameGroup) {
+
+        nameGroup.style.display =
+          signup
+            ? "block"
+            : "none";
+
+      }
+
+
+      if (toggleCopy) {
+
+        toggleCopy.innerHTML =
+          signup ? `Already have an account
               <a
                 href="#"
                 id="authModeToggle"
@@ -1938,1633 +1960,1628 @@ const GrooveDNA = {
               </a>
             `
 
-          : `
+            : `
               New to GrooveDNA?
               <a
                 href="#"
                 id="authModeToggle"
               >
                 Create an account
-              </a>
-            
+              </a>`
 
-      const newToggle =
-        $("#authModeToggle");
-
-
-      if (newToggle) {
-
-        newToggle.addEventListener(
-          "click",
-          event => {
-
-            event.preventDefault();
+        const newToggle =
+          $("#authModeToggle");
 
 
-            GrooveDNA.authMode =
-              signup
-                ? "signin"
-                : "signup";
+        if (newToggle) {
+
+          newToggle.addEventListener(
+            "click",
+            event => {
+
+              event.preventDefault();
 
 
-            updateAuthUI();
+              GrooveDNA.authMode =
+                signup
+                  ? "signin"
+                  : "signup";
 
-          }
-        );
+
+              updateAuthUI();
+
+            }
+          );
+        }
       }
     }
-  }
 
 
-  updateAuthUI();
+    updateAuthUI();
 
 
-  /* =======================================================
-     FORM SUBMISSION
-     ======================================================= */
+    /* =======================================================
+       FORM SUBMISSION
+       ======================================================= */
 
-  form.addEventListener(
-    "submit",
-    async event => {
-
-      event.preventDefault();
-
-
-      const email =
-        $("#authEmail")
-          ?.value
-          .trim();
-
-
-      const password =
-        $("#authPassword")
-          ?.value;
-
-
-      const displayName =
-        $("#authName")
-          ?.value
-          .trim() || "";
-
-
-      if (
-        !email ||
-        !password
-      ) {
-
-        showToast(
-          "Enter your email and password."
-        );
-
-        return;
-      }
-
-
-      if (
-        password.length < 6
-      ) {
-
-        showToast(
-          "Password must be at least 6 characters."
-        );
-
-        return;
-      }
-
-
-      submit.disabled =
-        true;
-
-
-      if (
-        GrooveDNA.authMode ===
-        "signup"
-      ) {
-
-        await createAccount(
-          email,
-          password,
-          displayName
-        );
-
-      } else {
-
-        await signIn(
-          email,
-          password
-        );
-      }
-
-
-      submit.disabled =
-        false;
-
-    }
-  );
-
-
-  /* =======================================================
-     SIGN IN LINK
-     ======================================================= */
-
-  $("#signInLink")
-    ?.addEventListener(
-      "click",
-      event => {
+    form.addEventListener(
+      "submit",
+      async event => {
 
         event.preventDefault();
 
 
-        GrooveDNA.authMode =
-          "signin";
+        const email =
+          $("#authEmail")
+            ?.value
+            .trim();
 
 
-        updateAuthUI();
+        const password =
+          $("#authPassword")
+            ?.value;
 
 
-        window.location.hash =
-          "auth";
+        const displayName =
+          $("#authName")
+            ?.value
+            .trim() || "";
+
+
+        if (
+          !email ||
+          !password
+        ) {
+
+          showToast(
+            "Enter your email and password."
+          );
+
+          return;
+        }
+
+
+        if (
+          password.length < 6
+        ) {
+
+          showToast(
+            "Password must be at least 6 characters."
+          );
+
+          return;
+        }
+
+
+        submit.disabled =
+          true;
+
+
+        if (
+          GrooveDNA.authMode ===
+          "signup"
+        ) {
+
+          await createAccount(
+            email,
+            password,
+            displayName
+          );
+
+        } else {
+
+          await signIn(
+            email,
+            password
+          );
+        }
+
+
+        submit.disabled =
+          false;
 
       }
     );
 
 
- /* =======================================================
-     CREATE ACCOUNT LINK
-     ======================================================= */
+    /* =======================================================
+       SIGN IN LINK
+       ======================================================= */
 
-  $("#createAccountLink")
-    ?.addEventListener(
-      "click",
-      event => {
+    $("#signInLink")
+      ?.addEventListener(
+        "click",
+        event => {
 
-        event.preventDefault();
-
-
-        GrooveDNA.authMode =
-          "signup";
+          event.preventDefault();
 
 
-        updateAuthUI();
+          GrooveDNA.authMode =
+            "signin";
 
 
-        window.location.hash =
-          "auth";
-
-      }
-    );
-
-}
-/* =========================================================
-   28. AUTH STATE LISTENER
-   ========================================================= */
-
-function listenForAuthChanges() {
-  if (!supabaseClient) {
-    return;
-  }
-
-  supabaseClient.auth.onAuthStateChange(
-    async (event, session) => {
-
-      GrooveDNA.session = session;
-      GrooveDNA.user = session?.user || null;
-
-      console.log(
-        "GrooveDNA auth event:",
-        event
-      );
-
-      /*
-        These events can include:
-
-        SIGNED_IN
-        SIGNED_OUT
-        INITIAL_SESSION
-        TOKEN_REFRESHED
-        USER_UPDATED
-        PASSWORD_RECOVERY
-      */
-
-      if (event === "SIGNED_IN") {
-        updateAuthUI();
-      }
-
-      if (event === "SIGNED_OUT") {
-        updateAuthUI();
-      }
-
-      if (event === "USER_UPDATED") {
-        updateAuthUI();
-      }
-    }
-  );
-}
+          updateAuthUI();
 
 
-/* =========================================================
-   29. USER PROFILE
-   ========================================================= */
+          window.location.hash =
+            "auth";
 
-async function createUserProfile(user, displayName = "") {
-  if (!supabaseClient || !user) {
-    return false;
-  }
-
-  try {
-
-    const profile = {
-      id: user.id,
-      username:
-        displayName ||
-        user.user_metadata?.display_name ||
-        user.email?.split("@")[0] ||
-        "Creator",
-      email: user.email || null
-    };
-
-    const {
-      error
-    } = await supabaseClient
-      .from("profiles")
-      .upsert(
-        profile,
-        {
-          onConflict: "id"
         }
       );
 
-    if (error) {
-      throw error;
-    }
 
-    return true;
+    /* =======================================================
+        CREATE ACCOUNT LINK
+        ======================================================= */
 
-  } catch (error) {
+    $("#createAccountLink")
+      ?.addEventListener(
+        "click",
+        event => {
 
-    console.error(
-      "Create profile error:",
-      error
-    );
-
-    return false;
-  }
-}
+          event.preventDefault();
 
 
-async function loadUserProfile() {
-  if (!supabaseClient || !GrooveDNA.user) {
-    return null;
-  }
-
-  try {
-
-    const {
-      data,
-      error
-    } = await supabaseClient
-      .from("profiles")
-      .select("*")
-      .eq("id", GrooveDNA.user.id)
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    GrooveDNA.profile = data;
-
-    updateProfileUI();
-
-    return data;
-
-  } catch (error) {
-
-    console.error(
-      "Load profile error:",
-      error
-    );
-
-    return null;
-  }
-}
+          GrooveDNA.authMode =
+            "signup";
 
 
-/* =========================================================
-   30. AUTH / PROFILE UI
-   ========================================================= */
-
-function updateAuthUI() {
-
-  const authButtons =
-    document.querySelectorAll(
-      "[data-auth-required]"
-    );
-
-  authButtons.forEach(element => {
-
-    if (GrooveDNA.user) {
-      element.removeAttribute("disabled");
-      element.classList.remove("disabled");
-
-    } else {
-      element.setAttribute("disabled", "true");
-      element.classList.add("disabled");
-    }
-  });
+          updateAuthUI();
 
 
-  const userElements =
-    document.querySelectorAll(
-      "[data-user-name]"
-    );
+          window.location.hash =
+            "auth";
 
-  userElements.forEach(element => {
-
-    element.textContent =
-      GrooveDNA.profile?.username ||
-      GrooveDNA.user?.user_metadata?.display_name ||
-      GrooveDNA.user?.email?.split("@")[0] ||
-      "Guest";
-  });
-
-
-  const emailElements =
-    document.querySelectorAll(
-      "[data-user-email]"
-    );
-
-  emailElements.forEach(element => {
-
-    element.textContent =
-      GrooveDNA.user?.email ||
-      "";
-  });
-}
-
-
-function updateProfileUI() {
-
-  if (!GrooveDNA.profile) {
-    updateAuthUI();
-    return;
-  }
-
-  const nameElements =
-    document.querySelectorAll(
-      "[data-profile-name]"
-    );
-
-  nameElements.forEach(element => {
-    element.textContent =
-      GrooveDNA.profile.username ||
-      "Creator";
-  });
-
-  updateAuthUI();
-}
-
-
-/* =========================================================
-   31. AUTH BUTTON EVENTS
-   ========================================================= */
-
-document.addEventListener(
-  "click",
-  async event => {
-
-    const signOutButton =
-      event.target.closest(
-        "[data-signout]"
+        }
       );
 
-    if (signOutButton) {
-      event.preventDefault();
+  }
+  /* =========================================================
+     28. AUTH STATE LISTENER
+     ========================================================= */
 
-      await signOut();
-
+  function listenForAuthChanges() {
+    if (!supabaseClient) {
       return;
     }
 
+    supabaseClient.auth.onAuthStateChange(
+      async (event, session) => {
 
-    const signInButton =
-      event.target.closest(
-        "[data-signin]"
-      );
+        GrooveDNA.session = session;
+        GrooveDNA.user = session?.user || null;
 
-    if (signInButton) {
-      event.preventDefault();
-
-      const emailInput =
-        document.querySelector(
-          "[data-auth-email]"
+        console.log(
+          "GrooveDNA auth event:",
+          event
         );
 
-      const passwordInput =
-        document.querySelector(
-          "[data-auth-password]"
-        );
+        /*
+          These events can include:
+  
+          SIGNED_IN
+          SIGNED_OUT
+          INITIAL_SESSION
+          TOKEN_REFRESHED
+          USER_UPDATED
+          PASSWORD_RECOVERY
+        */
 
-      if (!emailInput || !passwordInput) {
-        showToast(
-          "Login fields were not found."
-        );
+        if (event === "SIGNED_IN") {
+          updateAuthUI();
+        }
 
-        return;
+        if (event === "SIGNED_OUT") {
+          updateAuthUI();
+        }
+
+        if (event === "USER_UPDATED") {
+          updateAuthUI();
+        }
       }
+    );
+  }
 
-      await signIn(
-        emailInput.value.trim(),
-        passwordInput.value
-      );
 
-      return;
+  /* =========================================================
+     29. USER PROFILE
+     ========================================================= */
+
+  async function createUserProfile(user, displayName = "") {
+    if (!supabaseClient || !user) {
+      return false;
     }
 
+    try {
 
-    const createAccountButton =
-      event.target.closest(
-        "[data-create-account]"
-      );
+      const profile = {
+        id: user.id,
+        username:
+          displayName ||
+          user.user_metadata?.display_name ||
+          user.email?.split("@")[0] ||
+          "Creator",
+        email: user.email || null
+      };
 
-    if (createAccountButton) {
-      event.preventDefault();
-
-      const emailInput =
-        document.querySelector(
-          "[data-auth-email]"
+      const {
+        error
+      } = await supabaseClient
+        .from("profiles")
+        .upsert(
+          profile,
+          {
+            onConflict: "id"
+          }
         );
 
-      const passwordInput =
-        document.querySelector(
-          "[data-auth-password]"
-        );
-
-      const nameInput =
-        document.querySelector(
-          "[data-display-name]"
-        );
-
-      if (!emailInput || !passwordInput) {
-        showToast(
-          "Account fields were not found."
-        );
-
-        return;
+      if (error) {
+        throw error;
       }
 
-      await createAccount(
-        emailInput.value.trim(),
-        passwordInput.value,
-        nameInput?.value.trim() || ""
+      return true;
+
+    } catch (error) {
+
+      console.error(
+        "Create profile error:",
+        error
       );
 
-      return;
+      return false;
+    }
+  }
+
+
+  async function loadUserProfile() {
+    if (!supabaseClient || !GrooveDNA.user) {
+      return null;
     }
 
+    try {
 
-    const resetButton =
-      event.target.closest(
-        "[data-reset-password]"
-      );
+      const {
+        data,
+        error
+      } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", GrooveDNA.user.id)
+        .single();
 
-    if (resetButton) {
-      event.preventDefault();
-
-      const emailInput =
-        document.querySelector(
-          "[data-auth-email]"
-        );
-
-      if (!emailInput) {
-        showToast(
-          "Enter your email address first."
-        );
-
-        return;
+      if (error) {
+        throw error;
       }
 
-      await resetPassword(
-        emailInput.value.trim()
+      GrooveDNA.profile = data;
+
+      updateProfileUI();
+
+      return data;
+
+    } catch (error) {
+
+      console.error(
+        "Load profile error:",
+        error
       );
+
+      return null;
     }
   }
-);
 
 
-/* =========================================================
-   32. DATABASE ERROR HANDLER
-   ========================================================= */
+  /* =========================================================
+     30. AUTH / PROFILE UI
+     ========================================================= */
 
-function handleDatabaseError(
-  error,
-  fallbackMessage = "Something went wrong."
-) {
+  function updateAuthUI() {
 
-  console.error(
-    "GrooveDNA database error:",
-    error
-  );
+    const authButtons =
+      document.querySelectorAll(
+        "[data-auth-required]"
+      );
 
-  if (!error) {
-    showToast(fallbackMessage);
-    return;
-  }
+    authButtons.forEach(element => {
 
-  if (error.code === "23505") {
-    showToast(
-      "That information already exists."
-    );
-
-    return;
-  }
-
-  if (error.code === "42501") {
-    showToast(
-      "You do not have permission to perform that action."
-    );
-
-    return;
-  }
-
-  if (error.code === "PGRST116") {
-    showToast(
-      "The requested record could not be found."
-    );
-
-    return;
-  }
-
-  showToast(
-    error.message ||
-    fallbackMessage
-  );
-}
-
-/* =========================================================
-   33. BEAT LAB CONTROLS
-   ========================================================= */
-
-function setupBeatControls() {
-
-  const play =
-    $("#labPlay");
-
-  const bpm =
-    $("#bpm");
-
-  const bpmValue =
-    $("#bpmValue");
-
-  const pitch =
-    $("#pitch");
-
-  const pitchValue =
-    $("#pitchValue");
-
-  const loop =
-    $("#loopToggle");
-
-
-  play?.addEventListener(
-    "click",
-    () => {
-
-      const playing =
-        play.dataset.playing === "true";
-
-      if (playing) {
-
-        play.dataset.playing =
-          "false";
-
-        play.textContent = "▶";
-
-        stopBeatLab();
+      if (GrooveDNA.user) {
+        element.removeAttribute("disabled");
+        element.classList.remove("disabled");
 
       } else {
-
-        play.dataset.playing =
-          "true";
-
-        play.textContent = "⏸";
-
-        startBeatLab();
+        element.setAttribute("disabled", "true");
+        element.classList.add("disabled");
       }
-    }
-  );
+    });
 
 
-  bpm?.addEventListener(
-    "input",
-    () => {
+    const userElements =
+      document.querySelectorAll(
+        "[data-user-name]"
+      );
 
-      GrooveDNA.currentBeat.bpm =
-        Number(bpm.value);
+    userElements.forEach(element => {
 
-      if (bpmValue) {
-
-        bpmValue.textContent =
-          bpm.value;
-      }
-    }
-  );
-
-
-  pitch?.addEventListener(
-    "input",
-    () => {
-
-      GrooveDNA.currentBeat.pitch =
-        Number(pitch.value);
-
-      if (pitchValue) {
-
-        const value =
-          Number(pitch.value);
-
-        pitchValue.textContent =
-          value > 0
-            ? `+${value}`
-            : value;
-      }
-    }
-  );
+      element.textContent =
+        GrooveDNA.profile?.username ||
+        GrooveDNA.user?.user_metadata?.display_name ||
+        GrooveDNA.user?.email?.split("@")[0] ||
+        "Guest";
+    });
 
 
-  loop?.addEventListener(
-    "change",
-    () => {
+    const emailElements =
+      document.querySelectorAll(
+        "[data-user-email]"
+      );
 
-      GrooveDNA.currentBeat.loop =
-        loop.checked;
-    }
-  );
-}
+    emailElements.forEach(element => {
 
-
-/* =========================================================
-   34. BEAT LAB INSTRUMENT BROWSER
-   ========================================================= */
-
-function createBeatLabBrowser() {
-
-  let browser =
-    $("#instrumentBrowser");
-
-  if (!browser) {
-
-    browser =
-      document.createElement("aside");
-
-    browser.id =
-      "instrumentBrowser";
-
-    browser.className =
-      "instrument-browser";
-
-    const lab =
-      $(".beatlab");
-
-    if (lab) {
-
-      lab.prepend(browser);
-    }
+      element.textContent =
+        GrooveDNA.user?.email ||
+        "";
+    });
   }
 
 
-  browser.innerHTML = 
-    <div class="instrument-browser-header">
+  function updateProfileUI() {
 
-      <p class="eyebrow">
-        SOUNDS
-      </p>
+    if (!GrooveDNA.profile) {
+      updateAuthUI();
+      return;
+    }
 
-      <h3>
-        Instruments
-      </h3>
+    const nameElements =
+      document.querySelectorAll(
+        "[data-profile-name]"
+      );
 
-    </div>
+    nameElements.forEach(element => {
+      element.textContent =
+        GrooveDNA.profile.username ||
+        "Creator";
+    });
 
-    <div class="instrument-list">
+    updateAuthUI();
+  }
 
-      ${instrumentCatalog.map(
-        instrument => 
 
-          <button
-            class="instrument-button"
-            data-instrument="${instrument.id}">
+  /* =========================================================
+     31. AUTH BUTTON EVENTS
+     ========================================================= */
 
-            <span>
-              ${instrument.icon}
-            </span>
-
-            <strong>
-              ${instrument.name}
-            </strong>
-
-          </button>
-        
-      ).join("")}
-
-    </div>
-
-    <div
-      class="sound-list"
-      id="soundList">
-    </div>
-  
-
-  browser.addEventListener(
+  document.addEventListener(
     "click",
-    event => {
+    async event => {
 
-      const button =
+      const signOutButton =
         event.target.closest(
-          "[data-instrument]"
+          "[data-signout]"
         );
 
-      if (!button) {
+      if (signOutButton) {
+        event.preventDefault();
+
+        await signOut();
+
         return;
       }
 
 
-      const instrument =
-        instrumentCatalog.find(
-          item =>
-            item.id ===
-            button.dataset.instrument
+      const signInButton =
+        event.target.closest(
+          "[data-signin]"
         );
 
+      if (signInButton) {
+        event.preventDefault();
 
-      if (instrument) {
+        const emailInput =
+          document.querySelector(
+            "[data-auth-email]"
+          );
 
-        showInstrumentSounds(
-          instrument
+        const passwordInput =
+          document.querySelector(
+            "[data-auth-password]"
+          );
+
+        if (!emailInput || !passwordInput) {
+          showToast(
+            "Login fields were not found."
+          );
+
+          return;
+        }
+
+        await signIn(
+          emailInput.value.trim(),
+          passwordInput.value
+        );
+
+        return;
+      }
+
+
+      const createAccountButton =
+        event.target.closest(
+          "[data-create-account]"
+        );
+
+      if (createAccountButton) {
+        event.preventDefault();
+
+        const emailInput =
+          document.querySelector(
+            "[data-auth-email]"
+          );
+
+        const passwordInput =
+          document.querySelector(
+            "[data-auth-password]"
+          );
+
+        const nameInput =
+          document.querySelector(
+            "[data-display-name]"
+          );
+
+        if (!emailInput || !passwordInput) {
+          showToast(
+            "Account fields were not found."
+          );
+
+          return;
+        }
+
+        await createAccount(
+          emailInput.value.trim(),
+          passwordInput.value,
+          nameInput?.value.trim() || ""
+        );
+
+        return;
+      }
+
+
+      const resetButton =
+        event.target.closest(
+          "[data-reset-password]"
+        );
+
+      if (resetButton) {
+        event.preventDefault();
+
+        const emailInput =
+          document.querySelector(
+            "[data-auth-email]"
+          );
+
+        if (!emailInput) {
+          showToast(
+            "Enter your email address first."
+          );
+
+          return;
+        }
+
+        await resetPassword(
+          emailInput.value.trim()
         );
       }
     }
   );
-}
 
 
-function showInstrumentSounds(
-  instrument
-) {
+  /* =========================================================
+     32. DATABASE ERROR HANDLER
+     ========================================================= */
 
-  GrooveDNA.selectedInstrument =
-    instrument;
+  function handleDatabaseError(
+    error,
+    fallbackMessage = "Something went wrong."
+  ) {
 
-  const soundList =
-    $("#soundList");
-
-  if (!soundList) {
-    return;
-  }
-
-
-  soundList.innerHTML = 
-    <p class="eyebrow">
-      ${escapeHTML(instrument.name)}
-    </p>
-
-    ${instrument.sounds.map(
-      sound => 
-
-        <div class="sound-item">
-
-          <span>
-            ${escapeHTML(sound)}
-          </span>
-
-          <button
-            class="mini-play"
-            data-sound-preview="${escapeHTML(sound)}">
-            ▶
-          </button>
-
-          <button
-            class="btn primary"
-            data-add-sound="${escapeHTML(sound)}">
-            +
-          </button>
-
-        </div>
-      
-    ).join("")}
-  ;
-
-
-  soundList.addEventListener(
-    "click",
-    handleSoundListClick,
-    { once: true }
-  );
-}
-
-
-function handleSoundListClick(
-  event
-) {
-
-  const preview =
-    event.target.closest(
-      "[data-sound-preview]"
+    console.error(
+      "GrooveDNA database error:",
+      error
     );
 
-  const add =
-    event.target.closest(
-      "[data-add-sound]"
-    );
+    if (!error) {
+      showToast(fallbackMessage);
+      return;
+    }
 
+    if (error.code === "23505") {
+      showToast(
+        "That information already exists."
+      );
 
-  if (preview) {
+      return;
+    }
+
+    if (error.code === "42501") {
+      showToast(
+        "You do not have permission to perform that action."
+      );
+
+      return;
+    }
+
+    if (error.code === "PGRST116") {
+      showToast(
+        "The requested record could not be found."
+      );
+
+      return;
+    }
 
     showToast(
-      Previewing ${preview.dataset.soundPreview}
+      error.message ||
+      fallbackMessage
+    );
+  }
+
+  /* =========================================================
+     33. BEAT LAB CONTROLS
+     ========================================================= */
+
+  function setupBeatControls() {
+
+    const play =
+      $("#labPlay");
+
+    const bpm =
+      $("#bpm");
+
+    const bpmValue =
+      $("#bpmValue");
+
+    const pitch =
+      $("#pitch");
+
+    const pitchValue =
+      $("#pitchValue");
+
+    const loop =
+      $("#loopToggle");
+
+
+    play?.addEventListener(
+      "click",
+      () => {
+
+        const playing =
+          play.dataset.playing === "true";
+
+        if (playing) {
+
+          play.dataset.playing =
+            "false";
+
+          play.textContent = "▶";
+
+          stopBeatLab();
+
+        } else {
+
+          play.dataset.playing =
+            "true";
+
+          play.textContent = "⏸";
+
+          startBeatLab();
+        }
+      }
+    );
+
+
+    bpm?.addEventListener(
+      "input",
+      () => {
+
+        GrooveDNA.currentBeat.bpm =
+          Number(bpm.value);
+
+        if (bpmValue) {
+
+          bpmValue.textContent =
+            bpm.value;
+        }
+      }
+    );
+
+
+    pitch?.addEventListener(
+      "input",
+      () => {
+
+        GrooveDNA.currentBeat.pitch =
+          Number(pitch.value);
+
+        if (pitchValue) {
+
+          const value =
+            Number(pitch.value);
+
+          pitchValue.textContent =
+            value > 0
+              ? `+${value}`
+              : value;
+        }
+      }
+    );
+
+
+    loop?.addEventListener(
+      "change",
+      () => {
+
+        GrooveDNA.currentBeat.loop =
+          loop.checked;
+      }
     );
   }
 
 
-  if (add) {
+  /* =========================================================
+     34. BEAT LAB INSTRUMENT BROWSER
+     ========================================================= */
 
-    const sound =
-      add.dataset.addSound;
+  function createBeatLabBrowser() {
 
-    addInstrumentSound(
-      GrooveDNA.selectedInstrument,
-      sound
+    let browser =
+      $("#instrumentBrowser");
+
+    if (!browser) {
+
+      browser =
+        document.createElement("aside");
+
+      browser.id =
+        "instrumentBrowser";
+
+      browser.className =
+        "instrument-browser";
+
+      const lab =
+        $(".beatlab");
+
+      if (lab) {
+
+        lab.prepend(browser);
+      }
+    }
+
+
+    browser.innerHTML =
+      `<div class="instrument-browser-header">
+
+        <p class="eyebrow">
+          SOUNDS
+        </p>
+
+        <h3>
+          Instruments
+        </h3>
+
+      </div><div class="instrument-list">
+
+          ${instrumentCatalog.map(
+`            instrument => <button
+              class="instrument-button"
+              data-instrument="${instrument.id}">
+
+              <span>
+                ${instrument.icon}
+              </span>
+
+              <strong>
+                ${instrument.name}
+              </strong>
+
+            </button>
+
+          `).join("")}
+
+        </div>
+
+
+        <div
+          class="sound-list"
+          id="soundList">
+        </div>`
+
+
+    browser.addEventListener(
+      "click",
+      event => {
+
+        const button =
+          event.target.closest(
+            "[data-instrument]"
+          );
+
+        if (!button) {
+          return;
+        }
+
+
+        const instrument =
+          instrumentCatalog.find(
+            item =>
+              item.id ===
+              button.dataset.instrument
+          );
+
+
+        if (instrument) {
+
+          showInstrumentSounds(
+            instrument
+          );
+        }
+      }
     );
   }
-}
 
 
-/* =========================================================
-   35. ADD SAMPLE / SOUND TO BEAT
-   ========================================================= */
+  function showInstrumentSounds(
+    instrument
+  ) {
 
-function addSampleToBeatLab(sample) {
+    GrooveDNA.selectedInstrument =
+      instrument;
 
-  GrooveDNA.currentBeat.clips.push({
+    const soundList =
+      $("#soundList");
 
-    type: "sample",
-
-    title: sample.title,
-
-    bpm: sample.bpm,
-
-    key: sample.key,
-
-    cropStart:
-      sample.cropStart || 0,
-
-    cropEnd:
-      sample.cropEnd || 100
-  });
+    if (!soundList) {
+      return;
+    }
 
 
-  const timeline =
-    $("#timeline");
+   soundList.innerHTML =
+    `
+      <p class="eyebrow">
+        ${escapeHTML(instrument.name)}
+      </p>
+ 
+    ${
+      instrument.sounds.map(
+        sound => `
+
+          <div class="sound-item">
+
+            <span>
+              ${escapeHTML(sound)}
+            </span>
+
+            <button
+              class="mini-play"
+              data-sound-preview="${escapeHTML(sound)}">
+              ▶
+            </button>
+
+            <button
+              class="btn primary"
+              data-add-sound="${escapeHTML(sound)}">
+              +
+            </button>
+
+          </div>
+
+      `).join("")
+    }`;
 
 
-  if (timeline) {
 
-    const lane =
-      timeline.querySelector(
-        ".track-lane:last-of-type"
+    soundList.addEventListener(
+      "click",
+      handleSoundListClick,
+      { once: true }
+    );
+  }
+
+
+  function handleSoundListClick(
+    event
+  ) {
+
+    const preview =
+      event.target.closest(
+        "[data-sound-preview]"
+      );
+
+    const add =
+      event.target.closest(
+        "[data-add-sound]"
       );
 
 
-    if (lane) {
+    if (preview) {
 
-      const clip =
-        document.createElement("div");
-
-      clip.className =
-        "clip melody";
-
-      clip.textContent =
-        sample.title;
-
-      clip.title =
-        sample.title;
+      showToast(
+        `Previewing ${preview.dataset.soundPreview}`
+      );
+    }
 
 
-      lane.appendChild(
-        clip
+    if (add) {
+
+      const sound =
+        add.dataset.addSound;
+
+      addInstrumentSound(
+        GrooveDNA.selectedInstrument,
+        sound
       );
     }
   }
 
 
-  showToast(
-    `${sample.title} added to Beat Lab.`
-  );
-}
+  /* =========================================================
+     35. ADD SAMPLE / SOUND TO BEAT
+     ========================================================= */
+
+  function addSampleToBeatLab(sample) {
+
+    GrooveDNA.currentBeat.clips.push({
+
+      type: "sample",
+
+      title: sample.title,
+
+      bpm: sample.bpm,
+
+      key: sample.key,
+
+      cropStart:
+        sample.cropStart || 0,
+
+      cropEnd:
+        sample.cropEnd || 100
+    });
 
 
-function addInstrumentSound(
-  instrument,
-  sound
-) {
+    const timeline =
+      $("#timeline");
 
-  if (!instrument) {
-    return;
+
+    if (timeline) {
+
+      const lane =
+        timeline.querySelector(
+          ".track-lane:last-of-type"
+        );
+
+
+      if (lane) {
+
+        const clip =
+          document.createElement("div");
+
+        clip.className =
+          "clip melody";
+
+        clip.textContent =
+          sample.title;
+
+        clip.title =
+          sample.title;
+
+
+        lane.appendChild(
+          clip
+        );
+      }
+    }
+
+
+    showToast(
+      `${sample.title} added to Beat Lab.`
+    );
   }
 
-  GrooveDNA.currentBeat.clips.push({
 
-    type: "instrument",
+  function addInstrumentSound(
+    instrument,
+    sound
+  ) {
 
-    instrument:
-      instrument.id,
+    if (!instrument) {
+      return;
+    }
 
-    instrumentName:
-      instrument.name,
+    GrooveDNA.currentBeat.clips.push({
 
-    sound,
+      type: "instrument",
 
-    time:
-      Date.now()
-  });
+      instrument:
+        instrument.id,
 
-  showToast(
-    `${sound} added to Beat Lab.`
-  );
-}
+      instrumentName:
+        instrument.name,
 
-/* =========================================================
-   36. BEAT LAB MODES
-   ========================================================= */
+      sound,
 
-function setupBeatLabModes() {
+      time:
+        Date.now()
+    });
 
-  let modeContainer =
-    $("#beatModes");
+    showToast(
+      `${sound} added to Beat Lab.`
+    );
+  }
 
-  if (!modeContainer) {
+  /* =========================================================
+     36. BEAT LAB MODES
+     ========================================================= */
 
-    modeContainer =
-      document.createElement("div");
+  function setupBeatLabModes() {
 
-    modeContainer.id =
-      "beatModes";
+    let modeContainer =
+      $("#beatModes");
 
-    modeContainer.className =
-      "beat-modes";
+    if (!modeContainer) {
+
+      modeContainer =
+        document.createElement("div");
+
+      modeContainer.id =
+        "beatModes";
+
+      modeContainer.className =
+        "beat-modes";
+
+      const lab =
+        $(".beatlab");
+
+      if (lab) {
+        lab.prepend(
+          modeContainer
+        );
+      }
+    }
+
+    modeContainer.innerHTML =
+      `
+        <button
+          class="beat-mode active"
+          data-mode="mixer">
+          🎚 Music Mixer
+        </button>
+
+        <button
+          class="beat-mode"
+          data-mode="drumpad">
+          🥁 Drum Pad
+        </button>
+
+        <button
+          class="beat-mode"
+          data-mode="maker">
+          🎼 Music Maker
+        </button>
+      `
+
+
+    modeContainer.addEventListener(
+      "click",
+      event => {
+
+        const button =
+          event.target.closest(
+            "[data-mode]"
+          );
+
+        if (!button) {
+          return;
+        }
+
+        $$(".beat-mode")
+          .forEach(item =>
+            item.classList.remove(
+              "active"
+            )
+          );
+
+        button.classList.add(
+          "active"
+        );
+
+        GrooveDNA.beatMode =
+          button.dataset.mode;
+
+        showBeatMode(
+          GrooveDNA.beatMode
+        );
+      }
+    );
+  }
+
+
+  function showBeatMode(mode) {
+
+    const label =
+      mode === "mixer"
+        ? "Music Mixer"
+        : mode === "drumpad"
+          ? "Drum Pad"
+          : "Music Maker";
+
+    renderBeatMode(mode);
+
+    showToast(
+      `Beat Lab switched to ${label}.`
+    );
+  }
+
+
+  /* =========================================================
+     37. BEAT LAB — INTERACTIVE MODE INTERFACES
+     ========================================================= */
+
+  function getBeatModeHost() {
 
     const lab =
       $(".beatlab");
 
-    if (lab) {
-      lab.prepend(
-        modeContainer
-      );
+    if (!lab) {
+      return null;
     }
-  }
 
-  modeContainer.innerHTML = 
-    <button
-      class="beat-mode active"
-      data-mode="mixer">
-      🎚 Music Mixer
-    </button>
+    let host =
+      $("#beatModeWorkspace", lab);
 
-    <button
-      class="beat-mode"
-      data-mode="drumpad">
-      🥁 Drum Pad
-    </button>
+    if (!host) {
 
-    <button
-      class="beat-mode"
-      data-mode="maker">
-      🎼 Music Maker
-    </button>
-  
+      host =
+        document.createElement("div");
 
-   modeContainer.addEventListener(
-    "click",
-    event => {
+      host.id =
+        "beatModeWorkspace";
 
-      const button =
-        event.target.closest(
-          "[data-mode]"
-        );
+      host.className =
+        "beat-mode-workspace";
 
-      if (!button) {
-        return;
-      }
-
-      $$(".beat-mode")
-        .forEach(item =>
-          item.classList.remove(
-            "active"
-          )
-        );
-
-      button.classList.add(
-        "active"
-      );
-
-      GrooveDNA.beatMode =
-        button.dataset.mode;
-
-      showBeatMode(
-        GrooveDNA.beatMode
-      );
+      lab.appendChild(host);
     }
-  );
-}
 
-
-function showBeatMode(mode) {
-
-  const label =
-    mode === "mixer"
-      ? "Music Mixer"
-      : mode === "drumpad"
-        ? "Drum Pad"
-        : "Music Maker";
-
-  renderBeatMode(mode);
-
-  showToast(
-    Beat Lab switched to ${label}.
-  );
-}
-
-
-/* =========================================================
-   37. BEAT LAB — INTERACTIVE MODE INTERFACES
-   ========================================================= */
-
-function getBeatModeHost() {
-
-  const lab =
-    $(".beatlab");
-
-  if (!lab) {
-    return null;
+    return host;
   }
 
-  let host =
-    $("#beatModeWorkspace", lab);
 
-  if (!host) {
+  function renderMixerInterface() {
 
-    host =
-      document.createElement("div");
+    const host =
+      getBeatModeHost();
 
-    host.id =
-      "beatModeWorkspace";
+    if (!host) return;
 
-    host.className =
-      "beat-mode-workspace";
+    const channels = [
+      ["Drums", "🥁", "drums"],
+      ["Bass", "🎸", "bass"],
+      ["Keys", "🎹", "keys"],
+      ["Melody", "🎷", "melody"],
+      ["Samples", "🎛", "samples"]
+    ];
 
-    lab.appendChild(host);
-  }
+    host.innerHTML =`
+      <section
+        class="mixer-panel"
+        aria-label="Music Mixer">
 
-  return host;
-}
+        <div class="mixer-header">
 
+          <div>
 
-function renderMixerInterface() {
+            <p class="eyebrow">
+              MIX
+            </p>
 
-  const host =
-    getBeatModeHost();
+            <h3>
+              Music Mixer
+            </h3>
 
-  if (!host) return;
+            <p>
+              Control volume, pan, mute and sound previews.
+            </p>
 
-  const channels = [
-    ["Drums", "🥁", "drums"],
-    ["Bass", "🎸", "bass"],
-    ["Keys", "🎹", "keys"],
-    ["Melody", "🎷", "melody"],
-    ["Samples", "🎛", "samples"]
-  ];
+          </div>
 
-  host.innerHTML = 
-    <section
-      class="mixer-panel"
-      aria-label="Music Mixer">
-
-      <div class="mixer-header">
-
-        <div>
-
-          <p class="eyebrow">
-            MIX
-          </p>
-
-          <h3>
-            Music Mixer
-          </h3>
-
-          <p>
-            Control volume, pan, mute and sound previews.
-          </p>
+          <button
+            class="btn secondary"
+            type="button"
+            id="mixerStopAll">
+            Stop All
+          </button>
 
         </div>
 
-        <button
-          class="btn secondary"
-          type="button"
-          id="mixerStopAll">
-          Stop All
-        </button>
+        <div class="mixer-channels">
 
-      </div>
+          ${channels.map(
+            ([name, icon, id]) => `
 
-      <div class="mixer-channels">
+              <div class="mixer-channel">
 
-        ${channels.map(
-          ([name, icon, id]) => 
+                <div class="mixer-channel-top">
 
-            <div class="mixer-channel">
+                  <span class="mixer-icon">
+                    ${icon}
+                  </span>
 
-              <div class="mixer-channel-top">
+                  <strong>
+                    ${name}
+                  </strong>
 
-                <span class="mixer-icon">
-                  ${icon}
-                </span>
+                </div>
 
-                <strong>
-                  ${name}
-                </strong>
+                <button
+                  class="mixer-preview"
+                  type="button"
+                  data-mixer-preview="${id}">
+                  ▶ Preview
+                </button>
+
+                <label>
+                  Volume
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="0.8"
+                    data-mixer-volume="${id}" />
+                </label>
+
+                <label>
+                  Pan
+
+                  <input
+                    type="range"
+                    min="-1"
+                    max="1"
+                    step="0.01"
+                    value="0"
+                    data-mixer-pan="${id}" />
+                </label>
+
+                <button
+                  type="button"
+                  class="icon-btn"
+                  data-mixer-mute="${id}">
+                  M
+                </button>
 
               </div>
 
-              <button
-                class="mixer-preview"
-                type="button"
-                data-mixer-preview="${id}">
-                ▶ Preview
-              </button>
+          `).join("")}
 
-              <label>
-                Volume
+        </div>
 
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value="0.8"
-                  data-mixer-volume="${id}">
-              </label>
+      </section>
+      `
 
-              <label>
-                Pan
 
-                <input
-                  type="range"
-                  min="-1"
-                  max="1"
-                  step="0.01"
-                  value="0"
-                  data-mixer-pan="${id}">
-              </label>
+    channels.forEach(
+      ([name, icon, id]) =>
+        createMixerChannel(
+          id,
+          {
+            volume: .8,
+            pan: 0
+          }
+        )
+    );
 
-              <button
-                type="button"
-                class="icon-btn"
-                data-mixer-mute="${id}">
-                M
-              </button>
+    host
+      .querySelectorAll(
+        "[data-mixer-volume]"
+      )
+      .forEach(
+        input =>
+          input.addEventListener(
+            "input",
+            () =>
+              setChannelVolume(
+                input.dataset.mixerVolume,
+                input.value
+              )
+          )
+      );
 
-            </div>
-          
-        ).join("")}
+    host
+      .querySelectorAll(
+        "[data-mixer-pan]"
+      )
+      .forEach(
+        input =>
+          input.addEventListener(
+            "input",
+            () =>
+              setChannelPan(
+                input.dataset.mixerPan,
+                input.value
+              )
+          )
+      );
 
-      </div>
+    host
+      .querySelectorAll(
+        "[data-mixer-mute]"
+      )
+      .forEach(
+        button =>
+          button.addEventListener(
+            "click",
+            () => {
 
-    </section>
-  
+              muteChannel(
+                button.dataset.mixerMute
+              );
 
-  channels.forEach(
-    ([name, icon, id]) =>
+              button.classList.toggle(
+                "active"
+              );
+            }
+          )
+      );
+
+    host
+      .querySelectorAll(
+        "[data-mixer-preview]"
+      )
+      .forEach(
+        button =>
+          button.addEventListener(
+            "click",
+            () =>
+              previewMixerChannel(
+                button.dataset.mixerPreview,
+                button
+              )
+          )
+      );
+
+    $("#mixerStopAll")
+      ?.addEventListener(
+        "click",
+        () =>
+          showToast(
+            "Mixer previews stopped."
+          )
+      );
+  }
+
+
+  function previewMixerChannel(
+    id,
+    button
+  ) {
+
+    resumeAudio();
+
+    const channel =
+      mixerChannels.get(id) ||
       createMixerChannel(
         id,
         {
           volume: .8,
           pan: 0
         }
-      )
-  );
+      );
 
-  host
-    .querySelectorAll(
-      "[data-mixer-volume]"
-    )
-    .forEach(
-      input =>
-        input.addEventListener(
-          "input",
-          () =>
-            setChannelVolume(
-              input.dataset.mixerVolume,
-              input.value
-            )
-        )
+    const now =
+      audioContext.currentTime;
+
+    const osc =
+      audioContext.createOscillator();
+
+    const gain =
+      audioContext.createGain();
+
+    const frequencies = {
+      drums: 110,
+      bass: 55,
+      keys: 220,
+      melody: 330,
+      samples: 165
+    };
+
+    const frequency =
+      frequencies[id] || 220;
+
+    osc.type =
+      id === "bass"
+        ? "sawtooth"
+        : id === "keys"
+          ? "triangle"
+          : "sine";
+
+    osc.frequency.value =
+      frequency;
+
+    gain.gain.setValueAtTime(
+      .0001,
+      now
     );
 
-  host
-    .querySelectorAll(
-      "[data-mixer-pan]"
-    )
-    .forEach(
-      input =>
-        input.addEventListener(
-          "input",
-          () =>
-            setChannelPan(
-              input.dataset.mixerPan,
-              input.value
-            )
-        )
+    gain.gain.exponentialRampToValueAtTime(
+      .25,
+      now + .02
     );
 
-  host
-    .querySelectorAll(
-      "[data-mixer-mute]"
-    )
-    .forEach(
-      button =>
-        button.addEventListener(
-          "click",
-          () => {
-
-            muteChannel(
-              button.dataset.mixerMute
-            );
-
-            button.classList.toggle(
-              "active"
-            );
-          }
-        )
+    gain.gain.exponentialRampToValueAtTime(
+      .0001,
+      now + .5
     );
 
-  host
-    .querySelectorAll(
-      "[data-mixer-preview]"
-    )
-    .forEach(
-      button =>
-        button.addEventListener(
-          "click",
-          () =>
-            previewMixerChannel(
-              button.dataset.mixerPreview,
-              button
-            )
-        )
+    osc.connect(gain);
+
+    gain.connect(
+      channel.gain
     );
 
-  $("#mixerStopAll")
-    ?.addEventListener(
-      "click",
+    osc.start(now);
+
+    osc.stop(
+      now + .55
+    );
+
+    button.classList.add(
+      "active"
+    );
+
+    setTimeout(
       () =>
-        showToast(
-          "Mixer previews stopped."
-        )
+        button.classList.remove(
+          "active"
+        ),
+      250
     );
-}
+  }
 
 
-function previewMixerChannel(
-  id,
-  button
-) {
+  /* =========================================================
+     38. BEAT PLAYBACK
+     ========================================================= */
 
-  resumeAudio();
+  function playBeat() {
 
-  const channel =
-    mixerChannels.get(id) ||
-    createMixerChannel(
-      id,
-      {
-        volume: .8,
-        pan: 0
-      }
-    );
+    const clips =
+      GrooveDNA.currentBeat.clips;
 
-  const now =
-    audioContext.currentTime;
+    if (!clips.length) {
 
-  const osc =
-    audioContext.createOscillator();
+      showToast(
+        "Add sounds to your beat first."
+      );
 
-  const gain =
-    audioContext.createGain();
-
-  const frequencies = {
-    drums: 110,
-    bass: 55,
-    keys: 220,
-    melody: 330,
-    samples: 165
-  };
-
-  const frequency =
-    frequencies[id] || 220;
-
-  osc.type =
-    id === "bass"
-      ? "sawtooth"
-      : id === "keys"
-        ? "triangle"
-        : "sine";
-
-  osc.frequency.value =
-    frequency;
-
-  gain.gain.setValueAtTime(
-    .0001,
-    now
-  );
-
-  gain.gain.exponentialRampToValueAtTime(
-    .25,
-    now + .02
-  );
-
-  gain.gain.exponentialRampToValueAtTime(
-    .0001,
-    now + .5
-  );
-
-  osc.connect(gain);
-
-  gain.connect(
-    channel.gain
-  );
-
-  osc.start(now);
-
-  osc.stop(
-    now + .55
-  );
-
-  button.classList.add(
-    "active"
-  );
-
-  setTimeout(
-    () =>
-      button.classList.remove(
-        "active"
-      ),
-    250
-  );
-}
-
-
-/* =========================================================
-   38. BEAT PLAYBACK
-   ========================================================= */
-
-function playBeat() {
-
-  const clips =
-    GrooveDNA.currentBeat.clips;
-
-  if (!clips.length) {
+      return;
+    }
 
     showToast(
-      "Add sounds to your beat first."
+      `Playing beat at ${GrooveDNA.currentBeat.bpm} BPM.`
     );
-
-    return;
   }
 
-  showToast(
-    `Playing beat at ${GrooveDNA.currentBeat.bpm} BPM.`
-  );
-}
 
+  function stopBeat() {
 
-function stopBeat() {
-
-  showToast(
-    "Beat paused."
-  );
-}
-
-
-// =======================================================
-// 39. BEAT LAB PLAYBACK
-// =======================================================
-
-let beatLabPlaying = false;
-let beatLabTimer = null;
-
-function startBeatLab() {
-
-  resumeAudio();
-
-  if (beatLabPlaying) return;
-
-  beatLabPlaying = true;
-
-  if ($("#labPlay")) {
-
-    $("#labPlay").textContent =
-      "⏸";
+    showToast(
+      "Beat paused."
+    );
   }
 
-  scheduleBeatLab();
-}
 
+  // =======================================================
+  // 39. BEAT LAB PLAYBACK
+  // =======================================================
 
-function stopBeatLab() {
+  let beatLabPlaying = false;
+  //let beatLabTimer = null;
 
-  beatLabPlaying = false;
+  function startBeatLab() {
 
-  if (beatLabTimer) {
+    resumeAudio();
 
-    clearTimeout(
-      beatLabTimer
-    );
+    if (beatLabPlaying) return;
 
-    beatLabTimer = null;
+    beatLabPlaying = true;
+
+    if ($("#labPlay")) {
+
+      $("#labPlay").textContent =
+        "⏸";
+    }
+
+    scheduleBeatLab();
   }
 
-  if ($("#labPlay")) {
 
-    $("#labPlay").textContent =
-      "▶";
-  }
-}
+  function stopBeatLab() {
 
+    beatLabPlaying = false;
 
-function scheduleBeatLab() {
+    if (beatLabTimer) {
 
-  if (!beatLabPlaying) return;
-
-  const bpm =
-    Number(
-      $("#bpm")?.value || 96
-    );
-
-  const beatLength =
-    60000 / bpm;
-
-  // This is the timing foundation.
-  // Actual clips/patterns will be scheduled here.
-
-  beatLabTimer =
-    setTimeout(
-      scheduleBeatLab,
-      beatLength
-    );
-}
-
-
-/* =========================================================
-   40. RECORDING
-   ========================================================= */
-
-function setupBeatRecording() {
-
-  let recordButton =
-    $("#recordBeat");
-
-  if (!recordButton) {
-
-    recordButton =
-      document.createElement(
-        "button"
+      clearTimeout(
+        beatLabTimer
       );
 
-    recordButton.id =
-      "recordBeat";
+      beatLabTimer = null;
+    }
 
-    recordButton.className =
-      "btn primary";
+    if ($("#labPlay")) {
 
-    recordButton.textContent =
-      "● Record";
-
-    const toolbar =
-      $(".lab-toolbar");
-
-    if (toolbar) {
-
-      toolbar.appendChild(
-        recordButton
-      );
+      $("#labPlay").textContent =
+        "▶";
     }
   }
 
-  recordButton.addEventListener(
-    "click",
-    toggleRecording
-  );
-}
 
+  function scheduleBeatLab() {
 
-async function toggleRecording() {
+    if (!beatLabPlaying) return;
 
-  if (GrooveDNA.isRecording) {
-
-    GrooveDNA.mediaRecorder?.stop();
-
-    return;
-  }
-
-  try {
-
-    const stream =
-      await navigator.mediaDevices.getUserMedia({
-        audio: true
-      });
-
-    GrooveDNA.mediaRecorder =
-      new MediaRecorder(
-        stream
+    const bpm =
+      Number(
+        $("#bpm")?.value || 96
       );
 
-    GrooveDNA.recordedChunks =
-      [];
+    const beatLength =
+      60000 / bpm;
 
-    GrooveDNA.mediaRecorder.ondataavailable =
-      event => {
+    // This is the timing foundation.
+    // Actual clips/patterns will be scheduled here.
 
-        if (event.data.size) {
-
-          GrooveDNA.recordedChunks.push(
-            event.data
-          );
-        }
-      };
-
-    GrooveDNA.mediaRecorder.onstop =
-      () => {
-
-        GrooveDNA.isRecording =
-          false;
-
-        stream
-          .getTracks()
-          .forEach(
-            track =>
-              track.stop()
-          );
-
-        showToast(
-          "Recording saved."
-        );
-      };
-
-    GrooveDNA.mediaRecorder.start();
-
-    GrooveDNA.isRecording =
-      true;
-
-    showToast(
-      "Recording started."
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Recording error:",
-      error
-    );
-
-    showToast(
-      "⚠ Microphone access was not available."
-    );
+    beatLabTimer =
+      setTimeout(
+        scheduleBeatLab,
+        beatLength
+      );
   }
-}
 
 
-  } catch (error) {
+  /* =========================================================
+     40. RECORDING
+     ========================================================= */
 
-    console.error(
-      "Recording error:",
-      error
-    );
+  function setupBeatRecording() {
 
-    GrooveDNA.isRecording =
-      false;
-
-    const button =
+    let recordButton =
       $("#recordBeat");
 
-    if (button) {
+    if (!recordButton) {
 
-      button.textContent =
+      recordButton =
+        document.createElement(
+          "button"
+        );
+
+      recordButton.id =
+        "recordBeat";
+
+      recordButton.className =
+        "btn primary";
+
+      recordButton.textContent =
         "● Record";
+
+      const toolbar =
+        $(".lab-toolbar");
+
+      if (toolbar) {
+
+        toolbar.appendChild(
+          recordButton
+        );
+      }
     }
 
-    showToast(
-      "⚠ Unable to access the microphone."
+    recordButton.addEventListener(
+      "click",
+      toggleRecording
     );
   }
+
+
+  async function toggleRecording() {
+
+    if (GrooveDNA.isRecording) {
+
+      GrooveDNA.mediaRecorder?.stop();
+
+      return;
+    }
+
+    try {
+
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: true
+        });
+
+      GrooveDNA.mediaRecorder =
+        new MediaRecorder(
+          stream
+        );
+
+      GrooveDNA.recordedChunks =
+        [];
+
+      GrooveDNA.mediaRecorder.ondataavailable =
+        event => {
+
+          if (event.data.size) {
+
+            GrooveDNA.recordedChunks.push(
+              event.data
+            );
+          }
+        };
+
+      GrooveDNA.mediaRecorder.onstop =
+        () => {
+
+          GrooveDNA.isRecording =
+            false;
+
+          stream
+            .getTracks()
+            .forEach(
+              track =>
+                track.stop()
+            );
+
+          showToast(
+            "Recording saved."
+          );
+        };
+
+      GrooveDNA.mediaRecorder.start();
+
+      GrooveDNA.isRecording =
+        true;
+
+      showToast(
+        "Recording started."
+      );
+
+        } catch (error) {
+
+          console.error(
+            "Recording error:",
+            error
+          );
+
+          showToast(
+            "⚠ Microphone access was not available."
+          );
+        }
+      }
+
+
+  GrooveDNA.isRecording =
+    false;
+
+  const button =
+    $("#recordBeat");
+
+  if (button) {
+
+    button.textContent =
+      "● Record";
+  }
+
+  showToast(
+    "⚠ Unable to access the microphone."
+  );
 }
+
 
 
 /* =========================================================
@@ -3613,8 +3630,8 @@ function createDrumPadInterface() {
     return;
   }
 
-  host.innerHTML = 
-    <section
+  host.innerHTML =
+`    <section
       class="drumpad-panel"
       aria-label="Drum Pad Machine">
 
@@ -3700,7 +3717,8 @@ function createDrumPadInterface() {
       </div>
 
     </section>
-  
+    `
+
 
   const grid =
     $("#drumPadGrid");
@@ -3845,8 +3863,7 @@ const sequencerRows = [
   "clap"
 ];
 
-let sequencerPattern =
-  {};
+//let sequencerPattern = {};
 
 sequencerRows.forEach(
   row => {
@@ -3868,7 +3885,7 @@ function createMusicMakerInterface() {
     return;
   }
 
-  host.innerHTML = 
+  host.innerHTML = `
     <section
       class="music-maker-panel"
       aria-label="Music Maker">
@@ -3916,7 +3933,7 @@ function createMusicMakerInterface() {
         id="sequencer">
 
         ${sequencerRows.map(
-          row => 
+          row =>`
 
             <div
               class="sequencer-row"
@@ -3933,7 +3950,7 @@ function createMusicMakerInterface() {
                     length:
                       sequencerSteps
                   },
-                  (_, index) => 
+                  (_, index) =>`
 
                     <button
                       type="button"
@@ -3943,20 +3960,21 @@ function createMusicMakerInterface() {
                       aria-label="${row} step ${index + 1}">
                     </button>
 
-                  
-                ).join("")}
+
+               `).join("")}
 
               </div>
 
             </div>
 
-          
-        ).join("")}
+
+        `).join("")}
 
       </div>
 
     </section>
-  
+    `;
+
 
   setupSequencerEvents();
 }
@@ -4051,8 +4069,8 @@ function clearSequencer() {
 }
 
 
-let sequencerPlaying =
-  false;
+// let sequencerPlaying =
+//   false;
 
 let sequencerTimer =
   null;
@@ -4164,7 +4182,7 @@ function runSequencerStep() {
 
       if (
         sequencerPattern[row]
-          [sequencerPosition]
+        [sequencerPosition]
       ) {
 
         playDrumSound(
@@ -4384,8 +4402,8 @@ function safeProjectSave() {
           window.sequencerState?.notes
         )
           ? [
-              ...window.sequencerState.notes
-            ]
+            ...window.sequencerState.notes
+          ]
           : [],
 
       drumPattern:
@@ -4393,8 +4411,8 @@ function safeProjectSave() {
           window.drumState?.pattern
         )
           ? [
-              ...window.drumState.pattern
-            ]
+            ...window.drumState.pattern
+          ]
           : [],
 
       savedAt:
@@ -4555,10 +4573,10 @@ function ensureAudioReady() {
 
     if (
       typeof audioContext !==
-        "undefined" &&
+      "undefined" &&
       audioContext &&
       audioContext.state ===
-        "suspended"
+      "suspended"
     ) {
 
       audioContext.resume()
@@ -4717,22 +4735,22 @@ initializeGrooveDNACompatibility();
 // =======================================================
 
 document.addEventListener("DOMContentLoaded", () => {
-    try {
-        initAudioEngine();
+  try {
+    initAudioEngine();
 
-        renderSamples();
-        renderStretch();
-        renderPlaylists();
-        renderSettings();
+    renderSamples();
+    renderStretch();
+    renderPlaylists();
+    renderSettings();
 
-        console.log(
-            "GrooveDNA complete frontend loaded."
-        );
+    console.log(
+      "GrooveDNA complete frontend loaded."
+    );
 
-    } catch (error) {
-        console.error(
-            "GrooveDNA startup error:",
-            error
-        );
-    }
+  } catch (error) {
+    console.error(
+      "GrooveDNA startup error:",
+      error
+    );
+  }
 });
