@@ -593,39 +593,20 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  const success = await window.createAccount(
-    email,
-    password,
-    username
-);
+ <script src="script.js"></script>
 
-if (!success) {
-    return;
-}
-// After successfully creating an account:
-localStorage.setItem("grooveDNA_session", JSON.stringify({
-    email: email,
-    signedIn: true
-}));
+<script>
+    // Require users to be signed in before accessing GrooveDNA
+    document.addEventListener("DOMContentLoaded", async () => {
+        const authenticated = await requireAuthentication();
 
-window.location.href = "index.html";
+        if (!authenticated) {
+            return;
+        }
 
-// After successfully signing in:
-localStorage.setItem("grooveDNA_session", JSON.stringify({
-    email: email,
-    signedIn: true
-}));
-
-window.location.href = "index.html";
-
-  // After successfully signing in:
-localStorage.setItem("grooveDNA_session", JSON.stringify({
-    email: email,
-    signedIn: true
-}));
-
-// Send the user into the GrooveDNA app
-window.location.href = "index.html";
+        document.body.classList.add("authenticated");
+    });
+</script>
 
   
   <!-- =====================================================
