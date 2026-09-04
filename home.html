@@ -48,7 +48,20 @@
     href="styles.css"
   >
 
-  <script>
+  <script src="script.js"></script>
+
+<script>
+    // Require users to create account before accessing GrooveDNA
+    document.addEventListener("DOMContentLoaded", async () => {
+        const authenticated = await requireAuthentication();
+
+        if (!authenticated) {
+            return;
+        }
+
+        document.body.classList.add("authenticated");
+    });
+
     // Require the user to be signed in before accessing the GrooveDNA app
     document.addEventListener("DOMContentLoaded", async function () {
         const session = localStorage.getItem("grooveDNA_session");
@@ -58,6 +71,16 @@
             return;
         }
     });
+
+  // Account successfully created or signed in
+localStorage.setItem("grooveDNA_session", JSON.stringify({
+    email: email,
+    signedIn: true
+}));
+
+// Send the authenticated user into the GrooveDNA app
+window.location.href = "index.html";
+  
 </script>
 </head>
 
