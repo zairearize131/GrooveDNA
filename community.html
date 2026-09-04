@@ -48,19 +48,7 @@
     rel="stylesheet"
     href="styles.css"
   >
-
-  <script>
-    // Require the user to be signed in before accessing the GrooveDNA app
-    document.addEventListener("DOMContentLoaded", async function () {
-        const session = localStorage.getItem("grooveDNA_session");
-
-        if (!session) {
-            window.location.href = "groovedna-account.html";
-            return;
-        }
-    });
-</script>
-
+  
 </head>
 
 
@@ -605,7 +593,41 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  const success = await window.createAccount(
+    email,
+    password,
+    username
+);
 
+if (!success) {
+    return;
+}
+// After successfully creating an account:
+localStorage.setItem("grooveDNA_session", JSON.stringify({
+    email: email,
+    signedIn: true
+}));
+
+window.location.href = "index.html";
+
+// After successfully signing in:
+localStorage.setItem("grooveDNA_session", JSON.stringify({
+    email: email,
+    signedIn: true
+}));
+
+window.location.href = "index.html";
+
+  // After successfully signing in:
+localStorage.setItem("grooveDNA_session", JSON.stringify({
+    email: email,
+    signedIn: true
+}));
+
+// Send the user into the GrooveDNA app
+window.location.href = "index.html";
+
+  
   <!-- =====================================================
        GROOVEDNA MASTER JAVASCRIPT
        ===================================================== -->
