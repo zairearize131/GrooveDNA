@@ -616,9 +616,9 @@
   ========================== -->
 
 <script src="script.js"></script>
-  
+
 <script>
-    // Require users to be signed in before accessing GrooveDNA
+    // Require users to create account before accessing GrooveDNA
     document.addEventListener("DOMContentLoaded", async () => {
         const authenticated = await requireAuthentication();
 
@@ -628,8 +628,29 @@
 
         document.body.classList.add("authenticated");
     });
+
+<script> 
+    // Require users to be signed in before accessing GrooveDNA
+    document.addEventListener("DOMContentLoaded", async () => {
+        const authenticated = await requireAuthentication();
+
+        if (!authenticated) {
+            return;
+        }
+
+        document.body.classList.add("authenticated");
+    }); 
+
+ // Account successfully created or signed in
+localStorage.setItem("grooveDNA_session", JSON.stringify({
+    email: email,
+    signedIn: true
+}));
+
+// Send the authenticated user into the GrooveDNA app
+window.location.href = "index.html";
+
 </script>
 
 </body>
 </html>
-```
