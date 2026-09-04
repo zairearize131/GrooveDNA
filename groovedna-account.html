@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GrooveDNA — Account</title>
 
-  <!-- Use the same stylesheet as the main GrooveDNA app if available. -->
   <link rel="stylesheet" href="styles.css">
 
   <style>
@@ -136,50 +135,6 @@
       line-height: 1.6;
     }
 
-    .field {
-      display: grid;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .field label {
-      font-size: .88rem;
-      font-weight: 800;
-      color: #dddde3;
-    }
-
-    .field input {
-      width: 100%;
-      border: 1px solid var(--gd-border);
-      border-radius: 13px;
-      background: var(--gd-panel-2);
-      color: var(--gd-text);
-      padding: 14px 15px;
-      font: inherit;
-      outline: none;
-    }
-
-    .field input:focus {
-      border-color: rgba(216,255,62,.65);
-      box-shadow: 0 0 0 3px rgba(216,255,62,.10);
-    }
-
-    .password-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-    }
-
-    .password-toggle {
-      border: 1px solid var(--gd-border);
-      border-radius: 13px;
-      background: var(--gd-panel-2);
-      color: var(--gd-text);
-      padding: 0 13px;
-      cursor: pointer;
-      font-weight: 800;
-    }
-
     .primary-btn,
     .secondary-btn,
     .danger-btn {
@@ -209,6 +164,7 @@
       border: 1px solid var(--gd-border);
       background: transparent;
       color: var(--gd-text);
+      margin-top: 10px;
     }
 
     .danger-btn {
@@ -217,46 +173,22 @@
       color: #ff9c9c;
     }
 
-    .auth-card button:disabled {
-      opacity: .55;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .auth-toggle {
-      margin-top: 18px;
-      text-align: center;
-      color: var(--gd-muted);
-      font-size: .92rem;
-    }
-
-    .auth-toggle a {
-      color: var(--gd-accent);
-      font-weight: 900;
-      text-decoration: none;
-    }
-
     .status {
       min-height: 24px;
-      margin: 4px 0 14px;
+      margin: 12px 0;
       color: var(--gd-muted);
       font-size: .9rem;
       line-height: 1.5;
     }
 
-    .status.success { color: #b9f45d; }
     .status.error { color: var(--gd-danger); }
 
-    .signed-in {
+    .signed-in, .auth-unauthenticated {
       display: none;
     }
 
-    .signed-in.visible {
-      display: block;
-    }
-
-    .auth-form.hidden {
-      display: none;
+    .visible {
+      display: block !important;
     }
 
     .user-summary {
@@ -297,59 +229,6 @@
       display: grid;
       gap: 10px;
     }
-
-    .small-note {
-      margin-top: 15px;
-      color: var(--gd-muted);
-      font-size: .8rem;
-      line-height: 1.55;
-      text-align: center;
-    }
-
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 25px;
-      transform: translate(-50%, 20px);
-      opacity: 0;
-      pointer-events: none;
-      z-index: 1000;
-      background: #f5f5f7;
-      color: #111;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-weight: 800;
-      transition: opacity .2s ease, transform .2s ease;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
-
-    @media (max-width: 850px) {
-      .account-shell {
-        grid-template-columns: 1fr;
-        gap: 35px;
-        padding-top: 25px;
-      }
-
-      .account-copy h1 {
-        font-size: clamp(3rem, 15vw, 5rem);
-      }
-    }
-
-    @media (max-width: 520px) {
-      .account-header,
-      .account-shell {
-        width: min(100% - 24px, 1180px);
-      }
-
-      .auth-card {
-        padding: 22px;
-        border-radius: 22px;
-      }
-    }
   </style>
 </head>
 
@@ -364,9 +243,7 @@
 
     <section class="account-copy">
       <p class="eyebrow">YOUR GROOVE • YOUR PROFILE</p>
-
       <h1>Make your groove yours.</h1>
-
       <p>
         Create an individual GrooveDNA account, save your identity,
         and return to your own creator profile whenever you sign in.
@@ -375,519 +252,141 @@
       <ul class="account-features">
         <li>
           <span>✓</span>
-          <span><strong>Individual account</strong> — your account is tied to your own Supabase Auth user.</span>
+          <span><strong>Individual account</strong> — managed securely via Auth0.</span>
         </li>
         <li>
           <span>✓</span>
-          <span><strong>Creator profile</strong> — your display name is used to create your GrooveDNA profile.</span>
-        </li>
-        <li>
-          <span>✓</span>
-          <span><strong>Persistent session</strong> — Supabase can maintain the signed-in session in the browser.</span>
+          <span><strong>Creator profile</strong> — seamless authentication flow.</span>
         </li>
       </ul>
     </section>
 
-    <section class="auth-card" id="authPage">
+    <section class="auth-card">
 
-      <!-- SIGN IN / CREATE ACCOUNT FORM -->
-      <form id="authForm" class="auth-form" novalidate>
+      <!-- LOADING STATE -->
+      <div id="view-loading" class="status">Loading Auth0 session...</div>
 
-        <h2 id="authTitle">Enter your groove.</h2>
-
-        <p>
-          Sign in to your existing account or create a new GrooveDNA creator account.
-        </p>
-
-        <div id="authNameGroup" class="field" style="display:none;">
-          <label for="authName">Display Name</label>
-          <input
-            id="authName"
-            name="displayName"
-            type="text"
-            autocomplete="name"
-            maxlength="80"
-            placeholder="Your creator name">
-        </div>
-
-        <div class="field">
-          <label for="authEmail">Email Address</label>
-          <input
-            id="authEmail"
-            name="email"
-            type="email"
-            autocomplete="email"
-            required
-            placeholder="you@example.com">
-        </div>
-
-        <div class="field">
-          <label for="authPassword">Password</label>
-
-          <div class="password-row">
-            <input
-              id="authPassword"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              minlength="6"
-              required
-              placeholder="At least 6 characters">
-
-            <button
-              type="button"
-              class="password-toggle"
-              id="passwordToggle">
-              Show
-            </button>
-          </div>
-        </div>
-
-        <div id="authStatus" class="status" aria-live="polite"></div>
-
-        <button
-          type="submit"
-          class="primary-btn"
-          id="authSubmit">
-          Sign In
-        </button>
-
-        <div id="authToggleCopy" class="auth-toggle">
-          New to GrooveDNA?
-          <a href="#" id="authModeToggle">Create an account</a>
-        </div>
-
-      </form>
+      <!-- ERROR STATE -->
+      <div id="view-error" class="status error" style="display:none;"></div>
 
       <!-- SIGNED-IN ACCOUNT VIEW -->
-      <div id="signedInPanel" class="signed-in">
-
+      <div id="view-authenticated" class="signed-in">
         <h2>Your account</h2>
-
-        <p>
-          You are currently signed in to GrooveDNA.
-        </p>
+        <p>You are currently signed in to GrooveDNA.</p>
 
         <div class="user-summary">
           <div class="avatar" id="accountAvatar">GD</div>
-
           <div>
             <strong id="accountName">GrooveDNA Creator</strong>
             <span id="accountEmail">—</span>
           </div>
         </div>
 
-        <div id="signedInStatus" class="status success" aria-live="polite">
-          Your GrooveDNA session is active.
-        </div>
-
         <div class="account-actions">
-
-          <a
-            href="profile.html"
-            class="primary-btn"
-            id="profileLink"
-            style="display:grid;place-items:center;text-decoration:none;">
-            Go to My Profile
+          <a href="index.html" class="primary-btn" style="display:grid;place-items:center;text-decoration:none;">
+            Go to GrooveDNA App
           </a>
 
-          <button
-            type="button"
-            class="danger-btn"
-            id="signOutBtn"
-            data-signout>
+          <button type="button" class="danger-btn" id="logoutBtn">
             Sign Out
           </button>
-
         </div>
+      </div>
 
-        <p class="small-note">
-          Your profile is associated with the authenticated Supabase user ID,
-          so each account has its own identity.
-        </p>
+      <!-- UNAUTHENTICATED STATE -->
+      <div id="view-unauthenticated" class="auth-unauthenticated">
+        <h2>Enter your groove.</h2>
+        <p>Sign in to your existing account or create a new GrooveDNA creator account.</p>
+
+        <button type="button" class="primary-btn" id="loginBtn">
+          Sign In
+        </button>
+
+        <button type="button" class="secondary-btn" id="signupBtn">
+          Create Account
+        </button>
       </div>
 
     </section>
   </main>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <!-- Auth0 SPA SDK -->
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.18/auth0-spa-js.production.js"></script>
 
-  <!-- Supabase JS v2 -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Your existing GrooveDNA master script -->
-  <script src="script.js"></script>
-
-  <!-- Account-page bridge -->
   <script>
-    /*
-      =========================================================
-      GROOVEDNA ACCOUNT PAGE
-      =========================================================
+    (async () => {
+      const viewLoading = document.getElementById("view-loading");
+      const viewError = document.getElementById("view-error");
+      const viewAuthenticated = document.getElementById("view-authenticated");
+      const viewUnauthenticated = document.getElementById("view-unauthenticated");
 
-      This page is intentionally built around the IDs expected
-      by the existing GrooveDNA auth code:
-
-        #authForm
-        #authTitle
-        #authSubmit
-        #authNameGroup
-        #authName
-        #authEmail
-        #authPassword
-        #authModeToggle
-        #authToggleCopy
-
-      Your existing script.js supplies:
-
-        createAccount()
-        signIn()
-        signOut()
-        createUserProfile()
-        getCurrentSession()
-        GrooveDNA.authMode
-        GrooveDNA.user
-        GrooveDNA.session
-
-      The bridge below only controls this page's presentation.
-    */
-
-    document.addEventListener("DOMContentLoaded", async () => {
-
-      const form = document.getElementById("authForm");
-      const authTitle = document.getElementById("authTitle");
-      const authSubmit = document.getElementById("authSubmit");
-      const authNameGroup = document.getElementById("authNameGroup");
-      const authToggleCopy = document.getElementById("authToggleCopy");
-      const authModeToggle = document.getElementById("authModeToggle");
-
-      const authEmail = document.getElementById("authEmail");
-      const authPassword = document.getElementById("authPassword");
-      const authName = document.getElementById("authName");
-
-      const authStatus = document.getElementById("authStatus");
-      const signedInPanel = document.getElementById("signedInPanel");
-      const accountName = document.getElementById("accountName");
-      const accountEmail = document.getElementById("accountEmail");
-      const accountAvatar = document.getElementById("accountAvatar");
-      const signOutBtn = document.getElementById("signOutBtn");
-      const passwordToggle = document.getElementById("passwordToggle");
-
-      function setStatus(message, type = "") {
-        authStatus.textContent = message || "";
-        authStatus.className = "status" + (type ? " " + type : "");
-      }
-
-      function setMode(mode) {
-        if (window.GrooveDNA) {
-          GrooveDNA.authMode = mode;
-        }
-
-        const signup = mode === "signup";
-
-        authTitle.textContent = signup
-          ? "Create your groove."
-          : "Enter your groove.";
-
-        authSubmit.textContent = signup
-          ? "Create Account"
-          : "Sign In";
-
-        authNameGroup.style.display = signup ? "grid" : "none";
-
-        authToggleCopy.innerHTML = signup
-          ? 'Already have an account? <a href="#" id="authModeToggle">Sign in</a>'
-          : 'New to GrooveDNA? <a href="#" id="authModeToggle">Create an account</a>';
-
-        document
-          .getElementById("authModeToggle")
-          .addEventListener("click", event => {
-            event.preventDefault();
-            setMode(signup ? "signin" : "signup");
-          });
-
-        setStatus("");
-      }
-
-      function displayUser(user) {
-        if (!user) {
-          form.classList.remove("hidden");
-          signedInPanel.classList.remove("visible");
-          return;
-        }
-
-        const metadata = user.user_metadata || {};
-
-        const displayName =
-          metadata.display_name ||
-          metadata.full_name ||
-          metadata.name ||
-          user.email?.split("@")[0] ||
-          "GrooveDNA Creator";
-
-        accountName.textContent = displayName;
-        accountEmail.textContent = user.email || "No email available";
-
-        accountAvatar.textContent =
-          displayName
-            .split(/\s+/)
-            .filter(Boolean)
-            .slice(0, 2)
-            .map(word => word.charAt(0))
-            .join("")
-            .toUpperCase() || "GD";
-
-        form.classList.add("hidden");
-        signedInPanel.classList.add("visible");
-      }
-
-      /*
-        Keep this page public.
-
-        The existing master script protects non-public pages.
-        This page is the authentication page, so it must not
-        redirect an unauthenticated visitor away before the form
-        can be used.
-      */
-      if (typeof window.protectPrivatePages === "function") {
-        window.protectPrivatePages = async function () {
-          return;
-        };
-      }
-
-      /*
-        Initial mode.
-      */
-      setMode(
-        window.GrooveDNA?.authMode === "signup"
-          ? "signup"
-          : "signin"
-      );
-
-      /*
-        Password visibility.
-      */
-      passwordToggle.addEventListener("click", () => {
-        const showing = authPassword.type === "text";
-
-        authPassword.type = showing
-          ? "password"
-          : "text";
-
-        passwordToggle.textContent =
-          showing ? "Show" : "Hide";
+      // Initialize Auth0 Client
+      window.client = await auth0.createAuth0Client({
+        domain: 'dev-5zzoi8r8hubpz3qh.us.auth0.com',
+        clientId: 'BLNDamZlmERcIGrfMcozBvP7z2RZUOkE',
+        authorizationParams: { 
+          redirect_uri: window.location.origin + window.location.pathname 
+        },
       });
 
-      /*
-        Form submit.
-
-        We use the existing functions from script.js instead of
-        creating a second authentication system.
-      */
-      form.addEventListener("submit", async event => {
-        event.preventDefault();
-
-        const email = authEmail.value.trim();
-        const password = authPassword.value;
-        const displayName = authName.value.trim();
-
-        if (!email || !password) {
-          setStatus("Enter your email and password.", "error");
-          return;
-        }
-
-        if (password.length < 6) {
-          setStatus("Password must be at least 6 characters.", "error");
-          return;
-        }
-
-        authSubmit.disabled = true;
-        setStatus(
-          window.GrooveDNA?.authMode === "signup"
-            ? "Creating your GrooveDNA account..."
-            : "Signing you in..."
-        );
-
-        try {
-
-          let success = false;
-
-          if (window.GrooveDNA?.authMode === "signup") {
-
-            if (typeof window.createAccount !== "function") {
-              throw new Error("The GrooveDNA create-account function is not available.");
-            }
-
-            success = await window.createAccount(
-              email,
-              password,
-              displayName
-            );
-
-          } else {
-
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: password
-});
-
-if (error) {
-    console.error("GrooveDNA sign-in error:", error);
-    throw new Error(error.message);
-}
-
-if (data && data.session) {
-    localStorage.setItem("grooveDNA_session", JSON.stringify({
-        email: email,
-        signedIn: true
-    }));
-
-    window.location.href = "index.html";
-}
-  
-            success = await window.signIn(
-              email,
-              password
-            );
-          }
-
-          /*
-            The existing script navigates after successful
-            authentication. If it does not navigate because
-            email confirmation is required, this page remains
-            available and displays the status below.
-          */
-          if (success) {
-            const session =
-              typeof window.getCurrentSession === "function"
-                ? await window.getCurrentSession()
-                : null;
-
-            if (session?.user) {
-              displayUser(session.user);
-              setStatus("Account successfully authenticated.", "success");
-            } else if (window.GrooveDNA?.user) {
-              displayUser(window.GrooveDNA.user);
-              setStatus(
-                "Account created. Check your email if confirmation is required.",
-                "success"
-              );
-            } else {
-              setStatus(
-                "Account created. Check your email to confirm your account, then sign in.",
-                "success"
-              );
-            }
-          }
-
-        } catch (error) {
-          console.error("GrooveDNA account page error:", error);
-          setStatus(
-            error.message || "Something went wrong. Please try again.",
-            "error"
-          );
-        } finally {
-          authSubmit.disabled = false;
-        }
-      });
-
-      /*
-        Real sign-out action.
-
-        The existing master script's signOut() handles the
-        Supabase session and returns the user to index.html.
-      */
-      signOutBtn.addEventListener("click", async () => {
-
-        signOutBtn.disabled = true;
-        setStatus("Signing you out...");
-
-        try {
-          if (typeof window.signOut === "function") {
-            await window.signOut();
-          } else if (window.supabaseClient) {
-            const { error } =
-              await window.supabaseClient.auth.signOut();
-
-            if (error) throw error;
-
-            window.location.href = "index.html";
-          } else {
-            window.location.href = "index.html";
-          }
-
-        } catch (error) {
-          console.error("GrooveDNA sign-out error:", error);
-          setStatus(
-            error.message || "Unable to sign out. Please try again.",
-            "error"
-          );
-          signOutBtn.disabled = false;
-        }
-      });
-
-      /*
-        Load an existing session when the account page opens.
-      */
-      try {
-        let session = null;
-
-        if (typeof window.getCurrentSession === "function") {
-          session = await window.getCurrentSession();
-        } else if (window.supabaseClient) {
-          const result =
-            await window.supabaseClient.auth.getSession();
-
-          session = result.data?.session || null;
-        }
-
-        if (session?.user) {
-          displayUser(session.user);
-        }
-
-      } catch (error) {
-        console.error("GrooveDNA session check error:", error);
+      // Handle Errors returned from Auth0 redirect
+      if (location.search.includes("error=")) {
+        const params = new URLSearchParams(location.search);
+        viewLoading.style.display = "none";
+        viewError.style.display = "block";
+        viewError.textContent = `Error: ${params.get("error_description") || params.get("error")}`;
+        history.replaceState({}, "", location.pathname);
+        return;
       }
 
-    });
+      // Handle redirect callback after login
+      if (location.search.includes("code=") && location.search.includes("state=")) {
+        await window.client.handleRedirectCallback();
+        history.replaceState({}, "", location.pathname);
+        // Redirect directly to index.html after successful callback
+        window.location.href = "index.html";
+        return;
+      }
+
+      // Check authentication status
+      const isAuthenticated = await window.client.isAuthenticated();
+
+      viewLoading.style.display = "none";
+
+      if (isAuthenticated) {
+        const user = await window.client.getUser();
+
+        document.getElementById("accountEmail").textContent = user.email || "No email";
+        document.getElementById("accountName").textContent = user.name || user.nickname || "GrooveDNA Creator";
+
+        const initials = (user.name || user.email || "GD")
+          .substring(0, 2)
+          .toUpperCase();
+        document.getElementById("accountAvatar").textContent = initials;
+
+        viewAuthenticated.classList.add("visible");
+      } else {
+        viewUnauthenticated.classList.add("visible");
+      }
+
+      // Button Handlers
+      document.getElementById("loginBtn").addEventListener("click", () => {
+        window.client.loginWithRedirect();
+      });
+
+      document.getElementById("signupBtn").addEventListener("click", () => {
+        window.client.loginWithRedirect({
+          authorizationParams: { screen_hint: 'signup' }
+        });
+      });
+
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        window.client.logout({
+          logoutParams: { returnTo: window.location.origin }
+        });
+      });
+    })();
   </script>
 
-  <script src="script.js"></script>
-
-<script>
-    // Require users to create account before accessing GrooveDNA
-    document.addEventListener("DOMContentLoaded", async () => {
-        const authenticated = await requireAuthentication();
-
-        if (!authenticated) {
-            return;
-        }
-
-        document.body.classList.add("authenticated");
-    });
-
-    // Require users to be signed in before accessing GrooveDNA
-    document.addEventListener("DOMContentLoaded", async () => {
-        const authenticated = await requireAuthentication();
-
-        if (!authenticated) {
-            return;
-        }
-
-        document.body.classList.add("authenticated");
-    });
-
-
-  // Account successfully created or signed in
-localStorage.setItem("grooveDNA_session", JSON.stringify({
-    email: email,
-    signedIn: true
-}));
-
-// Send the authenticated user into the GrooveDNA app
-window.location.href = "index.html";
-
-</script>
-  
-  <body>
-  </html>
+</body>
+</html>
