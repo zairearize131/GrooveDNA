@@ -1360,7 +1360,6 @@ document.addEventListener(
 );
 
 
-```javascript
     source.connect(gain);
     gain.connect(masterGain);
 
@@ -1522,7 +1521,6 @@ localStorage.setItem("grooveDNA_session", JSON.stringify({
 // Send the user into the GrooveDNA app
 window.location.href = "index.html";
 
-localStorage.setItem("grooveDNA_session", ...);
 
 
 /* =========================================================
@@ -4301,7 +4299,7 @@ function initializeProductionUX() {
   setupAccessibilityUX();
 }
 
-```javascript
+
 /* =========================================================
    45. GROOVEDNA FINAL COMPATIBILITY / SAFETY LAYER
    ========================================================= */
