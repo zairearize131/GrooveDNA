@@ -5117,6 +5117,50 @@ footer a:hover {
 
 }
 
+/* =========================================================
+   GROOVEDNA ACCOUNT / AUTHENTICATION STYLES
+   ========================================================= */
+
+.account-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.account-container {
+    width: 100%;
+    max-width: 500px;
+}
+
+.account-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.account-form input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font: inherit;
+}
+
+.account-form button {
+    padding: 14px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+}
+
+.account-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
 
 /* =========================================================
    FINAL COMPATIBILITY STATES
