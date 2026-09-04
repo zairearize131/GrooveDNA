@@ -1360,36 +1360,7 @@ document.addEventListener(
 );
   
 function setMasterVolume(value) {
-    if (!masterGain) initAudioEngine();
-
-    masterGain.gain.setTargetAtTime(
-        Number(value),
-        audioContext.currentTime,
-        0.01
-    );
-}
-
-
-// =======================================================
-// 26. AUDIO UPLOAD
-// =======================================================
-
-const uploadInput = $("#audioUpload");
-
-function openUpload() {
-    if (uploadInput) {
-        uploadInput.click();
-    }
-}
-
-if ($("#uploadBtn")) {
-    $("#uploadBtn").addEventListener("click", openUpload);
-}
-
-if ($("#uploadBtn2")) {
-    $("#uploadBtn2").addEventListener("click", openUpload);
-}
-
+   
 if (uploadInput) {
     uploadInput.addEventListener("change", async () => {
         const file = uploadInput.files[0];
