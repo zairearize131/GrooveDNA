@@ -1568,7 +1568,7 @@ async function createAccount(
 
 
     navigate(
-      "home.html"
+      "profile.html"
     );
 
 
@@ -1653,7 +1653,7 @@ async function signIn(
 
 
     navigate(
-      "home.html"
+      "profile.html"
     );
 
 
