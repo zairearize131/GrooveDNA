@@ -47,45 +47,6 @@
     href="styles.css"
   >
 
-  <script src="script.js"></script>
-
-<script>
-    // Require users to create account before accessing GrooveDNA
-    document.addEventListener("DOMContentLoaded", async () => {
-        const authenticated = await requireAuthentication();
-
-        if (!authenticated) {
-            return;
-        }
-
-        document.body.classList.add("authenticated");
-    });
-
-    // Require the user to be signed in before accessing the GrooveDNA app
-    document.addEventListener("DOMContentLoaded", async function () {
-        const session = localStorage.getItem("grooveDNA_session");
-
-        if (!session) {
-            window.location.href = "groovedna-account.html";
-            return;
-        }
-    });
-
-  // Account successfully created or signed in
-localStorage.setItem("grooveDNA_session", JSON.stringify({
-    email: email,
-    signedIn: true
-}));
-
-// Send the authenticated user into the GrooveDNA app
-window.location.href = "index.html";
-
-    <button type="button" id="signOutBtn">
-    Sign Out
-</button>
-    
-</script>
-
 </head>
 
 
@@ -162,7 +123,11 @@ window.location.href = "index.html";
           Library
         </a>
 
-        <a href="profile.html">
+        <a
+          class="active"
+          href="profile.html"
+          aria-current="page"
+        >
           Profile
         </a>
 
@@ -194,58 +159,177 @@ window.location.href = "index.html";
 
 
       <!-- =========================
-           HERO
+           PROFILE
       ========================== -->
 
       <section
-        class="hero"
-        id="home"
+        class="profile-page"
+        id="profile"
       >
 
-        <div class="hero-copy">
-
-          <p class="eyebrow">
-            ROCK • FUNK • SOUL
-          </p>
+        <div class="profile-header-card">
 
 
-          <h1>
+          <!-- =========================
+               PROFILE PICTURE
+          ========================== -->
 
-            Find the sound.
+          <div class="profile-avatar-area">
 
-            <br>
-
-            <span>
-              Flip the groove.
-            </span>
-
-          </h1>
-
-
-          <p class="hero-text">
-            Discover sounds that fit your taste, understand your
-            musical DNA, build original ideas, and connect with creators.
-          </p>
-
-
-          <!-- HERO ACTIONS -->
-
-          <div class="hero-actions">
-
-            <a
-              class="btn primary"
-              href="discover.html"
+            <div
+              class="profile-avatar"
+              id="profileAvatar"
+              aria-label="Profile picture"
             >
-              Explore Sounds
-            </a>
+
+              <span id="profileAvatarPlaceholder">
+                GD
+              </span>
+
+              <img
+                id="profileAvatarImage"
+                alt="Profile picture"
+                hidden
+              >
+
+              <span
+                class="profile-bitmoji"
+                id="profileBitmoji"
+                aria-label="Bitmoji avatar"
+                hidden
+              >
+                😊
+              </span>
+
+            </div>
 
 
-            <a
-              class="btn secondary"
-              href="beatlab.html"
+            <div class="profile-picture-actions">
+
+              <strong>
+                Profile Picture
+              </strong>
+
+              <small>
+                Choose how you want to appear.
+              </small>
+
+
+              <div class="profile-choice-buttons">
+
+                <button
+                  type="button"
+                  class="btn secondary"
+                  id="takePhotoBtn"
+                >
+                  Take New Photo
+                </button>
+
+                <button
+                  type="button"
+                  class="btn secondary"
+                  id="choosePhotoBtn"
+                >
+                  Use Existing Photo
+                </button>
+
+                <button
+                  type="button"
+                  class="btn secondary"
+                  id="createBitmojiBtn"
+                >
+                  Create Bitmoji
+                </button>
+
+              </div>
+
+
+              <div class="profile-avatar-display-options">
+
+                <label>
+
+                  <input
+                    type="checkbox"
+                    id="showPhotoOption"
+                    checked
+                  >
+
+                  Show photo
+
+                </label>
+
+
+                <label>
+
+                  <input
+                    type="checkbox"
+                    id="showBitmojiOption"
+                  >
+
+                  Show Bitmoji
+
+                </label>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- PROFILE PHOTO INPUT -->
+
+          <input
+            type="file"
+            id="profilePhotoInput"
+            accept="image/*"
+            hidden
+          >
+
+
+          <!-- CAMERA INPUT -->
+
+          <input
+            type="file"
+            id="profileCameraInput"
+            accept="image/*"
+            capture="user"
+            hidden
+          >
+
+
+          <!-- =========================
+               PROFILE HEADING / POST TEXT
+          ========================== -->
+
+          <div class="profile-heading-area">
+
+            <label for="profileHeading">
+
+              <strong>
+                Profile Heading
+              </strong>
+
+            </label>
+
+
+            <div
+              class="profile-heading-preview"
+              id="profileHeadingPreview"
+              aria-live="polite"
             >
-              Open Beat Lab
-            </a>
+              Your profile heading
+            </div>
+
+
+            <textarea
+              id="profileHeading"
+              class="profile-heading-input"
+              rows="2"
+              maxlength="160"
+              placeholder="Type a heading you want to show under your profile picture..."
+              aria-label="Profile heading"
+            ></textarea>
 
           </div>
 
@@ -253,206 +337,742 @@ window.location.href = "index.html";
 
 
         <!-- =========================
-             HERO CONSOLE
+             PROFILE MUSIC
         ========================== -->
 
-        <div class="hero-console">
+        <section
+          class="profile-section-card"
+          id="profileMusicSection"
+        >
 
-          <div class="record"></div>
+          <div class="profile-section-heading">
 
+            <div>
 
-          <div class="console-card">
+              <p class="eyebrow">
+                YOUR GROOVE
+              </p>
 
-            <p>
-              NOW EXPLORING
-            </p>
+              <h2>
+                Profile Music
+              </h2>
 
-
-            <h3>
-              Funky Guitar Break
-            </h3>
-
-
-            <!-- DEMO WAVEFORM -->
-
-            <div
-              class="waveform"
-              aria-hidden="true"
-            >
-
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
+              <p>
+                Search for a song and choose the part that represents your groove.
+              </p>
 
             </div>
 
-
-            <!-- TRACK META -->
-
-            <div class="track-meta">
-
-              <span>
-                96 BPM
-              </span>
-
-              <span>
-                E Minor
-              </span>
-
-              <span>
-                Funk
-              </span>
-
-            </div>
-
-
-            <!-- DEMO PLAY BUTTON -->
 
             <button
               type="button"
-              class="play-btn"
-              data-demo-play
-              data-title="Funky Guitar Break"
-              aria-label="Play Funky Guitar Break"
+              class="btn primary"
+              id="addProfileMusicBtn"
             >
-              ▶ Play Preview
+              ＋ Add Music
             </button>
 
           </div>
 
-        </div>
 
-      </section>
+          <!-- MUSIC SEARCH -->
+
+          <div
+            class="profile-music-search"
+            id="profileMusicSearch"
+            hidden
+          >
+
+            <label for="profileMusicInput">
+              Search music
+            </label>
 
 
-      <!-- =========================
-           QUICK ACTIONS
-      ========================== -->
+            <div class="profile-search-row">
 
-      <section class="quick-grid">
+              <input
+                type="search"
+                id="profileMusicInput"
+                placeholder="Search songs, artists, albums..."
+                autocomplete="off"
+              >
 
 
-        <!-- DISCOVER -->
+              <button
+                type="button"
+                class="btn primary"
+                id="profileMusicSearchBtn"
+              >
+                Search
+              </button>
 
-        <a
-          class="quick-card"
-          href="discover.html"
-        >
+            </div>
 
-          <span aria-hidden="true">
-            ⌕
-          </span>
 
-          <div>
+            <!-- MUSIC RESULTS -->
 
-            <strong>
-              Discover
-            </strong>
+            <div
+              class="profile-music-results"
+              id="profileMusicResults"
+            >
 
-            <small>
-              Find your next obsession
-            </small>
+              <div class="profile-empty-state">
+                Search for music to choose what plays on your profile.
+              </div>
+
+            </div>
+
+
+            <!-- =========================
+                 SONG CROP / PLAYBACK SETUP
+            ========================== -->
+
+            <div
+              class="profile-song-editor"
+              id="profileSongEditor"
+              hidden
+            >
+
+              <div class="profile-song-editor-heading">
+
+                <div>
+
+                  <strong id="profileSongEditorTitle">
+                    Choose your profile song
+                  </strong>
+
+                  <small id="profileSongEditorArtist"></small>
+
+                </div>
+
+
+                <button
+                  type="button"
+                  class="btn secondary"
+                  id="profileSongPreviewBtn"
+                >
+                  ▶ Preview
+                </button>
+
+              </div>
+
+
+              <!-- WAVEFORM -->
+
+              <div
+                class="profile-waveform-editor"
+                id="profileWaveformEditor"
+              >
+
+                <div
+                  class="waveform-selection"
+                  id="profileWaveformSelection"
+                >
+
+                  <span
+                    class="waveform-handle"
+                    data-waveform-handle="start"
+                  ></span>
+
+                  <span
+                    class="waveform-handle"
+                    data-waveform-handle="end"
+                  ></span>
+
+                </div>
+
+
+                <div
+                  class="waveform-placeholder"
+                  aria-hidden="true"
+                >
+
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+
+                </div>
+
+              </div>
+
+
+              <!-- SONG TIME -->
+
+              <div class="profile-song-time-row">
+
+                <span id="profileSongStartTime">
+                  0:00
+                </span>
+
+                <span id="profileSongEndTime">
+                  0:30
+                </span>
+
+              </div>
+
+
+              <!-- SONG OPTIONS -->
+
+              <div class="profile-song-options">
+
+                <label>
+
+                  <input
+                    type="radio"
+                    name="profileSongLength"
+                    value="crop"
+                    checked
+                  >
+
+                  Replay selected part
+
+                </label>
+
+
+                <label>
+
+                  <input
+                    type="radio"
+                    name="profileSongLength"
+                    value="whole"
+                  >
+
+                  Play whole song
+
+                </label>
+
+
+                <label>
+
+                  <input
+                    type="checkbox"
+                    id="profileSongAutoplay"
+                    checked
+                  >
+
+                  Automatically play when my profile opens
+
+                </label>
+
+              </div>
+
+
+              <!-- DONE -->
+
+              <button
+                type="button"
+                class="btn primary"
+                id="profileSongDone"
+              >
+                Done
+              </button>
+
+            </div>
 
           </div>
 
-        </a>
 
+          <!-- CURRENT PROFILE MUSIC -->
 
-        <!-- GROOVEDNA -->
+          <div
+            class="profile-current-music"
+            id="profileCurrentMusic"
+          >
 
-        <a
-          class="quick-card"
-          href="groovedna.html"
-        >
-
-          <span aria-hidden="true">
-            🧬
-          </span>
-
-          <div>
-
-            <strong>
-              Your GrooveDNA
-            </strong>
-
-            <small>
-              See what makes your taste unique
-            </small>
+            <div class="profile-empty-state">
+              No profile song chosen yet.
+            </div>
 
           </div>
 
-        </a>
+        </section>
 
 
-        <!-- BEAT LAB -->
+        <!-- =========================
+             PROFILE LOCATION
+        ========================== -->
 
-        <a
-          class="quick-card"
-          href="beatlab.html"
+        <section
+          class="profile-section-card"
+          id="profileLocationSection"
         >
 
-          <span aria-hidden="true">
-            ✦
-          </span>
+          <div class="profile-section-heading">
 
-          <div>
+            <div>
 
-            <strong>
-              Create
-            </strong>
+              <p class="eyebrow">
+                WHERE YOU ARE
+              </p>
 
-            <small>
-              Turn inspiration into a beat
-            </small>
+              <h2>
+                Profile Location
+              </h2>
+
+              <p>
+                Choose exactly how much location information you want to share.
+              </p>
+
+            </div>
+
+
+            <button
+              type="button"
+              class="btn secondary"
+              id="editProfileLocationBtn"
+            >
+              Choose Location
+            </button>
 
           </div>
 
-        </a>
+
+          <!-- LOCATION DISPLAY -->
+
+          <div
+            class="profile-location-display"
+            id="profileLocationDisplay"
+          >
+
+            <div
+              class="profile-location-icon"
+              aria-hidden="true"
+            >
+              ⌖
+            </div>
 
 
-        <!-- COMMUNITY -->
+            <div>
 
-        <a
-          class="quick-card"
-          href="community.html"
-        >
+              <strong id="profileLocationText">
+                Location sharing is off
+              </strong>
 
-          <span aria-hidden="true">
-            ◎
-          </span>
+              <small id="profileLocationDetail">
+                You control what other users can see.
+              </small>
 
-          <div>
-
-            <strong>
-              Connect
-            </strong>
-
-            <small>
-              Meet creators with your taste
-            </small>
+            </div>
 
           </div>
 
-        </a>
+
+          <!-- LOCATION SETTINGS -->
+
+          <div
+            class="profile-location-settings"
+            id="profileLocationSettings"
+            hidden
+          >
+
+            <div class="location-field-grid">
+
+
+              <!-- COUNTRY -->
+
+              <label>
+
+                Country
+
+                <select id="profileLocationCountry">
+
+                  <option value="">
+                    Choose country
+                  </option>
+
+                  <option>
+                    United States
+                  </option>
+
+                  <option>
+                    Canada
+                  </option>
+
+                  <option>
+                    United Kingdom
+                  </option>
+
+                  <option>
+                    Mexico
+                  </option>
+
+                  <option>
+                    Other
+                  </option>
+
+                </select>
+
+              </label>
+
+
+              <!-- STATE -->
+
+              <label>
+
+                State / Region
+
+                <input
+                  type="text"
+                  id="profileLocationState"
+                  placeholder="State or region"
+                >
+
+              </label>
+
+
+              <!-- STREET -->
+
+              <label>
+
+                Street
+
+                <input
+                  type="text"
+                  id="profileLocationStreet"
+                  placeholder="Street (optional)"
+                >
+
+              </label>
+
+            </div>
+
+
+            <!-- GOOGLE MAPS -->
+
+            <div class="map-sharing-card">
+
+              <div>
+
+                <strong>
+                  Google Maps sharing
+                </strong>
+
+                <small>
+                  Choose whether your map location is shared.
+                </small>
+
+              </div>
+
+
+              <!-- LOCATION TOGGLE -->
+
+              <label class="toggle-row">
+
+                <span>
+                  Share my location
+                </span>
+
+                <input
+                  type="checkbox"
+                  id="googleMapsLocationToggle"
+                >
+
+              </label>
+
+
+              <!-- BITMOJI TOGGLE -->
+
+              <label class="toggle-row">
+
+                <span>
+                  Show my Bitmoji above my map location
+                </span>
+
+                <input
+                  type="checkbox"
+                  id="googleMapsBitmojiToggle"
+                >
+
+              </label>
+
+
+              <!-- MAP PREVIEW -->
+
+              <div
+                class="map-preview"
+                id="profileMapPreview"
+              >
+
+                <div class="map-preview-pin">
+                  ⌖
+                </div>
+
+                <span>
+                  Google Maps preview
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <!-- LOCATION ACTIONS -->
+
+            <div class="profile-location-actions">
+
+              <button
+                type="button"
+                class="btn secondary"
+                id="disableLocationBtn"
+              >
+                Turn Location Off
+              </button>
+
+
+              <button
+                type="button"
+                class="btn primary"
+                id="saveProfileLocationBtn"
+              >
+                Save Location
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =========================
+             PROFILE STATS
+        ========================== -->
+
+        <section
+          class="profile-stats-card"
+          aria-label="Profile statistics"
+        >
+
+          <div class="profile-stat">
+
+            <strong id="profilePostCount">
+              0
+            </strong>
+
+            <span>
+              Posts
+            </span>
+
+          </div>
+
+
+          <div class="profile-stat">
+
+            <strong id="profileFollowerCount">
+              0
+            </strong>
+
+            <span>
+              Followers
+            </span>
+
+          </div>
+
+
+          <div class="profile-stat">
+
+            <strong id="profileFollowingCount">
+              0
+            </strong>
+
+            <span>
+              Following
+            </span>
+
+          </div>
+
+
+          <div class="profile-stat">
+
+            <strong id="profileFriendCount">
+              0
+            </strong>
+
+            <span>
+              Friends
+            </span>
+
+          </div>
+
+        </section>
+
+
+        <!-- =========================
+             FRIEND / FOLLOW REQUEST AREA
+        ========================== -->
+
+        <section
+          class="profile-section-card"
+          id="profileConnectionsSection"
+        >
+
+          <div class="profile-section-heading">
+
+            <div>
+
+              <p class="eyebrow">
+                CONNECTIONS
+              </p>
+
+              <h2>
+                Follow &amp; Friends
+              </h2>
+
+              <p>
+                Following someone is immediate. Friendship requires the other
+                user to accept your request.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- CONNECTION BUTTONS -->
+
+          <div class="profile-connection-actions">
+
+            <button
+              type="button"
+              class="btn secondary"
+              id="profileFollowBtn"
+            >
+              Follow
+            </button>
+
+
+            <button
+              type="button"
+              class="btn secondary"
+              id="profileFriendBtn"
+            >
+              Add Friend
+            </button>
+
+          </div>
+
+
+          <!-- FRIEND REQUEST -->
+
+          <div
+            class="friend-request-panel"
+            id="friendRequestPanel"
+            hidden
+          >
+
+            <strong>
+              Friend Request
+            </strong>
+
+
+            <p id="friendRequestText">
+              A user would like to become your friend.
+            </p>
+
+
+            <div class="friend-request-actions">
+
+              <button
+                type="button"
+                class="btn primary"
+                id="acceptFriendBtn"
+              >
+                Accept
+              </button>
+
+
+              <button
+                type="button"
+                class="btn secondary"
+                id="declineFriendBtn"
+              >
+                Decline
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =========================
+             PUBLISHED MUSIC POSTS
+        ========================== -->
+
+        <section
+          class="profile-section-card"
+          id="publishedMusicSection"
+        >
+
+          <div class="profile-section-heading">
+
+            <div>
+
+              <p class="eyebrow">
+                PUBLISHED MUSIC
+              </p>
+
+              <h2>
+                Your Posts
+              </h2>
+
+              <p>
+                Every original song you publish through your profile adds one
+                post to your total.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- POSTS -->
+
+          <div
+            class="profile-posts-grid"
+            id="profilePostsGrid"
+          >
+
+            <div class="profile-empty-state">
+              Your published music will appear here.
+            </div>
+
+          </div>
+
+        </section>
 
       </section>
 
@@ -515,7 +1135,48 @@ window.location.href = "index.html";
        GROOVEDNA MASTER JAVASCRIPT
   ========================== -->
 
-  <script src="GrooveDNA_script_updated.js"></script>
+  <script src="script.js"></script>
+
+
+  <!-- =========================
+       AUTHENTICATION
+  ========================== -->
+
+  <script>
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      async () => {
+
+        if (
+          typeof requireAuthentication !== "function"
+        ) {
+
+          console.error(
+            "GrooveDNA authentication is unavailable."
+          );
+
+          return;
+
+        }
+
+
+        const authenticated =
+          await requireAuthentication();
+
+
+        if (authenticated) {
+
+          document.body.classList.add(
+            "authenticated"
+          );
+
+        }
+
+      }
+    );
+
+  </script>
 
 </body>
 
