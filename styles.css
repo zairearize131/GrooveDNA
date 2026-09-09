@@ -5163,6 +5163,42 @@ footer a:hover {
 }
 
 /* =========================================================
+   GROOVEDNA — AUTHENTICATION FORM SPACING
+   ========================================================= */
+
+#authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+#authNameGroup,
+.auth-field {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#authNameGroup label,
+.auth-field label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+#authName,
+#authEmail,
+#authPassword {
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 12px 14px;
+}
+
+#authSubmit {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 6px;
+}
+/* =========================================================
    FINAL COMPATIBILITY STATES
    ========================================================= */
 
