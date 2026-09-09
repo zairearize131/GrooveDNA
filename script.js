@@ -1116,9 +1116,25 @@ function setupAuthForm() {
 
   /* -------------------------------------------------------
      ACCOUNT → HOME LINKS
-     ------------------------------------------------------- */
+     ------------------------------------------------------- 
 
-  $$("[data-home-view]")
+  /*$$("[data-home-view]")*/
+document
+  .querySelectorAll("[data-home-view]")
+  .forEach((link) => {
+    link.addEventListener("click", async (event) => {
+      event.preventDefault();
+
+      const session = await getCurrentSession();
+
+      if (!session) {
+        showError("Please sign in first.");
+        return;
+      }
+
+      showHomeView();
+    });
+  });
     .forEach(
       (link) => {
 
