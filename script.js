@@ -2,19 +2,37 @@
    GROOVEDNA — SUPABASE AUTHENTICATION
    ========================================================= */
 
+/*
+   ========================================================
+   SUPABASE PROJECT
+   ========================================================
+*/
+
 const SUPABASE_URL =
   "https://nzfzcnusmjboykledznh.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_qsskdrsPBxg1dECb1HY8Jg_x0rL7wR3";
 
-/*
-   IMPORTANT:
-   "client" is the JavaScript variable containing the
-   Supabase client.
 
-   It is NOT the name of the Supabase database.
+/*
+   ========================================================
+   GROOVEDNA PRODUCTION URL
+   ========================================================
+
+   This is the page GrooveDNA should use after authentication.
 */
+
+const GROOVEDNA_HOME_URL =
+  "https://zairearize131.github.io/GrooveDNA/index.html";
+
+
+/*
+   ========================================================
+   SUPABASE CLIENT
+   ========================================================
+*/
+
 let client = null;
 
 
@@ -24,21 +42,34 @@ let client = null;
 
 function initializeSupabase() {
 
+  /*
+     Make sure the Supabase JavaScript library exists.
+  */
+
   if (!window.supabase) {
 
     console.error(
-      "Supabase JavaScript library was not loaded."
+      "GrooveDNA: Supabase JavaScript library was not loaded."
     );
 
     return null;
   }
 
+
   /*
-     Prevent multiple Supabase clients from being created.
+     Prevent multiple Supabase clients.
   */
+
   if (client) {
+
     return client;
+
   }
+
+
+  /*
+     Create the Supabase client.
+  */
 
   client =
     window.supabase.createClient(
@@ -46,20 +77,46 @@ function initializeSupabase() {
       SUPABASE_PUBLISHABLE_KEY,
       {
         auth: {
+
+          /*
+             Keep the user signed in between page loads.
+          */
+
           persistSession: true,
+
+          /*
+             Automatically refresh expired tokens.
+          */
+
           autoRefreshToken: true,
+
+          /*
+             Allow Supabase to process authentication
+             information returned in the URL.
+          */
+
           detectSessionInUrl: true
+
         }
       }
     );
 
+
   /*
-     Keep this global alias for compatibility with any
-     existing GrooveDNA code that uses window.supabaseClient.
+     Make the client available globally.
   */
-  window.supabaseClient = client;
+
+  window.supabaseClient =
+    client;
+
+
+  console.log(
+    "GrooveDNA: Supabase client initialized."
+  );
+
 
   return client;
+
 }
 
 
@@ -78,11 +135,18 @@ window.GrooveDNA =
 
     authMode: "signin",
 
+    currentPage: "account",
+
     currentBeat: {
+
       bpm: 96,
+
       pitch: 0,
+
       loop: false,
+
       clips: []
+
     }
 
   };
@@ -92,17 +156,13 @@ window.GrooveDNA =
    AUTH STATUS HELPERS
    ========================================================= */
 
-/*
-   These functions MUST be declared outside of other
-   functions so every part of GrooveDNA can use them.
-*/
-
 function showError(message) {
 
   const status =
     document.getElementById(
       "authStatus"
     );
+
 
   if (status) {
 
@@ -117,10 +177,12 @@ function showError(message) {
 
   }
 
+
   console.error(
     "GrooveDNA:",
     message
   );
+
 }
 
 
@@ -130,6 +192,7 @@ function showSuccess(message) {
     document.getElementById(
       "authStatus"
     );
+
 
   if (status) {
 
@@ -144,10 +207,12 @@ function showSuccess(message) {
 
   }
 
+
   console.log(
     "GrooveDNA:",
     message
   );
+
 }
 
 
@@ -160,9 +225,13 @@ async function getCurrentSession() {
   const supabase =
     initializeSupabase();
 
+
   if (!supabase) {
+
     return null;
+
   }
+
 
   try {
 
@@ -172,33 +241,43 @@ async function getCurrentSession() {
     } =
       await supabase.auth.getSession();
 
+
     if (error) {
 
       console.error(
-        "Unable to get Supabase session:",
+        "GrooveDNA: Unable to get Supabase session:",
         error
       );
 
       return null;
+
     }
+
 
     window.GrooveDNA.session =
       data.session || null;
 
+
     window.GrooveDNA.user =
       data.session?.user || null;
 
-    return data.session || null;
+
+    return (
+      data.session || null
+    );
+
 
   } catch (error) {
 
     console.error(
-      "Session error:",
+      "GrooveDNA: Session error:",
       error
     );
 
     return null;
+
   }
+
 }
 
 
@@ -213,28 +292,34 @@ function setAuthMode(mode) {
       "authTitle"
     );
 
+
   const authNameGroup =
     document.getElementById(
       "authNameGroup"
     );
+
 
   const authName =
     document.getElementById(
       "authName"
     );
 
+
   const authSubmit =
     document.getElementById(
       "authSubmit"
     );
+
 
   const authToggleCopy =
     document.getElementById(
       "authToggleCopy"
     );
 
+
   window.GrooveDNA.authMode =
     mode;
+
 
   const creatingAccount =
     mode === "signup";
@@ -301,6 +386,7 @@ function showAccountView() {
       "accountView"
     );
 
+
   const homeView =
     document.getElementById(
       "homeView"
@@ -337,10 +423,6 @@ function showAccountView() {
     "account";
 
 
-  /*
-     Keep the user on the combined index.html page.
-     Do NOT redirect to groovedna-account.html.
-  */
   if (
     window.location.hash !==
     "#account"
@@ -353,8 +435,11 @@ function showAccountView() {
 
 
   window.scrollTo({
+
     top: 0,
+
     behavior: "smooth"
+
   });
 
 }
@@ -370,6 +455,7 @@ function showHomeView() {
     document.getElementById(
       "accountView"
     );
+
 
   const homeView =
     document.getElementById(
@@ -419,8 +505,11 @@ function showHomeView() {
 
 
   window.scrollTo({
+
     top: 0,
+
     behavior: "smooth"
+
   });
 
 }
@@ -460,9 +549,45 @@ async function createAccount(
 
   try {
 
-    const redirectUrl =
-      `${window.location.origin}${window.location.pathname}#home`;
+    /*
+       Normalize the email address.
+    */
 
+    const normalizedEmail =
+      email
+        .trim()
+        .toLowerCase();
+
+
+    /*
+       Normalize display name.
+    */
+
+    const normalizedDisplayName =
+      displayName
+        .trim();
+
+
+    /*
+       IMPORTANT:
+
+       Supabase email confirmation should return the
+       user to GrooveDNA's actual index.html page.
+    */
+
+    const emailRedirectTo =
+      GROOVEDNA_HOME_URL;
+
+
+    console.log(
+      "GrooveDNA: Creating Supabase account for:",
+      normalizedEmail
+    );
+
+
+    /*
+       CREATE THE SUPABASE AUTH USER
+    */
 
     const {
       data,
@@ -471,7 +596,7 @@ async function createAccount(
       await supabase.auth.signUp({
 
         email:
-          email.trim(),
+          normalizedEmail,
 
         password:
           password,
@@ -481,24 +606,29 @@ async function createAccount(
           data: {
 
             display_name:
-              displayName.trim()
+              normalizedDisplayName
 
           },
 
           emailRedirectTo:
-            redirectUrl
+            emailRedirectTo
 
         }
 
       });
 
 
+    /*
+       Supabase returned an error.
+    */
+
     if (error) {
 
       console.error(
-        "Create account error:",
+        "GrooveDNA: Create account error:",
         error
       );
+
 
       return {
 
@@ -513,11 +643,35 @@ async function createAccount(
     }
 
 
+    /*
+       Store the Supabase user.
+    */
+
     window.GrooveDNA.user =
       data.user || null;
 
+
+    /*
+       Store the Supabase session.
+
+       This will be null when Supabase requires the
+       user to confirm their email first.
+    */
+
     window.GrooveDNA.session =
       data.session || null;
+
+
+    console.log(
+      "GrooveDNA: Supabase account creation successful.",
+      data.user
+    );
+
+
+    console.log(
+      "GrooveDNA: Session returned:",
+      !!data.session
+    );
 
 
     return {
@@ -537,7 +691,7 @@ async function createAccount(
   } catch (error) {
 
     console.error(
-      "Create account exception:",
+      "GrooveDNA: Create account exception:",
       error
     );
 
@@ -590,6 +744,22 @@ async function signIn(
 
   try {
 
+    const normalizedEmail =
+      email
+        .trim()
+        .toLowerCase();
+
+
+    console.log(
+      "GrooveDNA: Attempting Supabase sign in for:",
+      normalizedEmail
+    );
+
+
+    /*
+       SIGN IN WITH SUPABASE EMAIL/PASSWORD
+    */
+
     const {
       data,
       error
@@ -597,7 +767,7 @@ async function signIn(
       await supabase.auth.signInWithPassword({
 
         email:
-          email.trim(),
+          normalizedEmail,
 
         password:
           password
@@ -605,12 +775,17 @@ async function signIn(
       });
 
 
+    /*
+       Supabase rejected the credentials.
+    */
+
     if (error) {
 
       console.error(
-        "Sign in error:",
+        "GrooveDNA: Sign in error:",
         error
       );
+
 
       return {
 
@@ -625,11 +800,22 @@ async function signIn(
     }
 
 
+    /*
+       Store authenticated user/session.
+    */
+
     window.GrooveDNA.user =
       data.user || null;
 
+
     window.GrooveDNA.session =
       data.session || null;
+
+
+    console.log(
+      "GrooveDNA: Supabase sign in successful.",
+      data.user
+    );
 
 
     return {
@@ -649,7 +835,7 @@ async function signIn(
   } catch (error) {
 
     console.error(
-      "Sign in exception:",
+      "GrooveDNA: Sign in exception:",
       error
     );
 
@@ -680,7 +866,9 @@ async function signOut() {
 
 
   if (!supabase) {
+
     return false;
+
   }
 
 
@@ -695,7 +883,7 @@ async function signOut() {
     if (error) {
 
       console.error(
-        "Sign out error:",
+        "GrooveDNA: Sign out error:",
         error
       );
 
@@ -707,14 +895,17 @@ async function signOut() {
     window.GrooveDNA.user =
       null;
 
+
     window.GrooveDNA.session =
       null;
+
 
     window.GrooveDNA.profile =
       null;
 
 
     showAccountView();
+
 
     setAuthMode(
       "signin"
@@ -732,9 +923,10 @@ async function signOut() {
   } catch (error) {
 
     console.error(
-      "Sign out exception:",
+      "GrooveDNA: Sign out exception:",
       error
     );
+
 
     return false;
 
@@ -756,24 +948,30 @@ async function resetPassword(
 
 
   if (!supabase) {
+
     return false;
+
   }
 
 
   try {
 
-    const redirectUrl =
-      `${window.location.origin}${window.location.pathname}#account`;
+    const normalizedEmail =
+      email
+        .trim()
+        .toLowerCase();
 
 
     const {
       error
     } =
       await supabase.auth.resetPasswordForEmail(
-        email.trim(),
+        normalizedEmail,
         {
+
           redirectTo:
-            redirectUrl
+            GROOVEDNA_HOME_URL
+
         }
       );
 
@@ -781,13 +979,15 @@ async function resetPassword(
     if (error) {
 
       console.error(
-        "Password reset error:",
+        "GrooveDNA: Password reset error:",
         error
       );
+
 
       showError(
         error.message
       );
+
 
       return false;
 
@@ -805,7 +1005,7 @@ async function resetPassword(
   } catch (error) {
 
     console.error(
-      "Password reset exception:",
+      "GrooveDNA: Password reset exception:",
       error
     );
 
@@ -856,7 +1056,7 @@ function friendlyAuthError(
   ) {
 
     return (
-      "The email address or password is incorrect."
+      "The email address or password is incorrect. Make sure you created the account in Supabase and, if email confirmation is enabled, confirmed your email."
     );
 
   }
@@ -949,7 +1149,13 @@ function setupAuthForm() {
 
 
   if (!authForm) {
+
+    console.warn(
+      "GrooveDNA: #authForm was not found."
+    );
+
     return;
+
   }
 
 
@@ -989,9 +1195,9 @@ function setupAuthForm() {
     );
 
 
-  /* -------------------------------------------------------
+  /* =======================================================
      CREATE ACCOUNT / SIGN IN
-     ------------------------------------------------------- */
+     ======================================================= */
 
   authForm.addEventListener(
     "submit",
@@ -1084,7 +1290,7 @@ function setupAuthForm() {
 
 
       /* ---------------------------------------------------
-         DISABLE SUBMIT BUTTON
+         DISABLE SUBMIT
          --------------------------------------------------- */
 
       if (authSubmit) {
@@ -1092,8 +1298,10 @@ function setupAuthForm() {
         authSubmit.disabled =
           true;
 
+
         authSubmit.dataset.originalText =
           authSubmit.textContent;
+
 
         authSubmit.textContent =
           mode === "signup"
@@ -1108,9 +1316,9 @@ function setupAuthForm() {
         let result;
 
 
-        /* -------------------------------------------------
+        /* =================================================
            CREATE ACCOUNT
-           ------------------------------------------------- */
+           ================================================= */
 
         if (
           mode === "signup"
@@ -1124,9 +1332,9 @@ function setupAuthForm() {
             );
 
 
-        /*
+        /* =================================================
            SIGN IN
-        */
+           ================================================= */
 
         } else {
 
@@ -1139,9 +1347,9 @@ function setupAuthForm() {
         }
 
 
-        /* -------------------------------------------------
-           HANDLE AUTH ERROR
-           ------------------------------------------------- */
+        /* =================================================
+           HANDLE ERROR
+           ================================================= */
 
         if (result.error) {
 
@@ -1156,17 +1364,9 @@ function setupAuthForm() {
         }
 
 
-        /* -------------------------------------------------
-           EMAIL CONFIRMATION REQUIRED
-           ------------------------------------------------- */
-
-        /*
-           Supabase may create the user but return
-           session = null when email confirmation is enabled.
-
-           In that situation the user is NOT authenticated
-           yet, so we intentionally do NOT open Home.
-        */
+        /* =================================================
+           EMAIL CONFIRMATION
+           ================================================= */
 
         if (
           mode === "signup" &&
@@ -1174,7 +1374,7 @@ function setupAuthForm() {
         ) {
 
           showSuccess(
-            "Account created. Please check your email and confirm your account before signing in."
+            "Account created successfully. Please check your email and confirm your account before signing in."
           );
 
 
@@ -1191,9 +1391,9 @@ function setupAuthForm() {
         }
 
 
-        /* -------------------------------------------------
-           MAKE SURE A REAL SESSION EXISTS
-           ------------------------------------------------- */
+        /* =================================================
+           REQUIRE REAL SESSION
+           ================================================= */
 
         if (
           !result.session
@@ -1208,9 +1408,9 @@ function setupAuthForm() {
         }
 
 
-        /* -------------------------------------------------
+        /* =================================================
            SAVE AUTH STATE
-           ------------------------------------------------- */
+           ================================================= */
 
         window.GrooveDNA.session =
           result.session;
@@ -1220,9 +1420,9 @@ function setupAuthForm() {
           result.user;
 
 
-        /* -------------------------------------------------
+        /* =================================================
            SUCCESS
-           ------------------------------------------------- */
+           ================================================= */
 
         showSuccess(
           mode === "signup"
@@ -1231,9 +1431,9 @@ function setupAuthForm() {
         );
 
 
-        /* -------------------------------------------------
-           OPEN HOME
-           ------------------------------------------------- */
+        /* =================================================
+           SHOW HOME
+           ================================================= */
 
         setTimeout(
           () => {
@@ -1248,7 +1448,7 @@ function setupAuthForm() {
       } catch (error) {
 
         console.error(
-          "Authentication form error:",
+          "GrooveDNA: Authentication form error:",
           error
         );
 
@@ -1284,9 +1484,9 @@ function setupAuthForm() {
   );
 
 
-  /* -------------------------------------------------------
-     SIGN IN / CREATE ACCOUNT SWITCH
-     ------------------------------------------------------- */
+  /* =======================================================
+     SWITCH SIGN IN / CREATE ACCOUNT
+     ======================================================= */
 
   if (authToggleCopy) {
 
@@ -1310,9 +1510,9 @@ function setupAuthForm() {
   }
 
 
-  /* -------------------------------------------------------
+  /* =======================================================
      SIGN OUT
-     ------------------------------------------------------- */
+     ======================================================= */
 
   if (signOutBtn) {
 
@@ -1330,9 +1530,9 @@ function setupAuthForm() {
   }
 
 
-  /* -------------------------------------------------------
+  /* =======================================================
      PASSWORD VISIBILITY
-     ------------------------------------------------------- */
+     ======================================================= */
 
   const passwordToggle =
     document.getElementById(
@@ -1347,7 +1547,9 @@ function setupAuthForm() {
       () => {
 
         if (!authPassword) {
+
           return;
+
         }
 
 
@@ -1373,19 +1575,9 @@ function setupAuthForm() {
   }
 
 
-  /* -------------------------------------------------------
+  /* =======================================================
      ACCOUNT → HOME LINKS
-     ------------------------------------------------------- */
-
-  /*
-     FIX #3:
-
-     Do NOT use an undefined $$() helper here.
-
-     Use the native querySelectorAll() API directly.
-     This also removes the duplicate .forEach() block
-     that existed in the previous version.
-  */
+     ======================================================= */
 
   document
     .querySelectorAll(
@@ -1438,15 +1630,14 @@ async function initializeCombinedAuthentication() {
 
 
   /*
-     Set up the authentication form first.
+     Set up the form.
   */
 
   setupAuthForm();
 
 
   /*
-     Check whether the browser already has
-     an authenticated Supabase session.
+     Check existing Supabase session.
   */
 
   const session =
@@ -1458,13 +1649,6 @@ async function initializeCombinedAuthentication() {
      ------------------------------------------------------- */
 
   if (session) {
-
-    /*
-       If the user specifically requests the Account view,
-       allow the Account view to open.
-
-       Otherwise authenticated users go to Home.
-    */
 
     if (
       window.location.hash ===
@@ -1480,9 +1664,9 @@ async function initializeCombinedAuthentication() {
     }
 
 
-  /*
+  /* -------------------------------------------------------
      NO SESSION
-  */
+     ------------------------------------------------------- */
 
   } else {
 
@@ -1492,7 +1676,7 @@ async function initializeCombinedAuthentication() {
 
 
   /* -------------------------------------------------------
-     AUTH STATE CHANGES
+     SUPABASE AUTH STATE CHANGES
      ------------------------------------------------------- */
 
   if (supabase) {
@@ -1509,7 +1693,7 @@ async function initializeCombinedAuthentication() {
 
 
         /* -----------------------------------------------
-           USER SIGNED OUT
+           SIGNED OUT
            ----------------------------------------------- */
 
         if (
@@ -1524,7 +1708,7 @@ async function initializeCombinedAuthentication() {
 
 
         /* -----------------------------------------------
-           USER SIGNED IN
+           SIGNED IN
            ----------------------------------------------- */
 
         if (
@@ -1554,10 +1738,6 @@ function openAudioUpload() {
     window.GrooveDNA?.session;
 
 
-  /*
-     User is not authenticated.
-  */
-
   if (!session) {
 
     showAccountView();
@@ -1572,11 +1752,6 @@ function openAudioUpload() {
 
   }
 
-
-  /*
-     User is authenticated.
-     Open the audio file picker.
-  */
 
   const input =
     document.getElementById(
