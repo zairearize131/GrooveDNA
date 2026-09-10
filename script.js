@@ -1,4 +1,4 @@
-// GrooveDNA Application JavaScript
+// GrooveDNA Application Javascript
 // Initialize Supabase Client
 const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT_ID.supabase.co';
 const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
