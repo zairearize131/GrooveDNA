@@ -75,8 +75,9 @@ function initAuthUI() {
         if (error) {
           alert('Sign Up Error: ' + error.message);
         } else {
-          alert('Account created! Please check your email for verification.');
+          alert('Account created! You are now signed in.');
           window.location.hash = '';
+          checkUserSession();
         }
       } else {
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -91,12 +92,14 @@ function initAuthUI() {
     });
   }
 
+  // Safely handle Sign Out without triggering 403 errors
   if (btnSignOut) {
     btnSignOut.addEventListener('click', async () => {
       if (supabaseClient) {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) { 
-        await supabaseClient.auth.signOut();
+        if (session) {
+          await supabaseClient.auth.signOut();
+        }
       }
       checkUserSession();
     });
@@ -165,9 +168,10 @@ function initDrumPads() {
     button.addEventListener('click', () => triggerPad(button));
   });
 
+  // Guarded keydown listener to prevent undefined errors
   window.addEventListener('keydown', (e) => {
-    if (!e.key) return; //Guard clause to prevent undefined errors
-    const key = e.key.toUpperCase(); 
+    if (!e.key) return;
+    const key = e.key.toUpperCase();
     const pad = document.querySelector(`.pad-btn[data-key="${key}"]`);
     if (pad) {
       triggerPad(pad);
