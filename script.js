@@ -9,7 +9,7 @@ if (window.supabase) {
 }
 
 // Global Auth State
-let currentAuthMode = 'signup'; // 'signup' or 'login'
+let supabaseClient = 'signup'; // 'signup' or 'login'
 
 document.addEventListener('DOMContentLoaded', () => {
   initAuthUI();
@@ -37,7 +37,7 @@ function initAuthUI() {
     });
   }
 
-  if (btnSignUpNav) {
+  if (btnNav) {
     btnSignUpNav.addEventListener('click', () => {
       currentAuthMode = 'signup';
       updateAuthModalUI();
@@ -65,7 +65,7 @@ function initAuthUI() {
       }
 
       if (currentAuthMode === 'signup') {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabaseClient.auth.signUp({ email, password });
         if (error) {
           alert('Sign Up Error: ' + error.message);
         } else {
@@ -73,7 +73,7 @@ function initAuthUI() {
           window.location.hash = '';
         }
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) {
           alert('Sign In Error: ' + error.message);
         } else {
@@ -125,7 +125,7 @@ async function checkUserSession() {
 
   if (!supabase) return;
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
 
   if (session && session.user) {
     userMenu.classList.remove('hidden');
