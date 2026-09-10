@@ -94,6 +94,8 @@ function initAuthUI() {
   if (btnSignOut) {
     btnSignOut.addEventListener('click', async () => {
       if (supabaseClient) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) { 
         await supabaseClient.auth.signOut();
       }
       checkUserSession();
@@ -164,7 +166,8 @@ function initDrumPads() {
   });
 
   window.addEventListener('keydown', (e) => {
-    const key = e.key.toUpperCase();
+    if (!e.key) return; //Guard clause to prevent undefined errors
+    const key = e.key.toUpperCase(); 
     const pad = document.querySelector(`.pad-btn[data-key="${key}"]`);
     if (pad) {
       triggerPad(pad);
