@@ -3,101 +3,221 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GrooveDNA - Sign In</title>
-  <!-- Link to your CSS file -->
+  <title>GrooveDNA - Music Discovery, Sampling & Collaboration</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  <!-- HEADER & NAVIGATION -->
+  <header class="header">
+    <div class="header-container">
+      <a href="#" class="logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">Groove<strong>DNA</strong></span>
+      </a>
 
-  <!-- SIGN IN / CREATE ACCOUNT FORM -->
-  <form id="authForm" class="auth-form" novalidate>
+      <nav class="nav-links">
+        <a href="#creation" class="nav-link active">Studio</a>
+        <a href="#feed" class="nav-link">Feed</a>
+        <a href="#streaming" class="nav-link">Live Stream</a>
+        <a href="#gaming" class="nav-link">Gaming Hub</a>
+      </nav>
 
-    <h2 id="authTitle">Enter your groove.</h2>
-
-    <p>
-      Sign in to your existing account or create a new GrooveDNA creator account.
-    </p>
-
-    <!-- DISPLAY NAME -->
-    <div id="authNameGroup" class="field">
-      <label for="authName">Display Name</label>
-      <input
-        id="authName"
-        name="displayName"
-        type="text"
-        autocomplete="name"
-        maxlength="80"
-        placeholder="Your creator name"
-      >
-    </div>
-
-    <!-- EMAIL ADDRESS -->
-    <div class="field">
-      <label for="authEmail">Email Address</label>
-      <input
-        id="authEmail"
-        name="email"
-        type="email"
-        autocomplete="email"
-        required
-        placeholder="you@example.com"
-      >
-    </div>
-
-    <!-- PASSWORD -->
-    <div class="field">
-      <label for="authPassword">Password</label>
-      <div class="password-row">
-        <input
-          id="authPassword"
-          name="password"
-          type="password"
-          autocomplete="current-password"
-          minlength="6"
-          required
-          placeholder="At least 6 characters"
-        >
-        <button
-          type="button"
-          class="password-toggle"
-          id="passwordToggle"
-        >
-          Show
-        </button>
+      <div class="user-actions">
+        <a href="#auth-modal" class="btn secondary" id="btn-signin-nav">Sign In</a>
+        <a href="#auth-modal" class="btn primary" id="btn-signup-nav">Create Account</a>
+        
+        <!-- User Profile Dropdown (Shown when logged in) -->
+        <div id="user-profile-menu" class="user-profile-menu hidden">
+          <span id="user-email-display" class="user-email">user@example.com</span>
+          <button id="btn-signout" class="btn outline small">Sign Out</button>
+        </div>
       </div>
     </div>
+  </header>
 
-    <!-- AUTH STATUS -->
-    <div
-      id="authStatus"
-      class="status"
-      aria-live="polite"
-    ></div>
+  <!-- MAIN APPLICATION CONTENT -->
+  <main class="main-container">
+    
+    <!-- SECTION 1: STUDIO / DRUM PAD & SAMPLER -->
+    <section id="creation" class="app-section">
+      <div class="section-header">
+        <h1>Groove Studio & Drum Pad</h1>
+        <p class="section-subtitle">Craft unique loops, mix audio stems, and publish directly to the feed.</p>
+      </div>
 
-    <!-- SUBMIT BUTTON -->
-    <button
-      type="submit"
-      class="primary-btn"
-      id="authSubmit"
-    >
-      Sign In
-    </button>
+      <div class="studio-grid">
+        <!-- Drum Pad Machine -->
+        <div class="card drum-pad-card">
+          <h3>Interactive Drum Pad</h3>
+          <div class="pad-grid">
+            <button class="pad-btn" data-key="Q" data-sound="kick">Kick <span>(Q)</span></button>
+            <button class="pad-btn" data-key="W" data-sound="snare">Snare <span>(W)</span></button>
+            <button class="pad-btn" data-key="E" data-sound="hihat">Hi-Hat <span>(E)</span></button>
+            <button class="pad-btn" data-key="R" data-sound="clap">Clap <span>(R)</span></button>
+            <button class="pad-btn" data-key="A" data-sound="synth1">Synth A <span>(A)</span></button>
+            <button class="pad-btn" data-key="S" data-sound="synth2">Synth B <span>(S)</span></button>
+            <button class="pad-btn" data-key="D" data-sound="bass">Sub Bass <span>(D)</span></button>
+            <button class="pad-btn" data-key="F" data-sound="vocal">FX Vox <span>(F)</span></button>
+          </div>
+        </div>
 
-    <!-- SIGN IN / CREATE ACCOUNT TOGGLE -->
-    <div
-      id="authToggleCopy"
-      class="auth-toggle"
-    >
-      New to GrooveDNA?
-      <a
-        href="#"
-        id="authModeToggle"
-      >
-        Create an account
-      </a>
+        <!-- Mixer & Controls -->
+        <div class="card studio-controls-card">
+          <h3>Stem Mixer</h3>
+          <div class="mixer-controls">
+            <div class="fader-group">
+              <label for="bpm-slider">BPM (<span id="bpm-val">120</span>)</label>
+              <input type="range" id="bpm-slider" min="60" max="180" value="120" />
+            </div>
+
+            <div class="fader-group">
+              <label for="master-vol">Master Volume</label>
+              <input type="range" id="master-vol" min="0" max="100" value="80" />
+            </div>
+
+            <div class="fader-group">
+              <label for="reverb-level">Reverb Depth</label>
+              <input type="range" id="reverb-level" min="0" max="100" value="25" />
+            </div>
+
+            <div class="studio-actions">
+              <button id="btn-record" class="btn primary full-width">⏺ Start Recording Loop</button>
+              <button id="btn-publish-track" class="btn secondary full-width" disabled>🚀 Publish Track to Feed</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: SOCIAL FEED & MUSIC DISCOVERY -->
+    <section id="feed" class="app-section">
+      <div class="section-header">
+        <h2>Community Discover Feed</h2>
+        <p class="section-subtitle">Listen, sample, like, and comment on tracks produced by creators worldwide.</p>
+      </div>
+
+      <div class="feed-container" id="feed-container">
+        <!-- Feed Item Card -->
+        <div class="card feed-item" data-track-id="1">
+          <div class="feed-header">
+            <div class="author-info">
+              <div class="avatar">DJ</div>
+              <div>
+                <strong class="author-name">Alex Rivera</strong>
+                <span class="track-date">2 hours ago</span>
+              </div>
+            </div>
+            <button class="btn outline small btn-follow">+ Follow</button>
+          </div>
+
+          <div class="feed-body">
+            <h3 class="track-title">Cybernetic Synthwave Loop #4</h3>
+            <p class="track-desc">Created with Groove Studio preset #2. Free to sample and remix!</p>
+            <div class="audio-player-mock">
+              <button class="btn-play">▶ Play Track</button>
+              <div class="waveform-bar"></div>
+              <span class="duration">0:45</span>
+            </div>
+          </div>
+
+          <div class="feed-footer">
+            <button class="action-btn btn-like">❤️ <span class="like-count">42</span> Likes</button>
+            <button class="action-btn btn-comment">💬 <span class="comment-count">8</span> Comments</button>
+            <button class="action-btn btn-sample">🎛️ Sample into Studio</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: LIVE STREAMING & ROOMS -->
+    <section id="streaming" class="app-section">
+      <div class="section-header">
+        <h2>Live Collaboration Rooms</h2>
+        <p class="section-subtitle">Broadcast your jam session live or collaborate in real-time rooms.</p>
+      </div>
+
+      <div class="stream-layout">
+        <div class="card stream-viewport">
+          <div class="stream-placeholder">
+            <div class="live-badge">🔴 LIVE NOW</div>
+            <p>Stage Stream: <strong>Midnight Jam Session w/ Marcus</strong></p>
+          </div>
+        </div>
+
+        <div class="card stream-chat">
+          <h3>Live Chat</h3>
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-msg"><strong>Sarah:</strong> Love that bassline drop!</div>
+            <div class="chat-msg"><strong>BeatMaker99:</strong> What tempo is this?</div>
+          </div>
+          <form id="chat-form" class="chat-input-row">
+            <input type="text" id="chat-input" placeholder="Say something in chat..." required />
+            <button type="submit" class="btn primary">Send</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: GAMING HUB INTEGRATION -->
+    <section id="gaming" class="app-section">
+      <div class="section-header">
+        <h2>Gaming Platform Integrations</h2>
+        <p class="section-subtitle">Sync your game sound effects, trigger pads using controllers, and earn trophies.</p>
+      </div>
+
+      <div class="gaming-grid">
+        <div class="card gaming-card">
+          <div class="gaming-icon">🎮</div>
+          <h3>Controller Support</h3>
+          <p>Map your gamepad buttons directly to drum pad triggers for low-latency live sound performance.</p>
+          <button class="btn outline">Connect Gamepad</button>
+        </div>
+
+        <div class="card gaming-card">
+          <div class="gaming-icon">🏆</div>
+          <h3>Rhythm Achievements</h3>
+          <p>Complete daily rhythm challenges and level up your creator rank in the community.</p>
+          <button class="btn outline">View Challenges</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- AUTHENTICATION MODAL (Fixes missing anchor issue) -->
+  <div id="auth-modal" class="modal-backdrop auth-modal-backdrop">
+    <div class="modal auth-container">
+      <a href="#" class="modal-close" id="modal-close-btn" aria-label="Close modal">&times;</a>
+      
+      <h2 id="auth-modal-title">Create Account</h2>
+      <p id="auth-modal-subtitle" class="muted">Join GrooveDNA to save your tracks and collaborate.</p>
+      
+      <form id="auth-form">
+        <div class="form-group auth-email-group">
+          <label for="auth-email">Email Address</label>
+          <input type="email" id="auth-email" required placeholder="you@example.com" />
+        </div>
+        
+        <div class="form-group auth-password-group">
+          <label for="auth-password">Password</label>
+          <input type="password" id="auth-password" required placeholder="••••••••" />
+        </div>
+        
+        <button type="submit" id="auth-submit-btn" class="btn primary auth-submit full-width">Create Account</button>
+        
+        <p class="auth-toggle-copy">
+          <span id="auth-toggle-text">Already have an account?</span> 
+          <a href="#auth-modal" class="auth-toggle" id="auth-toggle-btn">Sign In</a>
+        </p>
+      </form>
     </div>
+  </div>
 
-  </form>
+  <footer class="footer">
+    <p>&copy; 2026 GrooveDNA Platform. All rights reserved.</p>
+  </footer>
 
+  <script src="app.js"></script>
 </body>
 </html>
