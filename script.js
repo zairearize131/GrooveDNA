@@ -1,1804 +1,505 @@
-/* =========================================================
-   GROOVEDNA — SUPABASE AUTHENTICATION
-   ========================================================= */
-
-/*
-   ========================================================
-   SUPABASE PROJECT
-   ========================================================
-*/
-
-const SUPABASE_URL =
-  "https://nzfzcnusmjboykledznh.supabase.co";
-
-const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_qsskdrsPBxg1dECb1HY8Jg_x0rL7wR3";
-
-
-/*
-   ========================================================
-   GROOVEDNA PRODUCTION URL
-   ========================================================
-
-   This is the page GrooveDNA should use after authentication.
-*/
-
-const GROOVEDNA_HOME_URL =
-  "https://zairearize131.github.io/GrooveDNA/index.html";
-
-
-/*
-   ========================================================
-   SUPABASE CLIENT
-   ========================================================
-*/
-
-let client = null;
-
-
-/* =========================================================
-   INITIALIZE SUPABASE
-   ========================================================= */
-
-function initializeSupabase() {
-
-  /*
-     Make sure the Supabase JavaScript library exists.
-  */
-
-  if (!window.supabase) {
-
-    console.error(
-      "GrooveDNA: Supabase JavaScript library was not loaded."
-    );
-
-    return null;
-  }
-
-
-  /*
-     Prevent multiple Supabase clients.
-  */
-
-  if (client) {
-
-    return client;
-
-  }
-
-
-  /*
-     Create the Supabase client.
-  */
-
-  client =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY,
-      {
-        auth: {
-
-          /*
-             Keep the user signed in between page loads.
-          */
-
-          persistSession: true,
-
-          /*
-             Automatically refresh expired tokens.
-          */
-
-          autoRefreshToken: true,
-
-          /*
-             Allow Supabase to process authentication
-             information returned in the URL.
-          */
-
-          detectSessionInUrl: true
-
-        }
-      }
-    );
-
-
-  /*
-     Make the client available globally.
-  */
-
-  window.supabaseClient =
-    client;
-
-
-  console.log(
-    "GrooveDNA: Supabase client initialized."
-  );
-
-
-  return client;
-
+/* GrooveDNA Master Stylesheet */
+:root {
+  --bg-dark: #0f1117;
+  --bg-card: #181b24;
+  --bg-card-hover: #212532;
+  --accent-purple: #7c3aed;
+  --accent-purple-hover: #6d28d9;
+  --accent-pink: #ec4899;
+  --accent-cyan: #06b6d4;
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --border-color: #2e3440;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
 }
 
-
-/* =========================================================
-   GROOVEDNA GLOBAL STATE
-   ========================================================= */
-
-window.GrooveDNA =
-  window.GrooveDNA || {
-
-    user: null,
-
-    session: null,
-
-    profile: null,
-
-    authMode: "signin",
-
-    currentPage: "account",
-
-    currentBeat: {
-
-      bpm: 96,
-
-      pitch: 0,
-
-      loop: false,
-
-      clips: []
-
-    }
-
-  };
-
-
-/* =========================================================
-   AUTH STATUS HELPERS
-   ========================================================= */
-
-function showError(message) {
-
-  const status =
-    document.getElementById(
-      "authStatus"
-    );
-
-
-  if (status) {
-
-    status.textContent =
-      message;
-
-    status.className =
-      "auth-status error";
-
-    status.style.display =
-      "block";
-
-  }
-
-
-  console.error(
-    "GrooveDNA:",
-    message
-  );
-
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-
-function showSuccess(message) {
-
-  const status =
-    document.getElementById(
-      "authStatus"
-    );
-
-
-  if (status) {
-
-    status.textContent =
-      message;
-
-    status.className =
-      "auth-status success";
-
-    status.style.display =
-      "block";
-
-  }
-
-
-  console.log(
-    "GrooveDNA:",
-    message
-  );
-
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  line-height: 1.6;
+  padding-top: 70px;
 }
 
-
-/* =========================================================
-   GET CURRENT SESSION
-   ========================================================= */
-
-async function getCurrentSession() {
-
-  const supabase =
-    initializeSupabase();
-
-
-  if (!supabase) {
-
-    return null;
-
-  }
-
-
-  try {
-
-    const {
-      data,
-      error
-    } =
-      await supabase.auth.getSession();
-
-
-    if (error) {
-
-      console.error(
-        "GrooveDNA: Unable to get Supabase session:",
-        error
-      );
-
-      return null;
-
-    }
-
-
-    window.GrooveDNA.session =
-      data.session || null;
-
-
-    window.GrooveDNA.user =
-      data.session?.user || null;
-
-
-    return (
-      data.session || null
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "GrooveDNA: Session error:",
-      error
-    );
-
-    return null;
-
-  }
-
+/* Header & Nav */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  background-color: rgba(15, 17, 23, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 1000;
 }
 
-
-/* =========================================================
-   SWITCH AUTH MODE
-   ========================================================= */
-
-function setAuthMode(mode) {
-
-  const authTitle =
-    document.getElementById(
-      "authTitle"
-    );
-
-
-  const authNameGroup =
-    document.getElementById(
-      "authNameGroup"
-    );
-
-
-  const authName =
-    document.getElementById(
-      "authName"
-    );
-
-
-  const authSubmit =
-    document.getElementById(
-      "authSubmit"
-    );
-
-
-  const authToggleCopy =
-    document.getElementById(
-      "authToggleCopy"
-    );
-
-
-  window.GrooveDNA.authMode =
-    mode;
-
-
-  const creatingAccount =
-    mode === "signup";
-
-
-  if (authTitle) {
-
-    authTitle.textContent =
-      creatingAccount
-        ? "Create Account"
-        : "Sign In";
-
-  }
-
-
-  if (authNameGroup) {
-
-    authNameGroup.classList.toggle(
-      "hidden",
-      !creatingAccount
-    );
-
-  }
-
-
-  if (authName) {
-
-    authName.required =
-      creatingAccount;
-
-  }
-
-
-  if (authSubmit) {
-
-    authSubmit.textContent =
-      creatingAccount
-        ? "Create Account"
-        : "Sign In";
-
-  }
-
-
-  if (authToggleCopy) {
-
-    authToggleCopy.textContent =
-      creatingAccount
-        ? "Already have an account? Sign in"
-        : "Don't have an account? Create one";
-
-  }
-
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
 }
 
-
-/* =========================================================
-   SHOW ACCOUNT VIEW
-   ========================================================= */
-
-function showAccountView() {
-
-  const accountView =
-    document.getElementById(
-      "accountView"
-    );
-
-
-  const homeView =
-    document.getElementById(
-      "homeView"
-    );
-
-
-  if (accountView) {
-
-    accountView.classList.add(
-      "active"
-    );
-
-    accountView.classList.remove(
-      "hidden"
-    );
-
-  }
-
-
-  if (homeView) {
-
-    homeView.classList.add(
-      "hidden"
-    );
-
-    homeView.classList.remove(
-      "active"
-    );
-
-  }
-
-
-  window.GrooveDNA.currentPage =
-    "account";
-
-
-  if (
-    window.location.hash !==
-    "#account"
-  ) {
-
-    window.location.hash =
-      "account";
-
-  }
-
-
-  window.scrollTo({
-
-    top: 0,
-
-    behavior: "smooth"
-
-  });
-
+.logo {
+  text-decoration: none;
+  color: var(--text-main);
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-
-/* =========================================================
-   SHOW HOME VIEW
-   ========================================================= */
-
-function showHomeView() {
-
-  const accountView =
-    document.getElementById(
-      "accountView"
-    );
-
-
-  const homeView =
-    document.getElementById(
-      "homeView"
-    );
-
-
-  if (homeView) {
-
-    homeView.classList.add(
-      "active"
-    );
-
-    homeView.classList.remove(
-      "hidden"
-    );
-
-  }
-
-
-  if (accountView) {
-
-    accountView.classList.add(
-      "hidden"
-    );
-
-    accountView.classList.remove(
-      "active"
-    );
-
-  }
-
-
-  window.GrooveDNA.currentPage =
-    "home";
-
-
-  if (
-    window.location.hash !==
-    "#home"
-  ) {
-
-    window.location.hash =
-      "home";
-
-  }
-
-
-  window.scrollTo({
-
-    top: 0,
-
-    behavior: "smooth"
-
-  });
-
+.logo-text strong {
+  color: var(--accent-pink);
 }
 
-
-/* =========================================================
-   CREATE ACCOUNT
-   ========================================================= */
-
-async function createAccount(
-  email,
-  password,
-  displayName
-) {
-
-  const supabase =
-    initializeSupabase();
-
-
-  if (!supabase) {
-
-    return {
-
-      user: null,
-
-      session: null,
-
-      error:
-        new Error(
-          "Supabase is unavailable."
-        )
-
-    };
-
-  }
-
-
-  try {
-
-    /*
-       Normalize the email address.
-    */
-
-    const normalizedEmail =
-      email
-        .trim()
-        .toLowerCase();
-
-
-    /*
-       Normalize display name.
-    */
-
-    const normalizedDisplayName =
-      displayName
-        .trim();
-
-
-    /*
-       IMPORTANT:
-
-       Supabase email confirmation should return the
-       user to GrooveDNA's actual index.html page.
-    */
-
-    const emailRedirectTo =
-      GROOVEDNA_HOME_URL;
-
-
-    console.log(
-      "GrooveDNA: Creating Supabase account for:",
-      normalizedEmail
-    );
-
-
-    /*
-       CREATE THE SUPABASE AUTH USER
-    */
-
-    const {
-      data,
-      error
-    } =
-      await supabase.auth.signUp({
-
-        email:
-          normalizedEmail,
-
-        password:
-          password,
-
-        options: {
-
-          data: {
-
-            display_name:
-              normalizedDisplayName
-
-          },
-
-          emailRedirectTo:
-            emailRedirectTo
-
-        }
-
-      });
-
-
-    /*
-       Supabase returned an error.
-    */
-
-    if (error) {
-
-      console.error(
-        "GrooveDNA: Create account error:",
-        error
-      );
-
-
-      return {
-
-        user: null,
-
-        session: null,
-
-        error
-
-      };
-
-    }
-
-
-    /*
-       Store the Supabase user.
-    */
-
-    window.GrooveDNA.user =
-      data.user || null;
-
-
-    /*
-       Store the Supabase session.
-
-       This will be null when Supabase requires the
-       user to confirm their email first.
-    */
-
-    window.GrooveDNA.session =
-      data.session || null;
-
-
-    console.log(
-      "GrooveDNA: Supabase account creation successful.",
-      data.user
-    );
-
-
-    console.log(
-      "GrooveDNA: Session returned:",
-      !!data.session
-    );
-
-
-    return {
-
-      user:
-        data.user || null,
-
-      session:
-        data.session || null,
-
-      error:
-        null
-
-    };
-
-
-  } catch (error) {
-
-    console.error(
-      "GrooveDNA: Create account exception:",
-      error
-    );
-
-
-    return {
-
-      user: null,
-
-      session: null,
-
-      error
-
-    };
-
-  }
-
+.nav-links {
+  display: flex;
+  gap: 24px;
 }
 
-
-/* =========================================================
-   SIGN IN
-   ========================================================= */
-
-async function signIn(
-  email,
-  password
-) {
-
-  const supabase =
-    initializeSupabase();
-
-
-  if (!supabase) {
-
-    return {
-
-      user: null,
-
-      session: null,
-
-      error:
-        new Error(
-          "Supabase is unavailable."
-        )
-
-    };
-
-  }
-
-
-  try {
-
-    const normalizedEmail =
-      email
-        .trim()
-        .toLowerCase();
-
-
-    console.log(
-      "GrooveDNA: Attempting Supabase sign in for:",
-      normalizedEmail
-    );
-
-
-    /*
-       SIGN IN WITH SUPABASE EMAIL/PASSWORD
-    */
-
-    const {
-      data,
-      error
-    } =
-      await supabase.auth.signInWithPassword({
-
-        email:
-          normalizedEmail,
-
-        password:
-          password
-
-      });
-
-
-    /*
-       Supabase rejected the credentials.
-    */
-
-    if (error) {
-
-      console.error(
-        "GrooveDNA: Sign in error:",
-        error
-      );
-
-
-      return {
-
-        user: null,
-
-        session: null,
-
-        error
-
-      };
-
-    }
-
-
-    /*
-       Store authenticated user/session.
-    */
-
-    window.GrooveDNA.user =
-      data.user || null;
-
-
-    window.GrooveDNA.session =
-      data.session || null;
-
-
-    console.log(
-      "GrooveDNA: Supabase sign in successful.",
-      data.user
-    );
-
-
-    return {
-
-      user:
-        data.user || null,
-
-      session:
-        data.session || null,
-
-      error:
-        null
-
-    };
-
-
-  } catch (error) {
-
-    console.error(
-      "GrooveDNA: Sign in exception:",
-      error
-    );
-
-
-    return {
-
-      user: null,
-
-      session: null,
-
-      error
-
-    };
-
-  }
-
+.nav-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
-
-/* =========================================================
-   SIGN OUT
-   ========================================================= */
-
-async function signOut() {
-
-  const supabase =
-    initializeSupabase();
-
-
-  if (!supabase) {
-
-    return false;
-
-  }
-
-
-  try {
-
-    const {
-      error
-    } =
-      await supabase.auth.signOut();
-
-
-    if (error) {
-
-      console.error(
-        "GrooveDNA: Sign out error:",
-        error
-      );
-
-      return false;
-
-    }
-
-
-    window.GrooveDNA.user =
-      null;
-
-
-    window.GrooveDNA.session =
-      null;
-
-
-    window.GrooveDNA.profile =
-      null;
-
-
-    showAccountView();
-
-
-    setAuthMode(
-      "signin"
-    );
-
-
-    showSuccess(
-      "You have been signed out."
-    );
-
-
-    return true;
-
-
-  } catch (error) {
-
-    console.error(
-      "GrooveDNA: Sign out exception:",
-      error
-    );
-
-
-    return false;
-
-  }
-
+.nav-link:hover, .nav-link.active {
+  color: var(--accent-cyan);
 }
 
-
-/* =========================================================
-   PASSWORD RESET
-   ========================================================= */
-
-async function resetPassword(
-  email
-) {
-
-  const supabase =
-    initializeSupabase();
-
-
-  if (!supabase) {
-
-    return false;
-
-  }
-
-
-  try {
-
-    const normalizedEmail =
-      email
-        .trim()
-        .toLowerCase();
-
-
-    const {
-      error
-    } =
-      await supabase.auth.resetPasswordForEmail(
-        normalizedEmail,
-        {
-
-          redirectTo:
-            GROOVEDNA_HOME_URL
-
-        }
-      );
-
-
-    if (error) {
-
-      console.error(
-        "GrooveDNA: Password reset error:",
-        error
-      );
-
-
-      showError(
-        error.message
-      );
-
-
-      return false;
-
-    }
-
-
-    showSuccess(
-      "Password reset instructions were sent to your email."
-    );
-
-
-    return true;
-
-
-  } catch (error) {
-
-    console.error(
-      "GrooveDNA: Password reset exception:",
-      error
-    );
-
-
-    showError(
-      "Unable to send password reset instructions."
-    );
-
-
-    return false;
-
-  }
-
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-
-/* =========================================================
-   AUTH ERROR MESSAGES
-   ========================================================= */
-
-function friendlyAuthError(
-  error
-) {
-
-  if (!error) {
-
-    return (
-      "Authentication failed."
-    );
-
-  }
-
-
-  const message =
-    String(
-      error.message || error
-    );
-
-
-  const lower =
-    message.toLowerCase();
-
-
-  if (
-    lower.includes(
-      "invalid login credentials"
-    )
-  ) {
-
-    return (
-      "The email address or password is incorrect. Make sure you created the account in Supabase and, if email confirmation is enabled, confirmed your email."
-    );
-
-  }
-
-
-  if (
-    lower.includes(
-      "email not confirmed"
-    )
-  ) {
-
-    return (
-      "Please confirm your email address before signing in."
-    );
-
-  }
-
-
-  if (
-    lower.includes(
-      "password should be at least"
-    )
-  ) {
-
-    return (
-      "Your password must contain at least 6 characters."
-    );
-
-  }
-
-
-  if (
-    lower.includes(
-      "user already registered"
-    )
-  ) {
-
-    return (
-      "An account with this email already exists. Please sign in."
-    );
-
-  }
-
-
-  return message;
-
+.user-profile-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-
-/* =========================================================
-   REQUIRE AUTHENTICATION
-   ========================================================= */
-
-async function requireAuthentication() {
-
-  const session =
-    await getCurrentSession();
-
-
-  if (session) {
-
-    return true;
-
-  }
-
-
-  showAccountView();
-
-
-  showError(
-    "Please sign in to use this feature."
-  );
-
-
-  return false;
-
+.user-email {
+  font-size: 0.9rem;
+  color: var(--text-muted);
 }
 
-
-/* =========================================================
-   AUTH FORM
-   ========================================================= */
-
-function setupAuthForm() {
-
-  const authForm =
-    document.getElementById(
-      "authForm"
-    );
-
-
-  if (!authForm) {
-
-    console.warn(
-      "GrooveDNA: #authForm was not found."
-    );
-
-    return;
-
-  }
-
-
-  const authName =
-    document.getElementById(
-      "authName"
-    );
-
-
-  const authEmail =
-    document.getElementById(
-      "authEmail"
-    );
-
-
-  const authPassword =
-    document.getElementById(
-      "authPassword"
-    );
-
-
-  const authSubmit =
-    document.getElementById(
-      "authSubmit"
-    );
-
-
-  const authToggleCopy =
-    document.getElementById(
-      "authToggleCopy"
-    );
-
-
-  const signOutBtn =
-    document.getElementById(
-      "signOutBtn"
-    );
-
-
-  /* =======================================================
-     CREATE ACCOUNT / SIGN IN
-     ======================================================= */
-
-  authForm.addEventListener(
-    "submit",
-    async (event) => {
-
-      event.preventDefault();
-
-
-      const email =
-        authEmail?.value.trim() || "";
-
-
-      const password =
-        authPassword?.value || "";
-
-
-      const displayName =
-        authName?.value.trim() || "";
-
-
-      const mode =
-        window.GrooveDNA.authMode;
-
-
-      /* ---------------------------------------------------
-         VALIDATE EMAIL
-         --------------------------------------------------- */
-
-      if (!email) {
-
-        showError(
-          "Please enter your email address."
-        );
-
-        authEmail?.focus();
-
-        return;
-
-      }
-
-
-      /* ---------------------------------------------------
-         VALIDATE PASSWORD
-         --------------------------------------------------- */
-
-      if (!password) {
-
-        showError(
-          "Please enter your password."
-        );
-
-        authPassword?.focus();
-
-        return;
-
-      }
-
-
-      if (password.length < 6) {
-
-        showError(
-          "Your password must contain at least 6 characters."
-        );
-
-        authPassword?.focus();
-
-        return;
-
-      }
-
-
-      /* ---------------------------------------------------
-         VALIDATE DISPLAY NAME
-         --------------------------------------------------- */
-
-      if (
-        mode === "signup" &&
-        !displayName
-      ) {
-
-        showError(
-          "Please enter your display name."
-        );
-
-        authName?.focus();
-
-        return;
-
-      }
-
-
-      /* ---------------------------------------------------
-         DISABLE SUBMIT
-         --------------------------------------------------- */
-
-      if (authSubmit) {
-
-        authSubmit.disabled =
-          true;
-
-
-        authSubmit.dataset.originalText =
-          authSubmit.textContent;
-
-
-        authSubmit.textContent =
-          mode === "signup"
-            ? "Creating Account..."
-            : "Signing In...";
-
-      }
-
-
-      try {
-
-        let result;
-
-
-        /* =================================================
-           CREATE ACCOUNT
-           ================================================= */
-
-        if (
-          mode === "signup"
-        ) {
-
-          result =
-            await createAccount(
-              email,
-              password,
-              displayName
-            );
-
-
-        /* =================================================
-           SIGN IN
-           ================================================= */
-
-        } else {
-
-          result =
-            await signIn(
-              email,
-              password
-            );
-
-        }
-
-
-        /* =================================================
-           HANDLE ERROR
-           ================================================= */
-
-        if (result.error) {
-
-          showError(
-            friendlyAuthError(
-              result.error
-            )
-          );
-
-          return;
-
-        }
-
-
-        /* =================================================
-           EMAIL CONFIRMATION
-           ================================================= */
-
-        if (
-          mode === "signup" &&
-          !result.session
-        ) {
-
-          showSuccess(
-            "Account created successfully. Please check your email and confirm your account before signing in."
-          );
-
-
-          authForm.reset();
-
-
-          setAuthMode(
-            "signin"
-          );
-
-
-          return;
-
-        }
-
-
-        /* =================================================
-           REQUIRE REAL SESSION
-           ================================================= */
-
-        if (
-          !result.session
-        ) {
-
-          showError(
-            "Authentication was not completed. Please try again."
-          );
-
-          return;
-
-        }
-
-
-        /* =================================================
-           SAVE AUTH STATE
-           ================================================= */
-
-        window.GrooveDNA.session =
-          result.session;
-
-
-        window.GrooveDNA.user =
-          result.user;
-
-
-        /* =================================================
-           SUCCESS
-           ================================================= */
-
-        showSuccess(
-          mode === "signup"
-            ? "Account created successfully."
-            : "Signed in successfully."
-        );
-
-
-        /* =================================================
-           SHOW HOME
-           ================================================= */
-
-        setTimeout(
-          () => {
-
-            showHomeView();
-
-          },
-          350
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "GrooveDNA: Authentication form error:",
-          error
-        );
-
-
-        showError(
-          friendlyAuthError(
-            error
-          )
-        );
-
-
-      } finally {
-
-        if (authSubmit) {
-
-          authSubmit.disabled =
-            false;
-
-
-          authSubmit.textContent =
-            authSubmit.dataset.originalText ||
-            (
-              mode === "signup"
-                ? "Create Account"
-                : "Sign In"
-            );
-
-        }
-
-      }
-
-    }
-  );
-
-
-  /* =======================================================
-     SWITCH SIGN IN / CREATE ACCOUNT
-     ======================================================= */
-
-  if (authToggleCopy) {
-
-    authToggleCopy.addEventListener(
-      "click",
-      (event) => {
-
-        event.preventDefault();
-
-
-        setAuthMode(
-          window.GrooveDNA.authMode ===
-            "signup"
-              ? "signin"
-              : "signup"
-        );
-
-      }
-    );
-
-  }
-
-
-  /* =======================================================
-     SIGN OUT
-     ======================================================= */
-
-  if (signOutBtn) {
-
-    signOutBtn.addEventListener(
-      "click",
-      async (event) => {
-
-        event.preventDefault();
-
-        await signOut();
-
-      }
-    );
-
-  }
-
-
-  /* =======================================================
-     PASSWORD VISIBILITY
-     ======================================================= */
-
-  const passwordToggle =
-    document.getElementById(
-      "passwordToggle"
-    );
-
-
-  if (passwordToggle) {
-
-    passwordToggle.addEventListener(
-      "click",
-      () => {
-
-        if (!authPassword) {
-
-          return;
-
-        }
-
-
-        const showing =
-          authPassword.type ===
-          "text";
-
-
-        authPassword.type =
-          showing
-            ? "password"
-            : "text";
-
-
-        passwordToggle.textContent =
-          showing
-            ? "Show"
-            : "Hide";
-
-      }
-    );
-
-  }
-
-
-  /* =======================================================
-     ACCOUNT → HOME LINKS
-     ======================================================= */
-
-  document
-    .querySelectorAll(
-      "[data-home-view]"
-    )
-    .forEach(
-      (link) => {
-
-        link.addEventListener(
-          "click",
-          async (event) => {
-
-            event.preventDefault();
-
-
-            const session =
-              await getCurrentSession();
-
-
-            if (!session) {
-
-              showError(
-                "Please sign in first."
-              );
-
-              return;
-
-            }
-
-
-            showHomeView();
-
-          }
-        );
-
-      }
-    );
-
+.hidden {
+  display: none !important;
 }
 
-
-/* =========================================================
-   INITIALIZE COMBINED AUTHENTICATION
-   ========================================================= */
-
-async function initializeCombinedAuthentication() {
-
-  const supabase =
-    initializeSupabase();
-
-
-  /*
-     Set up the form.
-  */
-
-  setupAuthForm();
-
-
-  /*
-     Check existing Supabase session.
-  */
-
-  const session =
-    await getCurrentSession();
-
-
-  /* -------------------------------------------------------
-     EXISTING SESSION
-     ------------------------------------------------------- */
-
-  if (session) {
-
-    if (
-      window.location.hash ===
-      "#account"
-    ) {
-
-      showAccountView();
-
-    } else {
-
-      showHomeView();
-
-    }
-
-
-  /* -------------------------------------------------------
-     NO SESSION
-     ------------------------------------------------------- */
-
-  } else {
-
-    showAccountView();
-
-  }
-
-
-  /* -------------------------------------------------------
-     SUPABASE AUTH STATE CHANGES
-     ------------------------------------------------------- */
-
-  if (supabase) {
-
-    supabase.auth.onAuthStateChange(
-      (event, session) => {
-
-        window.GrooveDNA.session =
-          session || null;
-
-
-        window.GrooveDNA.user =
-          session?.user || null;
-
-
-        /* -----------------------------------------------
-           SIGNED OUT
-           ----------------------------------------------- */
-
-        if (
-          event === "SIGNED_OUT"
-        ) {
-
-          showAccountView();
-
-          return;
-
-        }
-
-
-        /* -----------------------------------------------
-           SIGNED IN
-           ----------------------------------------------- */
-
-        if (
-          event === "SIGNED_IN" &&
-          session
-        ) {
-
-          showHomeView();
-
-        }
-
-      }
-    );
-
-  }
-
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
 }
 
-
-/* =========================================================
-   PROTECTED AUDIO UPLOAD
-   ========================================================= */
-
-function openAudioUpload() {
-
-  const session =
-    window.GrooveDNA?.session;
-
-
-  if (!session) {
-
-    showAccountView();
-
-
-    showError(
-      "Please sign in before uploading audio."
-    );
-
-
-    return;
-
-  }
-
-
-  const input =
-    document.getElementById(
-      "audioUpload"
-    );
-
-
-  if (input) {
-
-    input.click();
-
-  }
-
+.btn.primary {
+  background-color: var(--accent-purple);
+  color: #fff;
 }
 
+.btn.primary:hover {
+  background-color: var(--accent-purple-hover);
+}
 
-/* =========================================================
-   APPLICATION STARTUP
-   ========================================================= */
+.btn.secondary {
+  background-color: var(--bg-card-hover);
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
 
-document.addEventListener(
-  "DOMContentLoaded",
-  async () => {
+.btn.outline {
+  background: transparent;
+  border-color: var(--accent-purple);
+  color: var(--accent-purple);
+}
 
-    try {
+.btn.outline:hover {
+  background: var(--accent-purple);
+  color: #fff;
+}
 
-      await initializeCombinedAuthentication();
+.btn.small {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+}
 
+.btn.full-width {
+  width: 100%;
+}
 
-      console.log(
-        "GrooveDNA authentication initialized."
-      );
+/* Layout */
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
 
+.app-section {
+  margin-bottom: 60px;
+}
 
-    } catch (error) {
+.section-header {
+  margin-bottom: 24px;
+}
 
-      console.error(
-        "GrooveDNA initialization error:",
-        error
-      );
+.section-header h1, .section-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+}
 
+.section-subtitle {
+  color: var(--text-muted);
+}
 
-      showError(
-        "GrooveDNA could not initialize correctly."
-      );
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 24px;
+}
 
-    }
+/* Studio Section */
+.studio-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
 
-  }
-);
+.pad-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.pad-btn {
+  aspect-ratio: 1;
+  background-color: var(--bg-card-hover);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s ease;
+}
+
+.pad-btn span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: normal;
+}
+
+.pad-btn:active, .pad-btn.active {
+  background-color: var(--accent-pink);
+  border-color: #fff;
+  transform: scale(0.96);
+  box-shadow: 0 0 15px rgba(236, 72, 153, 0.6);
+}
+
+.fader-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fader-group label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.studio-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Feed Section */
+.feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.feed-item {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.track-date {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.audio-player-mock {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-card-hover);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  margin-top: 10px;
+}
+
+.btn-play {
+  background: var(--accent-cyan);
+  border: none;
+  color: #000;
+  font-weight: bold;
+  padding: 6px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.waveform-bar {
+  flex-grow: 1;
+  height: 8px;
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.feed-footer {
+  display: flex;
+  gap: 16px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* Stream Layout */
+.stream-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.stream-viewport {
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+}
+
+.live-badge {
+  background: #ef4444;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.stream-chat {
+  display: flex;
+  flex-direction: column;
+  height: 320px;
+}
+
+.chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-msg {
+  font-size: 0.85rem;
+  background: var(--bg-card-hover);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-input-row input {
+  flex-grow: 1;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+}
+
+/* Gaming Grid */
+.gaming-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.gaming-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.gaming-icon {
+  font-size: 2.5rem;
+}
+
+/* AUTH MODAL STYLES & FIXES */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(5px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+/* CSS Target pseudo-class trigger for Modal display */
+.modal-backdrop:target {
+  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 32px;
+  position: relative;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  font-size: 1.8rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  line-height: 1;
+}
+
+.form-group {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--accent-purple);
+}
+
+.auth-toggle-copy {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.auth-toggle {
+  color: var(--accent-cyan);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer {
+  text-align: center;
+  padding: 30px;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
