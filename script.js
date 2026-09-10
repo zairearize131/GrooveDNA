@@ -9,7 +9,7 @@ if (window.supabase) {
 }
 
 // Global Auth State
-let supabaseClient = 'signup'; // 'signup' or 'login'
+supabaseClient = 'signup'; // 'signup' or 'login'
 
 document.addEventListener('DOMContentLoaded', () => {
   initAuthUI();
