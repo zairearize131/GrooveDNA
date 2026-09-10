@@ -1,7 +1,7 @@
 // GrooveDNA Application Javascript
 // Initialize Supabase Client
-const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://nzfzcnusmjboykledznh.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_qsskdrsPBxg1dECb1HY8Jg_x0rL7wR3';
 
 let supabaseClient = null;
 if (window.supabase) {
@@ -9,7 +9,7 @@ if (window.supabase) {
 }
 
 // Global Auth State
-supabaseClient = 'signup'; // 'signup' or 'login'
+let currentAuthMode = 'signup'; // 'signup' or 'login'
 
 document.addEventListener('DOMContentLoaded', () => {
   initAuthUI();
@@ -37,7 +37,8 @@ function initAuthUI() {
     });
   }
 
-  if (btnNav) {
+  // Fixed btnNav typo to btnSignUpNav
+  if (btnSignUpNav) {
     btnSignUpNav.addEventListener('click', () => {
       currentAuthMode = 'signup';
       updateAuthModalUI();
@@ -58,8 +59,8 @@ function initAuthUI() {
       const email = document.getElementById('auth-email').value;
       const password = document.getElementById('auth-password').value;
 
-      if (!supabase) {
-        alert('Supabase client is not configured yet. Please update SUPABASE_URL and SUPABASE_ANON_KEY in app.js.');
+      if (!supabaseClient) {
+        alert('Supabase client is not configured yet. Please update SUPABASE_URL and SUPABASE_ANON_KEY in script.js.');
         window.location.hash = ''; // Close modal
         return;
       }
@@ -87,8 +88,8 @@ function initAuthUI() {
 
   if (btnSignOut) {
     btnSignOut.addEventListener('click', async () => {
-      if (supabase) {
-        await supabase.auth.signOut();
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
       }
       checkUserSession();
     });
@@ -103,17 +104,17 @@ function updateAuthModalUI() {
   const toggleBtn = document.getElementById('auth-toggle-btn');
 
   if (currentAuthMode === 'signup') {
-    modalTitle.textContent = 'Create Account';
-    modalSubtitle.textContent = 'Join GrooveDNA to save your tracks and collaborate.';
-    submitBtn.textContent = 'Create Account';
-    toggleText.textContent = 'Already have an account?';
-    toggleBtn.textContent = 'Sign In';
+    if (modalTitle) modalTitle.textContent = 'Create Account';
+    if (modalSubtitle) modalSubtitle.textContent = 'Join GrooveDNA to save your tracks and collaborate.';
+    if (submitBtn) submitBtn.textContent = 'Create Account';
+    if (toggleText) toggleText.textContent = 'Already have an account?';
+    if (toggleBtn) toggleBtn.textContent = 'Sign In';
   } else {
-    modalTitle.textContent = 'Sign In';
-    modalSubtitle.textContent = 'Welcome back! Enter your credentials to access your studio.';
-    submitBtn.textContent = 'Sign In';
-    toggleText.textContent = "Don't have an account?";
-    toggleBtn.textContent = 'Create Account';
+    if (modalTitle) modalTitle.textContent = 'Sign In';
+    if (modalSubtitle) modalSubtitle.textContent = 'Welcome back! Enter your credentials to access your studio.';
+    if (submitBtn) submitBtn.textContent = 'Sign In';
+    if (toggleText) toggleText.textContent = "Don't have an account?";
+    if (toggleBtn) toggleBtn.textContent = 'Create Account';
   }
 }
 
@@ -123,19 +124,19 @@ async function checkUserSession() {
   const btnSignInNav = document.getElementById('btn-signin-nav');
   const userEmailDisplay = document.getElementById('user-email-display');
 
-  if (!supabase) return;
+  if (!supabaseClient) return;
 
   const { data: { session } } = await supabaseClient.auth.getSession();
 
   if (session && session.user) {
-    userMenu.classList.remove('hidden');
-    btnSignUpNav.classList.add('hidden');
-    btnSignInNav.classList.add('hidden');
-    userEmailDisplay.textContent = session.user.email;
+    if (userMenu) userMenu.classList.remove('hidden');
+    if (btnSignUpNav) btnSignUpNav.classList.add('hidden');
+    if (btnSignInNav) btnSignInNav.classList.add('hidden');
+    if (userEmailDisplay) userEmailDisplay.textContent = session.user.email;
   } else {
-    userMenu.classList.add('hidden');
-    btnSignUpNav.classList.remove('hidden');
-    btnSignInNav.classList.remove('hidden');
+    if (userMenu) userMenu.classList.add('hidden');
+    if (btnSignUpNav) btnSignUpNav.classList.remove('hidden');
+    if (btnSignInNav) btnSignInNav.classList.remove('hidden');
   }
 }
 
