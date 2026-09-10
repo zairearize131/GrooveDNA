@@ -1,121 +1,103 @@
-<!-- SIGN IN / CREATE ACCOUNT FORM -->
-<form id="authForm" class="auth-form" novalidate>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GrooveDNA - Sign In</title>
+  <!-- Link to your CSS file -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
 
-  <h2 id="authTitle">Enter your groove.</h2>
+  <!-- SIGN IN / CREATE ACCOUNT FORM -->
+  <form id="authForm" class="auth-form" novalidate>
 
-  <p>
-    Sign in to your existing account or create a new GrooveDNA creator account.
-  </p>
+    <h2 id="authTitle">Enter your groove.</h2>
 
+    <p>
+      Sign in to your existing account or create a new GrooveDNA creator account.
+    </p>
 
-  <!-- =========================
-       DISPLAY NAME
-       Visible when creating an account
-  ========================== -->
-
-  <div id="authNameGroup" class="field">
-    <label for="authName">Display Name</label>
-
-    <input
-      id="authName"
-      name="displayName"
-      type="text"
-      autocomplete="name"
-      maxlength="80"
-      placeholder="Your creator name"
-    >
-  </div>
-
-
-  <!-- =========================
-       EMAIL ADDRESS
-  ========================== -->
-
-  <div class="field">
-    <label for="authEmail">Email Address</label>
-
-    <input
-      id="authEmail"
-      name="email"
-      type="email"
-      autocomplete="email"
-      required
-      placeholder="you@example.com"
-    >
-  </div>
-
-
-  <!-- =========================
-       PASSWORD
-  ========================== -->
-
-  <div class="field">
-    <label for="authPassword">Password</label>
-
-    <div class="password-row">
-
+    <!-- DISPLAY NAME -->
+    <div id="authNameGroup" class="field">
+      <label for="authName">Display Name</label>
       <input
-        id="authPassword"
-        name="password"
-        type="password"
-        autocomplete="current-password"
-        minlength="6"
-        required
-        placeholder="At least 6 characters"
+        id="authName"
+        name="displayName"
+        type="text"
+        autocomplete="name"
+        maxlength="80"
+        placeholder="Your creator name"
       >
-
-      <button
-        type="button"
-        class="password-toggle"
-        id="passwordToggle"
-      >
-        Show
-      </button>
-
     </div>
-  </div>
 
+    <!-- EMAIL ADDRESS -->
+    <div class="field">
+      <label for="authEmail">Email Address</label>
+      <input
+        id="authEmail"
+        name="email"
+        type="email"
+        autocomplete="email"
+        required
+        placeholder="you@example.com"
+      >
+    </div>
 
-  <!-- =========================
-       AUTH STATUS
-  ========================== -->
+    <!-- PASSWORD -->
+    <div class="field">
+      <label for="authPassword">Password</label>
+      <div class="password-row">
+        <input
+          id="authPassword"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          minlength="6"
+          required
+          placeholder="At least 6 characters"
+        >
+        <button
+          type="button"
+          class="password-toggle"
+          id="passwordToggle"
+        >
+          Show
+        </button>
+      </div>
+    </div>
 
-  <div
-    id="authStatus"
-    class="status"
-    aria-live="polite"
-  ></div>
+    <!-- AUTH STATUS -->
+    <div
+      id="authStatus"
+      class="status"
+      aria-live="polite"
+    ></div>
 
-
-  <!-- =========================
-       SUBMIT BUTTON
-  ========================== -->
-
-  <button
-    type="submit"
-    class="primary-btn"
-    id="authSubmit"
-  >
-    Sign In
-  </button>
-
-
-  <!-- =========================
-       SIGN IN / CREATE ACCOUNT TOGGLE
-  ========================== -->
-
-  <div
-    id="authToggleCopy"
-    class="auth-toggle"
-  >
-    New to GrooveDNA?
-
-    <a
-      href="#"
-      id="authModeToggle"
+    <!-- SUBMIT BUTTON -->
+    <button
+      type="submit"
+      class="primary-btn"
+      id="authSubmit"
     >
-      Create an account
-    </a>
-  </div>
+      Sign In
+    </button>
 
-</form>
+    <!-- SIGN IN / CREATE ACCOUNT TOGGLE -->
+    <div
+      id="authToggleCopy"
+      class="auth-toggle"
+    >
+      New to GrooveDNA?
+      <a
+        href="#"
+        id="authModeToggle"
+      >
+        Create an account
+      </a>
+    </div>
+
+  </form>
+
+</body>
+</html>
