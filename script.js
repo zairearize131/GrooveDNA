@@ -4,14 +4,20 @@ const SUPABASE_URL = 'https://nzfzcnusmjboykledznh.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_qsskdrsPBxg1dECb1HY8Jg_x0rL7wR3';
 
 let supabaseClient = null;
-if (window.supabase) {
-  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function initSupabase() {
+  if (window.supabase && window.supabase.createClient) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } else {
+    console.error('Supabase CDN library not loaded yet.');
+  }
 }
 
 // Global Auth State
 let currentAuthMode = 'signup'; // 'signup' or 'login'
 
 document.addEventListener('DOMContentLoaded', () => {
+  initSupabase();
   initAuthUI();
   initDrumPads();
   initChat();
@@ -37,7 +43,6 @@ function initAuthUI() {
     });
   }
 
-  // Fixed btnNav typo to btnSignUpNav
   if (btnSignUpNav) {
     btnSignUpNav.addEventListener('click', () => {
       currentAuthMode = 'signup';
@@ -60,7 +65,7 @@ function initAuthUI() {
       const password = document.getElementById('auth-password').value;
 
       if (!supabaseClient) {
-        alert('Supabase client is not configured yet. Please update SUPABASE_URL and SUPABASE_ANON_KEY in script.js.');
+        alert('Supabase client is not configured yet. Please check your Supabase CDN link.');
         window.location.hash = ''; // Close modal
         return;
       }
