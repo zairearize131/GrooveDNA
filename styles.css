@@ -4491,8 +4491,8 @@ p {
    ========================================================= */
 
 .upload-success {
-  border-color:
-    var(--green) !important;
+  border-color: var(--green);
+}
 
   color:
     var(--green) !important;
