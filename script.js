@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initSupabase();
   initAuthUI();
   initDrumPads();
-  initChat();
+  initLibrary();
+  initDiscover();
   checkUserSession();
 });
 
@@ -214,26 +215,318 @@ function playAudioBeep() {
 }
 
 /* ----------------------------------------------------
- * 3. LIVE CHAT SIMULATION
+ * 3. MUSIC LIBRARY & PLAYLIST MANAGER
  * ---------------------------------------------------- */
-function initChat() {
-  const chatForm = document.getElementById('chat-form');
-  const chatInput = document.getElementById('chat-input');
-  const chatMessages = document.getElementById('chat-messages');
+function initLibrary() {
+  const librarySearchInput = document.getElementById('librarySearchInput');
+  const librarySearchBtn = document.getElementById('librarySearchBtn');
+  const grooveMoodBtn = document.getElementById('grooveMoodBtn');
+  const addToPlaylistBtn = document.getElementById('addToPlaylistBtn');
+  const editMoodBtn = document.getElementById('editMoodBtn');
+  const grooveMoodPlayBtn = document.getElementById('grooveMoodPlayBtn');
+  const newPlaylistBtn = document.getElementById('newPlaylist');
 
-  if (chatForm) {
-    chatForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const text = chatInput.value.trim();
-      if (!text) return;
-
-      const msgDiv = document.createElement('div');
-      msgDiv.className = 'chat-msg';
-      msgDiv.innerHTML = `<strong>You:</strong> ${text}`;
-      chatMessages.appendChild(msgDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-
-      chatInput.value = '';
+  // Library Search Action using Supabase Media Storage / Catalog
+  if (librarySearchBtn && librarySearchInput) {
+    librarySearchBtn.addEventListener('click', async () => {
+      const query = librarySearchInput.value.trim();
+      if (!query) {
+        alert('Please enter a song, artist, or genre to search.');
+        return;
+      }
+      await searchMusicMedia(query);
     });
   }
+
+  // Groove of the Mood Actions
+  if (grooveMoodBtn) {
+    grooveMoodBtn.addEventListener('click', () => {
+      const moodSection = document.getElementById('grooveMoodSection');
+      if (moodSection) {
+        moodSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  }
+
+  if (editMoodBtn) {
+    editMoodBtn.addEventListener('click', () => {
+      const songTitle = prompt('Enter the title for your mood song:');
+      const artist = prompt('Enter the artist name:');
+      if (songTitle && artist) {
+        const titleElem = document.getElementById('grooveMoodSongTitle');
+        const artistElem = document.getElementById('grooveMoodSongArtist');
+        if (titleElem) titleElem.textContent = songTitle;
+        if (artistElem) artistElem.textContent = artist;
+      }
+    });
+  }
+
+  if (grooveMoodPlayBtn) {
+    grooveMoodPlayBtn.addEventListener('click', () => {
+      playAudioBeep(); // Plays audio feedback using Web Audio API
+      if (grooveMoodPlayBtn.textContent.includes('Play')) {
+        grooveMoodPlayBtn.textContent = '⏸ Pause';
+      } else {
+        grooveMoodPlayBtn.textContent = '▶ Play';
+      }
+    });
+  }
+
+  // Add Playlist Action
+  if (newPlaylistBtn) {
+    newPlaylistBtn.addEventListener('click', () => {
+      createNewPlaylistCard();
+    });
+  }
+
+  if (addToPlaylistBtn) {
+    addToPlaylistBtn.addEventListener('click', () => {
+      createNewPlaylistCard();
+    });
+  }
+
+  // Initialize Row Title Saving Logic
+  initRowTitleSavers();
+}
+
+// Function to fetch music media authorized via Supabase
+async function searchMusicMedia(query) {
+  if (!supabaseClient) {
+    console.warn('Supabase client not initialized. Querying local fallback for:', query);
+    alert(`Searching media catalog for: "${query}"`);
+    return;
+  }
+
+  try {
+    // Example Supabase Query: Accessing media audio tracks from 'tracks' bucket/table
+    const { data, error } = await supabaseClient
+      .from('tracks')
+      .select('*')
+      .ilike('title', `%${query}%`);
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      alert(`Found ${data.length} track(s) matching "${query}" in Supabase media repository!`);
+    } else {
+      alert(`No tracks found matching "${query}". Try searching for Rock, Funk, or Soul.`);
+    }
+  } catch (err) {
+    console.error('Supabase Media Query Error:', err.message);
+    alert(`Searching catalog for: "${query}"`);
+  }
+}
+
+function createNewPlaylistCard() {
+  const name = prompt('Enter a name for your new playlist:', 'My Groove Playlist');
+  if (!name) return;
+
+  const playlistGrid = document.getElementById('userPlaylistGrid');
+  if (playlistGrid) {
+    const card = document.createElement('article');
+    card.className = 'playlist-card';
+    card.innerHTML = `
+      <strong>${name}</strong>
+      <span>0 Songs</span>
+      <button class="btn small secondary" style="margin-top: 8px;">▶ Play</button>
+    `;
+    playlistGrid.appendChild(card);
+  }
+}
+
+function initRowTitleSavers() {
+  const saveBtns = document.querySelectorAll('.save-row-title');
+  saveBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const parent = e.target.closest('.row-heading');
+      if (parent) {
+        const input = parent.querySelector('.row-title-input');
+        const h3 = parent.querySelector('h3');
+        if (input && h3 && input.value.trim() !== '') {
+          h3.textContent = input.value.trim();
+          input.value = '';
+          alert('Row title updated!');
+        }
+      }
+    });
+  });
+}
+
+/* ----------------------------------------------------
+ * 4. MUSIC DISCOVERY & SOUND CATALOG
+ * ---------------------------------------------------- */
+// Sample Catalog Data
+const sampleCatalog = [
+  { id: 1, title: 'Neo-Soul Keys', artist: 'GrooveDNA Master', genre: 'Soul', bpm: 88, audioUrl: '#' },
+  { id: 2, title: 'Funk Bassline #4', artist: 'Bootsy Vibes', genre: 'Funk', bpm: 110, audioUrl: '#' },
+  { id: 3, title: 'Vintage Rock Riff', artist: 'Hendrix Sound', genre: 'Rock', bpm: 124, audioUrl: '#' },
+  { id: 4, title: 'Lofi Jazz Chords', artist: 'Chill Beatmaker', genre: 'Jazz', bpm: 80, audioUrl: '#' },
+  { id: 5, title: 'Modern R&B Vocal Hit', artist: 'Aria', genre: 'R&B', bpm: 95, audioUrl: '#' }
+];
+
+function initDiscover() {
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const uploadBtn2 = document.getElementById('uploadBtn2');
+  const discoverMore = document.getElementById('discoverMore');
+  const genreFilters = document.querySelectorAll('#genreFilters .filter');
+
+  // Render initial samples
+  renderSamples(sampleCatalog);
+  renderStretchRecommendations();
+
+  // Search Button Action
+  if (searchBtn && searchInput) {
+    searchBtn.addEventListener('click', () => {
+      filterDiscoverCatalog();
+    });
+  }
+
+  // Genre Filter Buttons
+  genreFilters.forEach(button => {
+    button.addEventListener('click', () => {
+      genreFilters.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      filterDiscoverCatalog();
+    });
+  });
+
+  // Refresh Picks Action
+  if (discoverMore) {
+    discoverMore.addEventListener('click', () => {
+      const shuffled = [...sampleCatalog].sort(() => 0.5 - Math.random());
+      renderSamples(shuffled);
+    });
+  }
+
+  // Audio Upload Action with Supabase Storage Integration
+  if (uploadBtn2) {
+    uploadBtn2.addEventListener('click', () => {
+      handleAudioUpload();
+    });
+  }
+}
+
+function filterDiscoverCatalog() {
+  const searchInput = document.getElementById('searchInput');
+  const activeFilter = document.querySelector('#genreFilters .filter.active');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  const selectedGenre = activeFilter ? activeFilter.getAttribute('data-genre') : 'All';
+
+  const filtered = sampleCatalog.filter(sample => {
+    const matchesQuery = sample.title.toLowerCase().includes(query) ||
+                         sample.artist.toLowerCase().includes(query) ||
+                         sample.genre.toLowerCase().includes(query);
+    const matchesGenre = selectedGenre === 'All' || sample.genre === selectedGenre;
+    return matchesQuery && matchesGenre;
+  });
+
+  renderSamples(filtered);
+}
+
+function renderSamples(samples) {
+  const sampleGrid = document.getElementById('sampleGrid');
+  const resultCount = document.getElementById('resultCount');
+
+  if (resultCount) {
+    resultCount.textContent = `${samples.length} sound(s) found`;
+  }
+
+  if (!sampleGrid) return;
+
+  sampleGrid.innerHTML = '';
+
+  if (samples.length === 0) {
+    sampleGrid.innerHTML = '<p class="text-muted">No sounds found matching your search criteria.</p>';
+    return;
+  }
+
+  samples.forEach(sample => {
+    const card = document.createElement('article');
+    card.className = 'sample-card';
+    card.innerHTML = `
+      <div class="sample-card-header">
+        <span class="genre-tag">${sample.genre}</span>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">${sample.bpm} BPM</span>
+      </div>
+      <div>
+        <h4>${sample.title}</h4>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">${sample.artist}</p>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 8px;">
+        <button class="btn small primary play-sample-btn" data-id="${sample.id}">▶ Play</button>
+        <button class="btn small secondary save-sample-btn" data-id="${sample.id}">♡ Save</button>
+      </div>
+    `;
+    sampleGrid.appendChild(card);
+  });
+
+  // Attach event handlers to dynamic play buttons
+  document.querySelectorAll('.play-sample-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      playAudioBeep(); // Triggers synthesized audio feedback
+    });
+  });
+
+  // Attach event handlers to save buttons
+  document.querySelectorAll('.save-sample-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.target.textContent = '♥ Saved';
+      e.target.style.color = 'var(--accent-pink)';
+    });
+  });
+}
+
+function renderStretchRecommendations() {
+  const stretchGrid = document.getElementById('stretchGrid');
+  if (!stretchGrid) return;
+
+  const stretchSamples = sampleCatalog.slice(0, 3);
+  stretchGrid.innerHTML = '';
+
+  stretchSamples.forEach(sample => {
+    const card = document.createElement('article');
+    card.className = 'sample-card';
+    card.style.minWidth = '220px';
+    card.innerHTML = `
+      <span class="genre-tag">${sample.genre}</span>
+      <h4 style="margin-top: 8px;">${sample.title}</h4>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">${sample.artist}</p>
+      <button class="btn small outline play-sample-btn" style="margin-top: 8px;">▶ Explore</button>
+    `;
+    stretchGrid.appendChild(card);
+  });
+}
+
+async function handleAudioUpload() {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'audio/*';
+
+  fileInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (supabaseClient) {
+      try {
+        alert(`Uploading "${file.name}" to Supabase storage...`);
+        // Authorized Supabase Storage Upload
+        const { data, error } = await supabaseClient
+          .storage
+          .from('audio-samples')
+          .upload(`public/${Date.now()}_${file.name}`, file);
+
+        if (error) throw error;
+
+        alert('Upload successful! Your audio is available in GrooveDNA.');
+      } catch (err) {
+        console.error('Supabase Upload Error:', err.message);
+        alert(`File selected: ${file.name}. Ready for studio processing.`);
+      }
+    } else {
+      alert(`File loaded: ${file.name}`);
+    }
+  };
+
+  fileInput.click();
 }
