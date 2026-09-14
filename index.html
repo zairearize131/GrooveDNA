@@ -41,53 +41,195 @@
   <!-- MAIN APPLICATION CONTENT -->
   <main class="main-container">
     
-    <!-- SECTION 1: STUDIO / DRUM PAD & SAMPLER -->
-    <section id="creation" class="app-section">
-      <div class="section-header">
-        <h1>Groove Studio & Drum Pad</h1>
-        <p class="section-subtitle">Craft unique loops, mix audio stems, and publish directly to the feed.</p>
+    <!-- SECTION 1: GROOVE STUDIO & BEAT LAB WORKSTATION -->
+    <section id="creation" class="app-section beatlab-section">
+      <div class="section-header section-heading">
+        <div>
+          <p class="eyebrow">CREATE</p>
+          <h1>Groove Studio & Beat Lab</h1>
+          <p class="section-subtitle">
+            Build beats, experiment with instruments, record ideas, mix audio stems, and collaborate with other GrooveDNA creators.
+          </p>
+        </div>
+        <button type="button" class="btn secondary" id="clearLab">Clear Lab</button>
       </div>
 
-      <div class="studio-grid">
-        <!-- Drum Pad Machine -->
-        <div class="card drum-pad-card">
-          <h3>Interactive Drum Pad</h3>
-          <div class="pad-grid">
-            <button class="pad-btn" data-key="Q" data-sound="kick">Kick <span>(Q)</span></button>
-            <button class="pad-btn" data-key="W" data-sound="snare">Snare <span>(W)</span></button>
-            <button class="pad-btn" data-key="E" data-sound="hihat">Hi-Hat <span>(E)</span></button>
-            <button class="pad-btn" data-key="R" data-sound="clap">Clap <span>(R)</span></button>
-            <button class="pad-btn" data-key="A" data-sound="synth1">Synth A <span>(A)</span></button>
-            <button class="pad-btn" data-key="S" data-sound="synth2">Synth B <span>(S)</span></button>
-            <button class="pad-btn" data-key="D" data-sound="bass">Sub Bass <span>(D)</span></button>
-            <button class="pad-btn" data-key="F" data-sound="vocal">FX Vox <span>(F)</span></button>
+      <!-- MAIN BEAT LAB CONTAINER -->
+      <div class="beatlab panel card" style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- BEAT MODES SELECTOR -->
+        <div id="beatModes" class="beat-modes" aria-label="Beat Lab modes" style="display: flex; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+          <button type="button" class="btn secondary beat-mode active" data-mode="mixer">🎚 Music Mixer</button>
+          <button type="button" class="btn secondary beat-mode" data-mode="drumpad">🥁 Drum Pad Machine</button>
+          <button type="button" class="btn secondary beat-mode" data-mode="maker">🎼 Music Maker & Timeline</button>
+        </div>
+
+        <!-- MASTER TOOLBAR -->
+        <div class="lab-toolbar" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; background: var(--bg-card-hover); padding: 12px 16px; border-radius: var(--radius-sm);">
+          <button type="button" class="mini-play play-large" id="labPlay" aria-label="Play Beat Lab" aria-pressed="false" data-playing="false" style="width: 36px; height: 36px; font-size: 1rem;">▶</button>
+          
+          <!-- BPM CONTROLLER -->
+          <div class="fader-group" style="margin-bottom: 0; min-width: 140px;">
+            <label for="bpm-slider">BPM (<strong id="bpm-val">120</strong>)</label>
+            <input type="range" id="bpm-slider" min="60" max="180" value="120" step="1" />
+          </div>
+
+          <!-- PITCH CONTROLLER -->
+          <div class="fader-group" style="margin-bottom: 0; min-width: 120px;">
+            <label for="pitch">Pitch (<strong id="pitchValue">0</strong>)</label>
+            <input id="pitch" type="range" min="-12" max="12" value="0" step="1">
+          </div>
+
+          <!-- LOOP TOGGLE -->
+          <label class="toggle-label" for="loopToggle" style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer;">
+            <input id="loopToggle" type="checkbox" checked />
+            <span>Loop</span>
+          </label>
+
+          <!-- WORKSTATION ACTIONS -->
+          <div style="display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap;">
+            <button type="button" class="btn secondary small" id="saveBeat">Save Idea</button>
+            <button type="button" class="btn primary small" id="generateBeat">✦ Generate</button>
+            <button type="button" class="btn primary small" id="btn-record">⏺ Record</button>
+            <button type="button" class="btn secondary small" id="collabBtn">👥 Collab</button>
           </div>
         </div>
 
-        <!-- Mixer & Controls -->
-        <div class="card studio-controls-card">
-          <h3>Stem Mixer</h3>
-          <div class="mixer-controls">
-            <div class="fader-group">
-              <label for="bpm-slider">BPM (<span id="bpm-val">120</span>)</label>
-              <input type="range" id="bpm-slider" min="60" max="180" value="120" />
+        <!-- MAIN WORKSPACE GRID: DRUM PADS & MIXER -->
+        <div class="studio-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+          
+          <!-- EXTENDED DRUM PAD MACHINE -->
+          <div class="card drum-pad-card drum-machine" id="drumMachine">
+            <div class="drum-machine-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div>
+                <h3>Interactive Drum Pad Machine</h3>
+                <p class="section-subtitle" style="font-size: 0.85rem;">Tap pads or use your keyboard keys to trigger sounds.</p>
+              </div>
+              <div class="drum-machine-controls" style="display: flex; gap: 8px;">
+                <button class="btn secondary small" id="drumRecord" type="button" aria-pressed="false">● Rec</button>
+                <button class="btn secondary small" id="drumClear" type="button">Clear</button>
+              </div>
             </div>
 
-            <div class="fader-group">
-              <label for="master-vol">Master Volume</label>
-              <input type="range" id="master-vol" min="0" max="100" value="80" />
+            <!-- 8-PAD GRID -->
+            <div class="pad-grid drum-pad-grid" id="drumPadGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+              <button class="pad-btn drum-pad kick" data-key="Q" data-sound="kick" data-drum="kick">
+                <span class="pad-icon">●</span> <strong>KICK</strong> <span>(Q)</span>
+              </button>
+              <button class="pad-btn drum-pad snare" data-key="W" data-sound="snare" data-drum="snare">
+                <span class="pad-icon">◆</span> <strong>SNARE</strong> <span>(W)</span>
+              </button>
+              <button class="pad-btn drum-pad hihat" data-key="E" data-sound="hihat" data-drum="hihat">
+                <span class="pad-icon">◇</span> <strong>HI-HAT</strong> <span>(E)</span>
+              </button>
+              <button class="pad-btn drum-pad clap" data-key="R" data-sound="clap" data-drum="clap">
+                <span class="pad-icon">✦</span> <strong>CLAP</strong> <span>(R)</span>
+              </button>
+              <button class="pad-btn drum-pad tom" data-key="A" data-sound="synth1" data-drum="tom">
+                <span class="pad-icon">◉</span> <strong>TOM</strong> <span>(A)</span>
+              </button>
+              <button class="pad-btn drum-pad open-hat" data-key="S" data-sound="synth2" data-drum="openhat">
+                <span class="pad-icon">○</span> <strong>OPEN HAT</strong> <span>(S)</span>
+              </button>
+              <button class="pad-btn drum-pad crash" data-key="D" data-sound="bass" data-drum="crash">
+                <span class="pad-icon">✧</span> <strong>CRASH</strong> <span>(D)</span>
+              </button>
+              <button class="pad-btn drum-pad perc" data-key="F" data-sound="vocal" data-drum="perc">
+                <span class="pad-icon">✺</span> <strong>PERC</strong> <span>(F)</span>
+              </button>
             </div>
 
-            <div class="fader-group">
-              <label for="reverb-level">Reverb Depth</label>
-              <input type="range" id="reverb-level" min="0" max="100" value="25" />
-            </div>
-
-            <div class="studio-actions">
-              <button id="btn-record" class="btn primary full-width">⏺ Start Recording Loop</button>
-              <button id="btn-publish-track" class="btn secondary full-width" disabled>🚀 Publish Track to Feed</button>
+            <!-- PATTERN STEP SEQUENCER -->
+            <div class="drum-sequencer" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+              <div class="drum-sequencer-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div>
+                  <strong>Pattern Sequencer</strong>
+                  <span id="drumPatternStatus" class="muted" style="display: block; font-size: 0.8rem;">Tap Record, then play the pads.</span>
+                </div>
+                <div class="drum-pattern-controls" style="display: flex; gap: 6px;">
+                  <button class="btn outline small" id="drumPatternPlay" type="button">▶ Play</button>
+                  <button class="btn outline small" id="drumPatternStop" type="button">■ Stop</button>
+                </div>
+              </div>
+              <div class="drum-step-grid" id="drumStepGrid" style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px;">
+                <!-- Step sequencer grid nodes injected via JS -->
+              </div>
             </div>
           </div>
+
+          <!-- STEM MIXER & AUDIO CONTROLS -->
+          <div class="card studio-controls-card">
+            <h3>Stem Mixer</h3>
+            <div class="mixer-controls" style="margin-top: 12px;">
+              <div class="fader-group">
+                <label for="master-vol">Master Volume</label>
+                <input type="range" id="master-vol" min="0" max="100" value="80" />
+              </div>
+
+              <div class="fader-group">
+                <label for="reverb-level">Reverb Depth</label>
+                <input type="range" id="reverb-level" min="0" max="100" value="25" />
+              </div>
+
+              <div class="studio-actions" style="margin-top: 24px;">
+                <button id="btn-publish-track" class="btn secondary full-width" disabled>🚀 Publish Track to Feed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MULTI-TRACK TIMELINE & INSTRUMENT BROWSER -->
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+          
+          <!-- INSTRUMENT BROWSER -->
+          <aside id="instrumentBrowser" class="instrument-browser panel card">
+            <div class="instrument-browser-header">
+              <p class="eyebrow">SOUNDS</p>
+              <h3>Instruments</h3>
+              <p class="section-subtitle" style="font-size: 0.8rem;">Select an instrument to explore sounds.</p>
+            </div>
+            <div class="instrument-list" style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px;">
+              <button class="btn outline small full-width" style="justify-content: flex-start;">🎹 Vintage Synth</button>
+              <button class="btn outline small full-width" style="justify-content: flex-start;">🎸 Electric Bass</button>
+              <button class="btn outline small full-width" style="justify-content: flex-start;">🎷 Soul Horns</button>
+            </div>
+            <div class="sound-list" id="soundList" style="margin-top: 12px;">
+              <div class="empty-state muted" style="font-size: 0.8rem;">Select an instrument sound to preview.</div>
+            </div>
+          </aside>
+
+          <!-- TRACK TIMELINE -->
+          <div class="timeline panel card" id="timeline" style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="timeline-ruler" style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; font-weight: bold; font-size: 0.8rem; color: var(--text-muted);">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+            </div>
+
+            <!-- TRACK LANES -->
+            <div class="track" style="display: flex; align-items: center; gap: 12px; background: var(--bg-card-hover); padding: 8px 12px; border-radius: var(--radius-sm);">
+              <span style="font-weight: bold; font-size: 0.8rem; width: 70px;">DRUMS</span>
+              <div class="track-lane" data-track="drums" style="flex-grow: 1; height: 24px; background: var(--bg-dark); border-radius: 4px;"></div>
+            </div>
+
+            <div class="track" style="display: flex; align-items: center; gap: 12px; background: var(--bg-card-hover); padding: 8px 12px; border-radius: var(--radius-sm);">
+              <span style="font-weight: bold; font-size: 0.8rem; width: 70px;">BASS</span>
+              <div class="track-lane" data-track="bass" style="flex-grow: 1; height: 24px; background: var(--bg-dark); border-radius: 4px;"></div>
+            </div>
+
+            <div class="track" style="display: flex; align-items: center; gap: 12px; background: var(--bg-card-hover); padding: 8px 12px; border-radius: var(--radius-sm);">
+              <span style="font-weight: bold; font-size: 0.8rem; width: 70px;">MELODY</span>
+              <div class="track-lane" data-track="melody" style="flex-grow: 1; height: 24px; background: var(--bg-dark); border-radius: 4px;"></div>
+            </div>
+
+            <div class="track" style="display: flex; align-items: center; gap: 12px; background: var(--bg-card-hover); padding: 8px 12px; border-radius: var(--radius-sm);">
+              <span style="font-weight: bold; font-size: 0.8rem; width: 70px;">SAMPLES</span>
+              <div class="track-lane" id="sampleLane" data-track="samples" style="flex-grow: 1; height: 24px; background: var(--bg-dark); border-radius: 4px;"></div>
+            </div>
+
+            <div class="empty-state muted" id="labEmpty" style="font-size: 0.8rem; text-align: center; margin-top: 8px;">
+              Select an instrument or add a sample from Discover to start creating.
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
