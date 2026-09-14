@@ -160,44 +160,111 @@ async function checkUserSession() {
 }
 
 /* ----------------------------------------------------
- * 2. DRUM PAD INTERACTION & AUDIO
+ * 2. BEAT LAB WORKSTATION & SUPABASE DRUM PAD AUDIO
  * ---------------------------------------------------- */
+let isRecordingPattern = false;
+let recordedPattern = [];
+let patternPlaybackInterval = null;
+let patternStartTime = 0;
+
 function initDrumPads() {
-  const padButtons = document.querySelectorAll('.pad-btn');
+  const padButtons = document.querySelectorAll('.pad-btn, .drum-pad');
   const bpmSlider = document.getElementById('bpm-slider');
   const bpmVal = document.getElementById('bpm-val');
+  const pitchSlider = document.getElementById('pitch');
+  const pitchValue = document.getElementById('pitchValue');
 
+  // Sync BPM Slider
   if (bpmSlider && bpmVal) {
     bpmSlider.addEventListener('input', (e) => {
       bpmVal.textContent = e.target.value;
     });
   }
 
+  // Sync Pitch Slider
+  if (pitchSlider && pitchValue) {
+    pitchSlider.addEventListener('input', (e) => {
+      pitchValue.textContent = e.target.value;
+    });
+  }
+
+  // Click handler for Drum Pads
   padButtons.forEach(button => {
     button.addEventListener('click', () => triggerPad(button));
   });
 
-  // Guarded keydown listener to prevent undefined errors
+  // Keydown listener for Q, W, E, R, A, S, D, F
   window.addEventListener('keydown', (e) => {
-    if (!e.key) return;
+    if (!e.key || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     const key = e.key.toUpperCase();
-    const pad = document.querySelector(`.pad-btn[data-key="${key}"]`);
+    const pad = document.querySelector(`.pad-btn[data-key="${key}"], .drum-pad[data-key="${key}"]`);
     if (pad) {
       triggerPad(pad);
     }
   });
+
+  // Initialize Beat Lab Mode Switching & Pattern Controls
+  initBeatLabControls();
 }
 
-function triggerPad(element) {
+/**
+ * Triggers visual pad activation, records note events, 
+ * and plays sample audio from Supabase Storage bucket.
+ */
+async function triggerPad(element) {
   element.classList.add('active');
   setTimeout(() => element.classList.remove('active'), 120);
 
-  const soundName = element.getAttribute('data-sound');
-  console.log(`[Audio Synth] Triggering sound: ${soundName}`);
-  playAudioBeep();
+  const soundName = element.getAttribute('data-sound') || element.getAttribute('data-drum');
+
+  // Record pattern event if recording state is active
+  if (isRecordingPattern) {
+    const timeOffset = Date.now() - patternStartTime;
+    recordedPattern.push({ sound: soundName, pad: element, time: timeOffset });
+  }
+
+  // Play audio track from Supabase Storage
+  playSupabaseAudioSample(soundName);
 }
 
-function playAudioBeep() {
+/**
+ * Fetches sample media URL from Supabase Storage bucket ('tracks')
+ * and plays it with client-side audio fallback.
+ */
+function playSupabaseAudioSample(soundName) {
+  let audioUrl = '';
+
+  if (supabaseClient) {
+    const { data } = supabaseClient
+      .storage
+      .from('tracks')
+      .getPublicUrl(`${soundName}.mp3`);
+      
+    audioUrl = data?.publicUrl;
+  }
+
+  // Supabase CDN Direct Media URL fallback
+  if (!audioUrl || audioUrl.includes('undefined')) {
+    audioUrl = `${SUPABASE_URL}/storage/v1/object/public/tracks/${soundName}.mp3`;
+  }
+
+  const sampleAudio = new Audio(audioUrl);
+  
+  // Apply pitch playback rate adjustment if set
+  const pitchSlider = document.getElementById('pitch');
+  if (pitchSlider && pitchSlider.value != 0) {
+    // Pitch shift formula approximation via playbackRate
+    const semitones = parseFloat(pitchSlider.value);
+    sampleAudio.playbackRate = Math.pow(2, semitones / 12);
+  }
+
+  sampleAudio.play().catch(() => {
+    // Synthetic Web Audio API Fallback if file isn't uploaded to bucket yet
+    playAudioBeep(soundName);
+  });
+}
+
+function playAudioBeep(soundName) {
   try {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return;
@@ -205,21 +272,112 @@ function playAudioBeep() {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(300, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+    // Map sound names to synthetic frequencies
+    const freqMap = {
+      kick: 80,
+      snare: 240,
+      hihat: 800,
+      clap: 450,
+      synth1: 320,
+      synth2: 440,
+      bass: 110,
+      vocal: 520,
+      tom: 150,
+      openhat: 700,
+      crash: 900,
+      perc: 380
+    };
 
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+    const targetFreq = freqMap[soundName] || 300;
+
+    osc.type = soundName === 'kick' || soundName === 'bass' ? 'triangle' : 'sine';
+    osc.frequency.setValueAtTime(targetFreq, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+
+    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
 
     osc.start();
-    osc.stop(ctx.currentTime + 0.15);
+    osc.stop(ctx.currentTime + 0.18);
   } catch(e) {
-    // Audio context handle
+    // Audio Context fallback safety
   }
+}
+
+/**
+ * Initializes Beat Modes, Step Sequencer controls, and Beat Lab actions.
+ */
+function initBeatLabControls() {
+  // Mode Selector Tabs
+  const modeBtns = document.querySelectorAll('.beat-mode');
+  modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Pattern Recording Controls
+  const drumRecordBtn = document.getElementById('drumRecord');
+  const drumClearBtn = document.getElementById('drumClear');
+  const drumPatternPlay = document.getElementById('drumPatternPlay');
+  const drumPatternStop = document.getElementById('drumPatternStop');
+  const drumPatternStatus = document.getElementById('drumPatternStatus');
+
+  if (drumRecordBtn) {
+    drumRecordBtn.addEventListener('click', () => {
+      isRecordingPattern = !isRecordingPattern;
+      if (isRecordingPattern) {
+        recordedPattern = [];
+        patternStartTime = Date.now();
+        drumRecordBtn.setAttribute('aria-pressed', 'true');
+        drumRecordBtn.textContent = '⏹ Stop Rec';
+        if (drumPatternStatus) drumPatternStatus.textContent = 'Recording pattern... Play pads now.';
+      } else {
+        drumRecordBtn.setAttribute('aria-pressed', 'false');
+        drumRecordBtn.textContent = '● Rec';
+        if (drumPatternStatus) drumPatternStatus.textContent = `Pattern recorded (${recordedPattern.length} notes).`;
+      }
+    });
+  }
+
+  if (drumClearBtn) {
+    drumClearBtn.addEventListener('click', () => {
+      recordedPattern = [];
+      if (drumPatternStatus) drumPatternStatus.textContent = 'Pattern cleared.';
+    });
+  }
+
+  if (drumPatternPlay) {
+    drumPatternPlay.addEventListener('click', () => {
+      if (recordedPattern.length === 0) {
+        alert('No recorded pattern found. Tap Record and play pads first!');
+        return;
+      }
+      playRecordedPattern();
+    });
+  }
+
+  if (drumPatternStop) {
+    drumPatternStop.addEventListener('click', () => {
+      if (patternPlaybackInterval) clearTimeout(patternPlaybackInterval);
+      if (drumPatternStatus) drumPatternStatus.textContent = 'Playback stopped.';
+    });
+  }
+}
+
+function playRecordedPattern() {
+  const drumPatternStatus = document.getElementById('drumPatternStatus');
+  if (drumPatternStatus) drumPatternStatus.textContent = 'Playing recorded pattern...';
+
+  recordedPattern.forEach(note => {
+    setTimeout(() => {
+      triggerPad(note.pad);
+    }, note.time);
+  });
 }
 
 /* ----------------------------------------------------
