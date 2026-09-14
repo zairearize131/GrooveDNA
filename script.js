@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initDrumPads();
   initChat();
   initCommunitySection(); 
+  initProfileSession();
   checkUserSession();
 });
 }
@@ -834,4 +835,234 @@ async function handleAudioUpload() {
   };
 
   fileInput.click();
+}
+
+/* ----------------------------------------------------
+ * 4. INDIVIDUAL USER PROFILE LOGIC & SUPABASE MEDIA
+ * ---------------------------------------------------- */
+let currentProfileAudio = null;
+
+function initProfile() {
+  initProfileAvatar();
+  initProfileHeading();
+  initProfileMusicSearch();
+  initProfileLocation();
+}
+
+/**
+ * Avatar photo selection and toggle logic
+ */
+function initProfileAvatar() {
+  const choosePhotoBtn = document.getElementById('choosePhotoBtn');
+  const takePhotoBtn = document.getElementById('takePhotoBtn');
+  const createBitmojiBtn = document.getElementById('createBitmojiBtn');
+  const photoInput = document.getElementById('profilePhotoInput');
+  const cameraInput = document.getElementById('profileCameraInput');
+  const avatarImg = document.getElementById('profileAvatarImage');
+  const avatarPlaceholder = document.getElementById('profileAvatarPlaceholder');
+  const bitmojiSpan = document.getElementById('profileBitmoji');
+  const showPhotoOpt = document.getElementById('showPhotoOption');
+  const showBitmojiOpt = document.getElementById('showBitmojiOption');
+
+  if (choosePhotoBtn && photoInput) {
+    choosePhotoBtn.addEventListener('click', () => photoInput.click());
+    photoInput.addEventListener('change', (e) => handleImageUpload(e, avatarImg, avatarPlaceholder));
+  }
+
+  if (takePhotoBtn && cameraInput) {
+    takePhotoBtn.addEventListener('click', () => cameraInput.click());
+    cameraInput.addEventListener('change', (e) => handleImageUpload(e, avatarImg, avatarPlaceholder));
+  }
+
+  if (createBitmojiBtn) {
+    createBitmojiBtn.addEventListener('click', () => {
+      if (showBitmojiOpt) showBitmojiOpt.checked = true;
+      if (showPhotoOpt) showPhotoOpt.checked = false;
+      updateAvatarDisplay();
+    });
+  }
+
+  if (showPhotoOpt && showBitmojiOpt) {
+    showPhotoOpt.addEventListener('change', () => {
+      if (showPhotoOpt.checked) showBitmojiOpt.checked = false;
+      updateAvatarDisplay();
+    });
+    showBitmojiOpt.addEventListener('change', () => {
+      if (showBitmojiOpt.checked) showPhotoOpt.checked = false;
+      updateAvatarDisplay();
+    });
+  }
+
+  function updateAvatarDisplay() {
+    if (showBitmojiOpt && showBitmojiOpt.checked) {
+      if (bitmojiSpan) bitmojiSpan.hidden = false;
+      if (avatarImg) avatarImg.hidden = true;
+      if (avatarPlaceholder) avatarPlaceholder.hidden = true;
+    } else {
+      if (bitmojiSpan) bitmojiSpan.hidden = true;
+      if (avatarImg && avatarImg.src) {
+        avatarImg.hidden = false;
+        if (avatarPlaceholder) avatarPlaceholder.hidden = true;
+      } else if (avatarPlaceholder) {
+        avatarPlaceholder.hidden = false;
+      }
+    }
+  }
+}
+
+function handleImageUpload(event, imgElem, placeholderElem) {
+  const file = event.target.files[0];
+  if (file && imgElem) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imgElem.src = e.target.result;
+      imgElem.hidden = false;
+      if (placeholderElem) placeholderElem.hidden = true;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+/**
+ * Live updates for Profile Heading/Bio
+ */
+function initProfileHeading() {
+  const headingInput = document.getElementById('profileHeading');
+  const headingPreview = document.getElementById('profileHeadingPreview');
+
+  if (headingInput && headingPreview) {
+    headingInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      headingPreview.textContent = val ? val : 'Your profile heading';
+    });
+  }
+}
+
+/**
+ * Search and load Profile Anthem using Supabase Storage ('tracks' bucket)
+ */
+function initProfileMusicSearch() {
+  const addMusicBtn = document.getElementById('addProfileMusicBtn');
+  const musicSearchDiv = document.getElementById('profileMusicSearch');
+  const searchBtn = document.getElementById('profileMusicSearchBtn');
+  const musicInput = document.getElementById('profileMusicInput');
+  const resultsDiv = document.getElementById('profileMusicResults');
+
+  if (addMusicBtn && musicSearchDiv) {
+    addMusicBtn.addEventListener('click', () => {
+      musicSearchDiv.hidden = !musicSearchDiv.hidden;
+    });
+  }
+
+  if (searchBtn && musicInput) {
+    searchBtn.addEventListener('click', () => {
+      const query = musicInput.value.trim().toLowerCase();
+      if (!query) return;
+      searchSupabaseMusic(query, resultsDiv);
+    });
+  }
+}
+
+async function searchSupabaseMusic(query, resultsContainer) {
+  if (!resultsContainer) return;
+
+  resultsContainer.innerHTML = '<div class="profile-empty-state">Searching Supabase media...</div>';
+
+  let tracks = [];
+
+  // Query Supabase Storage or fallback to default sample names
+  if (supabaseClient) {
+    const { data, error } = await supabaseClient.storage.from('tracks').list();
+    if (!error && data) {
+      tracks = data.filter(file => file.name.toLowerCase().includes(query));
+    }
+  }
+
+  // Fallback demo results if storage list is empty
+  if (tracks.length === 0) {
+    const defaultSamples = ['kick', 'snare', 'synth1', 'synth2', 'bass', 'vocal'];
+    tracks = defaultSamples
+      .filter(s => s.includes(query))
+      .map(s => ({ name: `${s}.mp3` }));
+  }
+
+  if (tracks.length === 0) {
+    resultsContainer.innerHTML = `<div class="profile-empty-state">No track matching "${query}" found.</div>`;
+    return;
+  }
+
+  resultsContainer.innerHTML = '';
+  tracks.forEach(track => {
+    const fileName = track.name.replace('.mp3', '');
+    const trackUrl = `${SUPABASE_URL}/storage/v1/object/public/tracks/${track.name}`;
+
+    const card = document.createElement('div');
+    card.className = 'audio-player-mock';
+    card.style.marginBottom = '8px';
+    card.innerHTML = `
+      <strong style="text-transform: capitalize; flex-grow: 1;">${fileName}</strong>
+      <button class="btn primary small btn-set-anthem">Set as Anthem</button>
+    `;
+
+    card.querySelector('.btn-set-anthem').addEventListener('click', () => {
+      setProfileAnthem(fileName, trackUrl);
+    });
+
+    resultsContainer.appendChild(card);
+  });
+}
+
+function setProfileAnthem(title, url) {
+  const currentMusicDiv = document.getElementById('profileCurrentMusic');
+  const musicSearchDiv = document.getElementById('profileMusicSearch');
+
+  if (musicSearchDiv) musicSearchDiv.hidden = true;
+
+  if (currentProfileAudio) {
+    currentProfileAudio.pause();
+  }
+
+  currentProfileAudio = new Audio(url);
+
+  if (currentMusicDiv) {
+    currentMusicDiv.innerHTML = `
+      <div class="audio-player-mock">
+        <button class="btn-play" id="btnPlayAnthem">▶ Play</button>
+        <div style="flex-grow: 1;">
+          <strong style="text-transform: capitalize; display: block;">${title}</strong>
+          <small style="color: var(--text-muted);">Profile Anthem</small>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('btnPlayAnthem').addEventListener('click', (e) => {
+      if (currentProfileAudio.paused) {
+        currentProfileAudio.play().catch(() => playAudioBeep());
+        e.target.textContent = '⏸ Pause';
+      } else {
+        currentProfileAudio.pause();
+        e.target.textContent = '▶ Play';
+      }
+    });
+  }
+}
+
+/**
+ * Location display and editing toggle
+ */
+function initProfileLocation() {
+  const editLocationBtn = document.getElementById('editProfileLocationBtn');
+  const locationText = document.getElementById('profileLocationText');
+
+  if (editLocationBtn) {
+    editLocationBtn.addEventListener('click', () => {
+      const current = locationText ? locationText.textContent : '';
+      const newLoc = prompt('Enter your location (e.g., Los Angeles, CA):', current.includes('sharing is off') ? '' : current);
+      if (newLoc !== null) {
+        if (locationText) {
+          locationText.textContent = newLoc.trim() ? newLoc.trim() : 'Location sharing is off';
+        }
+      }
+    });
+  }
 }
