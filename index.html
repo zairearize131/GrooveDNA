@@ -23,6 +23,7 @@
   <a href="#feed" class="nav-link">Feed</a>
   <a href="#discover" class="nav-link">Discover</a>
   <a href="#library" class="nav-link">Library</a>
+  <a herf="#profile" class="nav-link">Profile</a>
 </nav>
      
       <div class="user-actions">
@@ -613,7 +614,124 @@
 
   <footer class="footer">
     <p>&copy; 2026 GrooveDNA Platform. All rights reserved.</p>
-  </footer>
+  </footer> 
+
+    <!-- SECTION 5: INDIVIDUAL USER PROFILE -->
+    <section id="profile" class="app-section profile-page">
+      <div class="section-header">
+        <h2>User Profile</h2>
+        <p class="section-subtitle">Manage your personal details, avatar, profile track, location settings, and stats.</p>
+      </div>
+
+      <div class="profile-header-card card">
+        <!-- PROFILE PICTURE -->
+        <div class="profile-avatar-area">
+          <div class="profile-avatar" id="profileAvatar" aria-label="Profile picture">
+            <span id="profileAvatarPlaceholder">GD</span>
+            <img id="profileAvatarImage" alt="Profile picture" hidden>
+            <span class="profile-bitmoji" id="profileBitmoji" aria-label="Bitmoji avatar" hidden>😊</span>
+          </div>
+
+          <div class="profile-picture-actions">
+            <strong>Profile Picture</strong>
+            <small>Choose how you want to appear to other creators.</small>
+
+            <div class="profile-choice-buttons">
+              <button type="button" class="btn secondary" id="takePhotoBtn">Take Photo</button>
+              <button type="button" class="btn secondary" id="choosePhotoBtn">Upload Photo</button>
+              <button type="button" class="btn secondary" id="createBitmojiBtn">Bitmoji</button>
+            </div>
+
+            <div class="profile-avatar-display-options">
+              <label><input type="checkbox" id="showPhotoOption" checked> Show photo</label>
+              <label><input type="checkbox" id="showBitmojiOption"> Show Bitmoji</label>
+            </div>
+          </div>
+        </div>
+
+        <input type="file" id="profilePhotoInput" accept="image/*" hidden>
+        <input type="file" id="profileCameraInput" accept="image/*" capture="user" hidden>
+
+        <!-- PROFILE HEADING -->
+        <div class="profile-heading-area">
+          <label for="profileHeading"><strong>Profile Bio / Heading</strong></label>
+          <div class="profile-heading-preview" id="profileHeadingPreview" aria-live="polite">
+            Your profile heading
+          </div>
+          <textarea id="profileHeading" class="profile-heading-input" rows="2" maxlength="160" placeholder="Type a bio or tagline to display on your profile..." aria-label="Profile heading"></textarea>
+        </div>
+      </div>
+
+      <!-- PROFILE MUSIC -->
+      <section class="profile-section-card card" id="profileMusicSection">
+        <div class="profile-section-heading">
+          <div>
+            <p class="eyebrow">YOUR GROOVE</p>
+            <h3>Profile Anthem</h3>
+            <p>Select a track segment to auto-play or represent your profile identity.</p>
+          </div>
+          <button type="button" class="btn primary" id="addProfileMusicBtn">＋ Add Music</button>
+        </div>
+
+        <div class="profile-music-search" id="profileMusicSearch" hidden>
+          <label for="profileMusicInput">Search music</label>
+          <div class="profile-search-row">
+            <input type="search" id="profileMusicInput" placeholder="Search songs, artists..." autocomplete="off">
+            <button type="button" class="btn primary" id="profileMusicSearchBtn">Search</button>
+          </div>
+
+          <div class="profile-music-results" id="profileMusicResults">
+            <div class="profile-empty-state">Search for music to select your profile track.</div>
+          </div>
+        </div>
+
+        <div class="profile-current-music" id="profileCurrentMusic">
+          <div class="profile-empty-state">No profile song selected yet.</div>
+        </div>
+      </section>
+
+      <!-- PROFILE LOCATION -->
+      <section class="profile-section-card card" id="profileLocationSection">
+        <div class="profile-section-heading">
+          <div>
+            <p class="eyebrow">WHERE YOU ARE</p>
+            <h3>Location Settings</h3>
+            <p>Control what location details are visible to the community.</p>
+          </div>
+          <button type="button" class="btn secondary" id="editProfileLocationBtn">Edit Location</button>
+        </div>
+
+        <div class="profile-location-display" id="profileLocationDisplay">
+          <div class="profile-location-icon" aria-hidden="true">⌖</div>
+          <div>
+            <strong id="profileLocationText">Location sharing is off</strong>
+            <small id="profileLocationDetail">You control what other users can see.</small>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROFILE STATS -->
+      <section class="profile-stats-card card" aria-label="Profile statistics">
+        <div class="profile-stat-grid" style="display: flex; justify-content: space-around; text-align: center;">
+          <div class="profile-stat">
+            <strong id="profilePostCount">0</strong>
+            <span>Posts</span>
+          </div>
+          <div class="profile-stat">
+            <strong id="profileFollowerCount">0</strong>
+            <span>Followers</span>
+          </div>
+          <div class="profile-stat">
+            <strong id="profileFollowingCount">0</strong>
+            <span>Following</span>
+          </div>
+          <div class="profile-stat">
+            <strong id="profileFriendCount">0</strong>
+            <span>Friends</span>
+          </div>
+        </div>
+      </section>
+    </section>
 
   <script src="script.js"></script>
 </body>
