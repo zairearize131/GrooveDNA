@@ -18,13 +18,13 @@
         <span class="logo-text">Groove<strong>DNA</strong></span>
       </a>
 
-      <nav class="nav-links">
-        <a href="#creation" class="nav-link active">Studio</a>
-        <a href="#feed" class="nav-link">Feed</a>
-        <a href="#streaming" class="nav-link">Live Stream</a>
-        <a href="#gaming" class="nav-link">Gaming Hub</a>
-      </nav>
-
+<nav class="nav-links">
+  <a href="#creation" class="nav-link active">Studio</a>
+  <a href="#feed" class="nav-link">Feed</a>
+  <a href="#discover" class="nav-link">Discover</a>
+  <a href="#library" class="nav-link">Library</a>
+</nav>
+     
       <div class="user-actions">
         <a href="#auth-modal" class="btn secondary" id="btn-signin-nav">Sign In</a>
         <a href="#auth-modal" class="btn primary" id="btn-signup-nav">Create Account</a>
@@ -132,59 +132,174 @@
       </div>
     </section>
 
-    <!-- SECTION 3: LIVE STREAMING & ROOMS -->
-    <section id="streaming" class="app-section">
-      <div class="section-header">
-        <h2>Live Collaboration Rooms</h2>
-        <p class="section-subtitle">Broadcast your jam session live or collaborate in real-time rooms.</p>
+<!-- SECTION 3: MUSIC LIBRARY & PLAYLISTS -->
+<section id="library" class="app-section library-page">
+  <div class="section-header library-header">
+    <p class="eyebrow">YOUR MUSIC • YOUR GROOVE</p>
+    <h2>Library</h2>
+    <p class="section-subtitle">
+      Find music from every genre, your favorite artists, and new music published by GrooveDNA creators.
+    </p>
+
+    <!-- SEARCH BAR & QUICK ACTIONS -->
+    <div class="library-search" role="search">
+      <input
+        id="librarySearchInput"
+        type="search"
+        placeholder="Search songs, artists, genres, or GrooveDNA creators..."
+        aria-label="Search your music library"
+      >
+      <button class="btn primary" id="librarySearchBtn" type="button">Search</button>
+      <button class="btn secondary" id="grooveMoodBtn" type="button">Groove Of The Mood</button>
+      <button class="btn secondary" id="addToPlaylistBtn" type="button">Add to Playlist</button>
+    </div>
+  </div>
+
+  <!-- GROOVE OF THE MOOD CARD -->
+  <div class="library-mood" id="grooveMoodSection" aria-labelledby="grooveMoodTitle">
+    <div class="library-mood-head">
+      <div>
+        <p class="eyebrow">GROOVE OF THE MOOD</p>
+        <h3 id="grooveMoodTitle">Set the song for your mood</h3>
+        <p>Choose a song, preview it, use a cropped section or the whole song, and save it here.</p>
+      </div>
+      <button class="btn ghost" id="editMoodBtn" type="button">Edit</button>
+    </div>
+
+    <div class="mood-card" id="grooveMoodCard">
+      <div class="mood-cover" id="grooveMoodCover" aria-label="Mood song artwork">♪</div>
+      <div>
+        <h4 id="grooveMoodSongTitle">No mood song selected</h4>
+        <p id="grooveMoodSongArtist">Search for a song to begin.</p>
+        <p id="grooveMoodSongRange">Whole song</p>
+      </div>
+      <button class="btn secondary" id="grooveMoodPlayBtn" type="button">▶ Play</button>
+    </div>
+  </div>
+
+  <!-- PLAYLIST ROWS -->
+  <div class="library-rows" id="playlistRows" aria-label="Playlist rows">
+    <div class="playlist-row" data-row="1">
+      <div class="row-heading">
+        <div>
+          <p class="eyebrow">ROW 1</p>
+          <h3>Music Row</h3>
+        </div>
+        <input class="row-title-input" type="text" placeholder="Type a title for this row">
+        <button class="btn secondary save-row-title" type="button">Save</button>
       </div>
 
-      <div class="stream-layout">
-        <div class="card stream-viewport">
-          <div class="stream-placeholder">
-            <div class="live-badge">🔴 LIVE NOW</div>
-            <p>Stage Stream: <strong>Midnight Jam Session w/ Marcus</strong></p>
-          </div>
-        </div>
-
-        <div class="card stream-chat">
-          <h3>Live Chat</h3>
-          <div class="chat-messages" id="chat-messages">
-            <div class="chat-msg"><strong>Sarah:</strong> Love that bassline drop!</div>
-            <div class="chat-msg"><strong>BeatMaker99:</strong> What tempo is this?</div>
-          </div>
-          <form id="chat-form" class="chat-input-row">
-            <input type="text" id="chat-input" placeholder="Say something in chat..." required />
-            <button type="submit" class="btn primary">Send</button>
-          </form>
-        </div>
+      <div class="playlist-scroller" id="playlistRow1">
+        <article class="playlist-card add-playlist-card" data-add-playlist>
+          <strong>＋ Add Playlist</strong>
+          <span>Create another playlist in this row</span>
+        </article>
       </div>
-    </section>
+    </div>
+  </div>
 
-    <!-- SECTION 4: GAMING HUB INTEGRATION -->
-    <section id="gaming" class="app-section">
-      <div class="section-header">
-        <h2>Gaming Platform Integrations</h2>
-        <p class="section-subtitle">Sync your game sound effects, trigger pads using controllers, and earn trophies.</p>
+  <!-- ALL CREATED PLAYLISTS -->
+  <div class="playlist-section library-subsection" aria-labelledby="createdPlaylistsTitle">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">YOUR PLAYLISTS</p>
+        <h3 id="createdPlaylistsTitle">Everything you created</h3>
+        <p>Create unlimited playlists. Place each playlist under another playlist or next to it.</p>
       </div>
+      <button class="btn secondary" id="newPlaylist" type="button">＋ Add Playlist</button>
+    </div>
+    <div class="playlist-grid" id="userPlaylistGrid" aria-live="polite"></div>
+  </div>
 
-      <div class="gaming-grid">
-        <div class="card gaming-card">
-          <div class="gaming-icon">🎮</div>
-          <h3>Controller Support</h3>
-          <p>Map your gamepad buttons directly to drum pad triggers for low-latency live sound performance.</p>
-          <button class="btn outline">Connect Gamepad</button>
-        </div>
-
-        <div class="card gaming-card">
-          <div class="gaming-icon">🏆</div>
-          <h3>Rhythm Achievements</h3>
-          <p>Complete daily rhythm challenges and level up your creator rank in the community.</p>
-          <button class="btn outline">View Challenges</button>
-        </div>
+  <!-- SAVED SOUNDS GRID -->
+  <div class="library-subsection" id="savedSoundsSection" aria-labelledby="savedSoundsTitle">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">SAVED SOUNDS</p>
+        <h3 id="savedSoundsTitle">Your saved sounds</h3>
+        <p>Sounds you've saved from Discover will appear here.</p>
       </div>
-    </section>
-  </main>
+    </div>
+    <div class="sample-grid" id="savedSoundsGrid" aria-live="polite"></div>
+  </div>
+</section>
+
+    <!-- SECTION 4: MUSIC DISCOVERY & CATALOG -->
+<section id="discover" class="app-section">
+  <!-- SEARCH PANEL -->
+  <div class="search-panel">
+    <div class="section-heading compact">
+      <div>
+        <p class="eyebrow">DISCOVER</p>
+        <h2>What sound are you looking for?</h2>
+        <p class="section-subtitle">
+          Search the GrooveDNA sound catalog and discover samples that match your taste.
+        </p>
+      </div>
+      <button class="btn ghost" id="discoverMore" type="button">Refresh picks ↻</button>
+    </div>
+
+    <!-- SEARCH CONTROLS -->
+    <div class="search-row">
+      <label class="search-box" for="searchInput">
+        <span aria-hidden="true">⌕</span>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search artists, songs, riffs, drums, bass..."
+          autocomplete="off"
+          aria-label="Search sounds"
+        >
+      </label>
+
+      <button class="btn primary" id="searchBtn" type="button">Search</button>
+      <button class="btn upload" id="uploadBtn2" type="button">🎙 Upload Audio</button>
+    </div>
+
+    <!-- GENRE FILTERS -->
+    <div class="filter-row" id="genreFilters" aria-label="Filter by genre">
+      <button class="filter active" type="button" data-genre="All" aria-pressed="true">All</button>
+      <button class="filter" type="button" data-genre="Rock" aria-pressed="false">🎸 Rock</button>
+      <button class="filter" type="button" data-genre="Funk" aria-pressed="false">🕺 Funk</button>
+      <button class="filter" type="button" data-genre="Soul" aria-pressed="false">💜 Soul</button>
+      <button class="filter" type="button" data-genre="R&B" aria-pressed="false">🎙 R&B</button>
+      <button class="filter" type="button" data-genre="Jazz" aria-pressed="false">🎷 Jazz</button>
+    </div>
+
+    <p class="demo-note">
+      Search and filter the GrooveDNA sound catalog. Upload audio to begin working with your own sound.
+    </p>
+  </div>
+
+  <!-- DISCOVER RESULTS -->
+  <div class="content-section" id="discoverResults">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">FOR YOU</p>
+        <h3>Trending sounds</h3>
+        <p>Fresh picks based on your musical DNA.</p>
+      </div>
+      <span id="resultCount" class="result-count" aria-live="polite"></span>
+    </div>
+
+    <!-- SAMPLE GRID -->
+    <div class="sample-grid" id="sampleGrid" aria-live="polite">
+      <!-- Populated dynamically via JavaScript -->
+    </div>
+  </div>
+
+  <!-- STRETCH YOUR DNA RECOMMENDATIONS -->
+  <div class="content-section recommendation-band" id="stretch">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">DISCOVER OUTSIDE YOUR COMFORT ZONE</p>
+        <h3>Stretch your DNA</h3>
+        <p>Explore sounds just outside your usual taste.</p>
+      </div>
+    </div>
+    <div class="horizontal-cards" id="stretchGrid" aria-live="polite"></div>
+  </div>
+</section>
 
   <!-- AUTHENTICATION MODAL (Fixes missing anchor issue) -->
   <div id="auth-modal" class="modal-backdrop auth-modal-backdrop">
