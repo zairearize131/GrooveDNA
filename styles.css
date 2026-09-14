@@ -328,85 +328,334 @@ body {
   font-size: 0.9rem;
 }
 
-/* Stream Layout */
-.stream-layout {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
+/* ==========================================================================
+   Library & Playlist Styles (Replaces Stream Layout)
+   ========================================================================== */
+.library-page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
-.stream-viewport {
-  height: 320px;
+.library-header {
+  margin-bottom: 0;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-pink);
+  margin-bottom: 4px;
+}
+
+.library-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.library-search input[type="search"] {
+  flex: 1 1 300px;
+  padding: 10px 16px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.library-search input[type="search"]:focus {
+  outline: none;
+  border-color: var(--accent-purple);
+}
+
+/* Groove of the Mood Card */
+.library-mood {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(236, 72, 153, 0.15));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 24px;
+}
+
+.library-mood-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.mood-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+}
+
+.mood-cover {
+  width: 56px;
+  height: 56px;
+  background-color: var(--bg-card-hover);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #000;
+  font-size: 1.5rem;
+  color: var(--accent-cyan);
+  flex-shrink: 0;
 }
 
-.live-badge {
-  background: #ef4444;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  display: inline-block;
-  margin-bottom: 8px;
+.mood-card h4 {
+  font-size: 1.05rem;
+  font-weight: 600;
 }
 
-.stream-chat {
-  display: flex;
-  flex-direction: column;
-  height: 320px;
-}
-
-.chat-messages {
-  flex-grow: 1;
-  overflow-y: auto;
-  margin: 12px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.chat-msg {
+.mood-card p {
   font-size: 0.85rem;
-  background: var(--bg-card-hover);
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
+  color: var(--text-muted);
 }
 
-.chat-input-row {
-  display: flex;
-  gap: 8px;
+.mood-card .btn {
+  margin-left: auto;
 }
 
-.chat-input-row input {
-  flex-grow: 1;
-  background: var(--bg-dark);
-  border: 1px solid var(--border-color);
-  padding: 8px;
-  border-radius: var(--radius-sm);
-  color: var(--text-main);
-}
-
-/* Gaming Grid */
-.gaming-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.gaming-card {
-  text-align: center;
+/* Playlist Rows & Horizontally Scrolled Rows */
+.library-rows {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 28px;
+}
+
+.playlist-row {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.gaming-icon {
-  font-size: 2.5rem;
+.row-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.row-heading h3 {
+  font-size: 1.25rem;
+}
+
+.row-title-input {
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  color: var(--text-main);
+  font-size: 0.85rem;
+}
+
+.playlist-scroller {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scroll-behavior: smooth;
+}
+
+.playlist-card {
+  min-width: 180px;
+  max-width: 200px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.playlist-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-purple);
+  background-color: var(--bg-card-hover);
+}
+
+.add-playlist-card {
+  border: 2px dashed var(--border-color);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.add-playlist-card:hover {
+  border-color: var(--accent-cyan);
+  color: var(--text-main);
+}
+
+/* Subsections & Grids */
+.library-subsection {
+  margin-top: 16px;
+}
+
+.playlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* ==========================================================================
+   Music Discovery & Catalog Styles (Replaces Gaming Grid)
+   ========================================================================== */
+.search-panel {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.section-heading.compact {
+  margin-bottom: 8px;
+}
+
+.search-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 1 1 300px;
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+}
+
+.search-box span {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  margin-right: 8px;
+}
+
+.search-box input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 10px 0;
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.search-box input:focus {
+  outline: none;
+}
+
+.filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter {
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: var(--radius-lg);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter:hover, .filter.active {
+  background-color: var(--accent-purple);
+  border-color: var(--accent-purple);
+  color: #fff;
+}
+
+.demo-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.result-count {
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+/* Catalog / Sample Grid */
+.sample-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.sample-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.2s ease;
+}
+
+.sample-card:hover {
+  border-color: var(--accent-pink);
+}
+
+.sample-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.genre-tag {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card-hover);
+  color: var(--accent-cyan);
+}
+
+/* Stretch Recommendation Band */
+.recommendation-band {
+  background: linear-gradient(180deg, transparent, rgba(124, 58, 237, 0.08));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-top: 32px;
+}
+
+.horizontal-cards {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 12px 0;
 }
 
 /* AUTH MODAL STYLES & FIXES */
