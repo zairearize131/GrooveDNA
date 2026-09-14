@@ -11,6 +11,14 @@ function initSupabase() {
   } else {
     console.error('Supabase CDN library not loaded yet.');
   }
+document.addEventListener('DOMContentLoaded', () => {
+  initSupabase();
+  initAuthUI();
+  initDrumPads();
+  initChat();
+  initCommunitySection(); 
+  checkUserSession();
+});
 }
 
 // Global Auth State
@@ -215,7 +223,146 @@ function playAudioBeep() {
 }
 
 /* ----------------------------------------------------
- * 3. MUSIC LIBRARY & PLAYLIST MANAGER
+ * 3. COMMUNITY FEED & SUPABASE MEDIA PLAYER
+ * ---------------------------------------------------- */
+let currentAudio = null;
+let currentPlayBtn = null;
+
+function initCommunitySection() {
+  initCommunityAudio();
+  initCommunityInteractions();
+}
+
+/**
+ * Handles fetching public audio file URLs from Supabase Storage bucket ('tracks')
+ * and plays/pauses the track on the client.
+ */
+function initCommunityAudio() {
+  const playButtons = document.querySelectorAll('.mini-play, .btn-play');
+
+  playButtons.forEach(button => {
+    button.addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const trackId = btn.getAttribute('data-id') || '4'; // Default track fallback
+      
+      // If clicking the currently playing track button, toggle pause/play
+      if (currentAudio && currentPlayBtn === btn) {
+        if (currentAudio.paused) {
+          currentAudio.play();
+          btn.textContent = '⏸';
+        } else {
+          currentAudio.pause();
+          btn.textContent = '▶';
+        }
+        return;
+      }
+
+      // Stop any existing active track
+      if (currentAudio) {
+        currentAudio.pause();
+        if (currentPlayBtn) currentPlayBtn.textContent = '▶';
+      }
+
+      // Fetch public media URL from Supabase storage bucket named 'tracks'
+      let audioUrl = '';
+      if (supabaseClient) {
+        const { data } = supabaseClient
+          .storage
+          .from('tracks')
+          .getPublicUrl(`track_${trackId}.mp3`);
+          
+        audioUrl = data?.publicUrl;
+      }
+
+      // Fallback synthetic audio if Supabase storage file isn't uploaded yet
+      if (!audioUrl || audioUrl.includes('undefined')) {
+        audioUrl = `https://nzfzcnusmjboykledznh.supabase.co/storage/v1/object/public/tracks/track_${trackId}.mp3`;
+      }
+
+      // Initialize and play new HTML5 Audio object
+      currentAudio = new Audio(audioUrl);
+      currentPlayBtn = btn;
+      
+      btn.textContent = '⏳'; // Loading state indicator
+
+      currentAudio.play().then(() => {
+        btn.textContent = '⏸';
+      }).catch(err => {
+        console.warn('[Supabase Media] Track file not found in storage bucket. Playing synthetic preview note.', err);
+        playAudioBeep(); // Fallback audio sound
+        btn.textContent = '▶';
+        currentAudio = null;
+        currentPlayBtn = null;
+      });
+
+      // Reset button state when audio finishes
+      currentAudio.addEventListener('ended', () => {
+        btn.textContent = '▶';
+        currentAudio = null;
+        currentPlayBtn = null;
+      });
+    });
+  });
+}
+
+/**
+ * Handles client-side interactivity for Likes, Follows, and Challenge joins.
+ */
+function initCommunityInteractions() {
+  // Like Button Toggle
+  const likeBtns = document.querySelectorAll('[data-like]');
+  likeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const isPressed = btn.getAttribute('aria-pressed') === 'true';
+      const countSpan = btn.querySelector('.like-count') || btn.querySelector('span');
+      
+      let count = parseInt(countSpan?.textContent || '0', 10);
+      
+      if (isPressed) {
+        btn.setAttribute('aria-pressed', 'false');
+        if (countSpan) countSpan.textContent = count - 1;
+      } else {
+        btn.setAttribute('aria-pressed', 'true');
+        if (countSpan) countSpan.textContent = count + 1;
+      }
+    });
+  });
+
+  // Follow Button Toggle
+  const followBtns = document.querySelectorAll('[data-follow]');
+  followBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const isFollowing = btn.getAttribute('data-following') === 'true';
+      if (isFollowing) {
+        btn.setAttribute('data-following', 'false');
+        btn.setAttribute('aria-pressed', 'false');
+        btn.textContent = '＋ Follow';
+      } else {
+        btn.setAttribute('data-following', 'true');
+        btn.setAttribute('aria-pressed', 'true');
+        btn.textContent = '✓ Following';
+      }
+    });
+  });
+
+  // Challenge & DNA Match Actions
+  const challengeBtn = document.getElementById('joinChallenge');
+  if (challengeBtn) {
+    challengeBtn.addEventListener('click', () => {
+      alert('Awesome! You have entered this week\'s "Flip the Funk" challenge.');
+    });
+  }
+
+  const dnaMatchBtn = document.getElementById('dnaMatch');
+  if (dnaMatchBtn) {
+    dnaMatchBtn.addEventListener('click', () => {
+      alert('Opening DNA Match breakdown with @Maya...');
+    });
+  }
+}
+
+/* ----------------------------------------------------
+ * 4. MUSIC LIBRARY & PLAYLIST MANAGER
  * ---------------------------------------------------- */
 function initLibrary() {
   const librarySearchInput = document.getElementById('librarySearchInput');
@@ -353,7 +500,7 @@ function initRowTitleSavers() {
 }
 
 /* ----------------------------------------------------
- * 4. MUSIC DISCOVERY & SOUND CATALOG
+ * 5. MUSIC DISCOVERY & SOUND CATALOG
  * ---------------------------------------------------- */
 // Sample Catalog Data
 const sampleCatalog = [
