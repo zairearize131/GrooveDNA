@@ -92,16 +92,26 @@
       </div>
     </section>
 
-    <!-- SECTION 2: SOCIAL FEED & MUSIC DISCOVERY -->
-    <section id="feed" class="app-section">
-      <div class="section-header">
-        <h2>Community Discover Feed</h2>
-        <p class="section-subtitle">Listen, sample, like, and comment on tracks produced by creators worldwide.</p>
+    <!-- SECTION 2: SOCIAL FEED & COMMUNITY GROOVES -->
+    <section id="feed" class="app-section community-section">
+      <div class="section-header section-heading">
+        <div>
+          <p class="eyebrow">CONNECT</p>
+          <h2>Community grooves</h2>
+          <p class="section-subtitle">
+            Follow creators, share ideas, remix beats, listen, sample, and join challenges.
+          </p>
+        </div>
+        <button class="btn secondary" id="challengeBtn" type="button">
+          Weekly Challenge
+        </button>
       </div>
 
-      <div class="feed-container" id="feed-container">
-        <!-- Feed Item Card -->
-        <div class="card feed-item" data-track-id="1">
+      <!-- COMMUNITY CONTENT GRID -->
+      <div class="community-grid feed-container" id="feed-container">
+
+        <!-- ORIGINAL INDEX FEED TRACK CARD -->
+        <article class="card feed-item post-card panel" data-track-id="1">
           <div class="feed-header">
             <div class="author-info">
               <div class="avatar">DJ</div>
@@ -110,28 +120,157 @@
                 <span class="track-date">2 hours ago</span>
               </div>
             </div>
-            <button class="btn outline small btn-follow">+ Follow</button>
+            <button class="btn outline small btn-follow" data-follow data-following="false" aria-pressed="false">+ Follow</button>
           </div>
 
-          <div class="feed-body">
+          <div class="feed-body post-body">
             <h3 class="track-title">Cybernetic Synthwave Loop #4</h3>
             <p class="track-desc">Created with Groove Studio preset #2. Free to sample and remix!</p>
-            <div class="audio-player-mock">
-              <button class="btn-play">▶ Play Track</button>
+            <div class="audio-player-mock post-player">
+              <button class="btn-play mini-play" type="button" aria-label="Play Cybernetic Synthwave Loop">▶</button>
               <div class="waveform-bar"></div>
               <span class="duration">0:45</span>
             </div>
           </div>
 
-          <div class="feed-footer">
-            <button class="action-btn btn-like">❤️ <span class="like-count">42</span> Likes</button>
-            <button class="action-btn btn-comment">💬 <span class="comment-count">8</span> Comments</button>
-            <button class="action-btn btn-sample">🎛️ Sample into Studio</button>
+          <div class="feed-footer post-actions">
+            <button class="action-btn btn-like" type="button" data-like aria-label="Like this post" aria-pressed="false">
+              ❤️ <span class="like-count">42</span>
+            </button>
+            <button class="action-btn btn-comment" type="button" data-comment aria-label="View comments">
+              💬 <span class="comment-count">8</span>
+            </button>
+            <button class="action-btn btn-sample" type="button" data-remix>🎛️ Sample into Studio</button>
+          </div>
+        </article>
+
+        <!-- CREATOR POST (from community.html) -->
+        <article class="post-card panel card feed-item">
+          <div class="avatar" aria-hidden="true">
+            JG
+          </div>
+
+          <div class="post-body feed-body">
+            <div class="user-line author-info">
+              <strong>@JayGrooves</strong>
+              <span class="muted track-date">2h ago • Funk</span>
+            </div>
+
+            <h3 class="track-title">
+              Found a bass groove that changed the whole beat.
+            </h3>
+
+            <div class="post-player audio-player-mock">
+              <button
+                class="mini-play btn-play"
+                type="button"
+                aria-label="Preview Funky Bass Experiment"
+                data-preview
+                data-id="4"
+              >
+                ▶
+              </button>
+              <span>Funky Bass Experiment</span>
+              <span class="duration">01:12</span>
+            </div>
+
+            <div class="post-actions feed-footer">
+              <button
+                class="action-btn"
+                type="button"
+                data-like
+                aria-label="Like this post"
+                aria-pressed="false"
+              >
+                ♡ <span>124</span>
+              </button>
+
+              <button
+                class="action-btn"
+                type="button"
+                data-comment
+                aria-label="View comments"
+              >
+                💬 <span>31</span>
+              </button>
+
+              <button class="action-btn" type="button" data-remix>
+                ↻ Remix
+              </button>
+
+              <button
+                class="btn outline small"
+                type="button"
+                data-follow
+                data-following="false"
+                aria-pressed="false"
+              >
+                ＋ Follow
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- WEEKLY CHALLENGE CARD (from community.html) -->
+        <article class="challenge-card panel card">
+          <p class="eyebrow">WEEKLY CHALLENGE</p>
+          <h3>Flip the Funk</h3>
+          <p>
+            Build an original instrumental around this week's approved source material.
+          </p>
+
+          <div class="challenge-stats">
+            <span>🔥 438 entries</span>
+            <span>⏱ 5 days left</span>
+          </div>
+
+          <button class="btn primary" id="joinChallenge" type="button">
+            Join Challenge
+          </button>
+        </article>
+
+      </div>
+
+      <!-- SOCIAL MATCH & ACTIVITY GRID (from community.html) -->
+      <div class="social-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px;">
+        
+        <!-- DNA MATCH -->
+        <div class="panel match-card card">
+          <div>
+            <p class="eyebrow">NEW MATCH</p>
+            <h3>You + Maya = 89%</h3>
+            <p>
+              You share 7 favorite artists and a strong love for rhythmic soul.
+            </p>
+          </div>
+          <button class="btn secondary" id="dnaMatch" type="button" style="margin-top: 12px;">
+            View DNA Match
+          </button>
+        </div>
+
+        <!-- FRIEND ACTIVITY -->
+        <div class="panel activity-card card">
+          <p class="eyebrow">FRIEND ACTIVITY</p>
+
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+            <span class="avatar mini" aria-hidden="true">AM</span>
+            <span>
+              <strong>@AriMade</strong> saved <b>Velvet Keys</b>
+            </span>
+            <small class="muted" style="margin-left: auto;">14m ago</small>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+            <span class="avatar mini" aria-hidden="true">KL</span>
+            <span>
+              <strong>@KLeo</strong> started <b>Midnight Drive</b>
+            </span>
+            <small class="muted" style="margin-left: auto;">1h ago</small>
           </div>
         </div>
+
       </div>
     </section>
-
 <!-- SECTION 3: MUSIC LIBRARY & PLAYLISTS -->
 <section id="library" class="app-section library-page">
   <div class="section-header library-header">
