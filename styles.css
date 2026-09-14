@@ -922,4 +922,190 @@ body {
   border-top: 1px solid var(--border-color);
   color: var(--text-muted);
   font-size: 0.85rem;
+} 
+
+/* =========================================================
+   BEAT LAB & GROOVE STUDIO WORKSTATION EXTENSION
+   ========================================================= */
+
+/* Beat Modes Header Selector */
+.beat-modes {
+  display: flex;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+}
+
+.beat-mode.active {
+  background-color: var(--accent-purple);
+  color: #fff;
+  border-color: var(--accent-purple);
+}
+
+/* Master Toolbar Controls */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  background-color: var(--bg-card-hover);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.lab-toolbar .fader-group input[type="range"] {
+  accent-color: var(--accent-purple);
+}
+
+.toggle-label input[type="checkbox"] {
+  accent-color: var(--accent-pink);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Drum Pad Grid & Key Badges */
+.drum-pad {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 85px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border-color);
+  background: var(--bg-card-hover);
+  color: var(--text-main);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.drum-pad .pad-icon {
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+  color: var(--accent-cyan);
+}
+
+.drum-pad span:last-child {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.drum-pad:hover {
+  border-color: var(--accent-purple);
+  background-color: var(--bg-card);
+}
+
+.drum-pad:active, .drum-pad.active {
+  background-color: var(--accent-pink);
+  border-color: #ffffff;
+  transform: scale(0.96);
+  box-shadow: 0 0 15px rgba(236, 72, 153, 0.6);
+}
+
+/* Pattern Step Sequencer */
+.drum-sequencer {
+  margin-top: 20px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+}
+
+.drum-step-grid {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 8px 0;
+}
+
+.step-node {
+  flex: 1;
+  min-width: 28px;
+  height: 36px;
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.step-node:hover {
+  border-color: var(--accent-cyan);
+}
+
+.step-node.active {
+  background-color: var(--accent-cyan);
+  border-color: #ffffff;
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.5);
+}
+
+/* Instrument Browser Sidebar */
+.instrument-browser {
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--accent-pink);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+/* Multi-Track Timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timeline-ruler {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 6px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card-hover);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.track span {
+  font-weight: 700;
+  font-size: 0.8rem;
+  width: 70px;
+  color: var(--accent-cyan);
+}
+
+.track-lane {
+  flex-grow: 1;
+  height: 28px;
+  background: var(--bg-dark);
+  border-radius: 4px;
+  border: 1px dashed var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.track-block {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  background-color: var(--accent-purple);
+  border-radius: 3px;
+  opacity: 0.85;
 }
