@@ -838,7 +838,7 @@ async function handleAudioUpload() {
 }
 
 /* ----------------------------------------------------
- * 4. INDIVIDUAL USER PROFILE LOGIC & SUPABASE MEDIA
+ * 6. INDIVIDUAL USER PROFILE LOGIC & SUPABASE MEDIA
  * ---------------------------------------------------- */
 let currentProfileAudio = null;
 
