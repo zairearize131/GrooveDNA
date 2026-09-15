@@ -19,18 +19,27 @@
       </a>
 
 <nav class="nav-links">
-  <a href="#creation" class="nav-link active">Studio</a>
-  <a href="#feed" class="nav-link">Feed</a>
-  <a href="#discover" class="nav-link">Discover</a>
-  <a href="#library" class="nav-link">Library</a>
-  <a herf="#profile" class="nav-link">Profile</a>
+  <a href="#studio" class="nav-link active" data-target="studio-section">Studio</a>
+  <a href="#feed" class="nav-link" data-target="feed-section">Feed</a>
+  <a href="#discover" class="nav-link" data-target="discover-section">Discover</a>
+  <a href="#library" class="nav-link" data-target="library-section">Library</a>
+  <a herf="#profile" class="nav-link" data-target="profile-section">Profile</a>
 </nav>
-     
+
       <div class="user-actions">
         <a href="#auth-modal" class="btn secondary" id="btn-signin-nav">Sign In</a>
         <a href="#auth-modal" class="btn primary" id="btn-signup-nav">Create Account</a>
-        
-        <!-- User Profile Dropdown (Shown when logged in) -->
+ 
+  <!-- Views / Sections -->
+      <main>
+        <section id="studio-section" class="page-section">...</section>
+        <section id=feed-section" class="page-section">...</section>
+        <section id=discover-section" class="page-section">...</section>
+        <section id=library-section" class="page-section">...</section>
+        <section id=profile-section" class="page-section">...</section>
+      </main>
+     
+  <!-- User Profile Dropdown (Shown when logged in) -->
         <div id="user-profile-menu" class="user-profile-menu hidden">
           <span id="user-email-display" class="user-email">user@example.com</span>
           <button id="btn-signout" class="btn outline small">Sign Out</button>
