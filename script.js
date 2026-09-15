@@ -14,7 +14,7 @@ function initSupabase() {
 }
 
 // Global Auth State
-let currentAuthMode = 'signup'; // 'signup' or 'login'
+let currentAuthMode = 'signup'; 'signup' or 'login'
 document.addEventListener('DOMContentLoaded', () => {
   initSupabase();
   initAuthUI();
@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initSPARouter();
   checkUserSession();
 });
-}
 
 /* ----------------------------------------------------
  * 1. AUTHENTICATION & MODAL TOGGLE LOGIC
@@ -339,40 +338,29 @@ function initBeatLabControls() {
     });
   }
 
-  if (drumClearBtn) {
-    drumClearBtn.addEventListener('click', () => {
-      recordedPattern = [];
-      if (drumPatternStatus) drumPatternStatus.textContent = 'Pattern cleared.';
-    });
-  }
-
-  if (drumPatternPlay) {
-    drumPatternPlay.addEventListener('click', () => {
-      if (recordedPattern.length === 0) {
-        alert('No recorded pattern found. Tap Record and play pads first!');
-        return;
-      }
-      playRecordedPattern();
-    });
-  }
-
-  if (drumPatternStop) {
-    drumPatternStop.addEventListener('click', () => {
-      if (patternPlaybackInterval) clearTimeout(patternPlaybackInterval);
-      if (drumPatternStatus) drumPatternStatus.textContent = 'Playback stopped.';
-    });
-  }
-}
+  // Global tracking array for pattern playback timeouts
+let activePatternTimeouts = [];
 
 function playRecordedPattern() {
   const drumPatternStatus = document.getElementById('drumPatternStatus');
   if (drumPatternStatus) drumPatternStatus.textContent = 'Playing recorded pattern...';
 
+  // Clear any ongoing playback before starting a new run
+  stopRecordedPattern();
+
   recordedPattern.forEach(note => {
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       triggerPad(note.pad);
     }, note.time);
+    
+    activePatternTimeouts.push(timeoutId);
   });
+}
+
+function stopRecordedPattern() {
+  // Clear all pending scheduled notes
+  activePatternTimeouts.forEach(id => clearTimeout(id));
+  activePatternTimeouts = [];
 }
 
 /* ----------------------------------------------------
@@ -381,7 +369,7 @@ function playRecordedPattern() {
 let currentAudio = null;
 let currentPlayBtn = null;
 
-function initCommunitySection() {
+function initCommunity();
   initCommunityAudio();
   initCommunityInteractions();
 }
@@ -936,31 +924,31 @@ function initProfileHeading() {
  * Search and load Profile Anthem using Supabase Storage ('tracks' bucket)
  */
 function initProfileMusicSearch() {
-  const addMusicBtn = document.getElementById('addProfileMusicBtn');
-  const musicSearchDiv = document.getElementById('profileMusicSearch');
-  const searchBtn = document.getElementById('profileMusicSearchBtn');
-  const musicInput = document.getElementById('profileMusicInput');
-  const resultsDiv = document.getElementById('profileMusicResults');
+  const addAnthemBtn = document.getElementById('addProfileMusicBtn');
+  const anthemSearchSection = document.getElementById('profileMusicSearch');
+  const executeSearchBtn = document.getElementById('profileMusicSearchBtn');
+  const anthemInputElem = document.getElementById('profileMusicInput');
+  const anthemResultsContainer = document.getElementById('profileMusicResults');
 
-  if (addMusicBtn && musicSearchDiv) {
-    addMusicBtn.addEventListener('click', () => {
-      musicSearchDiv.hidden = !musicSearchDiv.hidden;
+  if (addAnthemBtn && anthemSearchSection) {
+    addAnthemBtn.addEventListener('click', () => {
+      anthemSearchSection.hidden = !anthemSearchSection.hidden;
     });
   }
 
-  if (searchBtn && musicInput) {
-    searchBtn.addEventListener('click', () => {
-      const query = musicInput.value.trim().toLowerCase();
-      if (!query) return;
-      searchSupabaseMusic(query, resultsDiv);
+  if (executeSearchBtn && anthemInputElem) {
+    executeSearchBtn.addEventListener('click', () => {
+      const searchQuery = anthemInputElem.value.trim().toLowerCase();
+      if (!searchQuery) return;
+      searchSupabaseMusic(searchQuery, anthemResultsContainer);
     });
   }
 }
 
-async function searchSupabaseMusic(query, resultsContainer) {
-  if (!resultsContainer) return;
+async function searchSupabaseMusic(queryText, targetContainer) {
+  if (!targetContainer) return;
 
-  resultsContainer.innerHTML = '<div class="profile-empty-state">Searching Supabase media...</div>';
+  targetContainer.innerHTML = '<div class="profile-empty-state">Searching Supabase media...</div>';
 
   let tracks = [];
 
@@ -968,7 +956,7 @@ async function searchSupabaseMusic(query, resultsContainer) {
   if (supabaseClient) {
     const { data, error } = await supabaseClient.storage.from('tracks').list();
     if (!error && data) {
-      tracks = data.filter(file => file.name.toLowerCase().includes(query));
+      tracks = data.filter(file => file.name.toLowerCase().includes(queryText));
     }
   }
 
@@ -976,16 +964,16 @@ async function searchSupabaseMusic(query, resultsContainer) {
   if (tracks.length === 0) {
     const defaultSamples = ['kick', 'snare', 'synth1', 'synth2', 'bass', 'vocal'];
     tracks = defaultSamples
-      .filter(s => s.includes(query))
+      .filter(s => s.includes(queryText))
       .map(s => ({ name: `${s}.mp3` }));
   }
 
   if (tracks.length === 0) {
-    resultsContainer.innerHTML = `<div class="profile-empty-state">No track matching "${query}" found.</div>`;
+    targetContainer.innerHTML = `<div class="profile-empty-state">No track matching "${queryText}" found.</div>`;
     return;
   }
 
-  resultsContainer.innerHTML = '';
+  targetContainer.innerHTML = '';
   tracks.forEach(track => {
     const fileName = track.name.replace('.mp3', '');
     const trackUrl = `${SUPABASE_URL}/storage/v1/object/public/tracks/${track.name}`;
@@ -1002,7 +990,7 @@ async function searchSupabaseMusic(query, resultsContainer) {
       setProfileAnthem(fileName, trackUrl);
     });
 
-    resultsContainer.appendChild(card);
+    targetContainer.appendChild(card);
   });
 }
 
