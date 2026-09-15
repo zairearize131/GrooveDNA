@@ -455,7 +455,7 @@ function initCommunityInteractions() {
   likeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const isPressed = btn.getAttribute('aria-pressed') === 'true';
-      const countSpan = btn.querySelector('.like-count') || btn.querySelector('span');
+      const countSpan = btn.querySelector('.like-count') || btn.querySelector('span'); 
       
       let count = parseInt(countSpan?.textContent || '0', 10);
       
