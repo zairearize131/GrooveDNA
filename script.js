@@ -14,7 +14,7 @@ function initSupabase() {
 }
 
 // Global Auth State
-let currentAuthMode = 'signup'; 'signup' or 'login'
+let currentAuthMode = 'signup'; // 'signup' or 'login'
 document.addEventListener('DOMContentLoaded', () => {
   initSupabase();
   initAuthUI();
