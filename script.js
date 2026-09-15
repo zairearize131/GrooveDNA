@@ -1066,3 +1066,101 @@ function initProfileLocation() {
     });
   }
 }
+
+/* ==========================================================================
+ * 7. SINGLE PAGE APPLICATION (SPA) ROUTER & STATE MANAGEMENT
+ * ========================================================================== */
+
+/**
+ * Switch active views/sections in the app
+ * @param {string} targetSectionId - The ID of the section element to make active (e.g., 'studio-section', 'feed-section')
+ */
+function navigateToSection(targetSectionId) {
+  const sections = document.querySelectorAll('.page-section');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  if (!sections.length) return;
+
+  // 1. Hide all page sections
+  sections.forEach((section) => {
+    section.style.display = 'none';
+    section.classList.remove('active');
+  });
+
+  // 2. Locate and display the selected target section
+  const activeSection = document.getElementById(targetSectionId);
+  if (activeSection) {
+    activeSection.style.display = 'block';
+    activeSection.classList.add('active');
+  }
+
+  // 3. Sync active state on navigation buttons/links
+  navLinks.forEach((link) => {
+    const route = link.getAttribute('data-target');
+    if (route === targetSectionId) {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
+  });
+
+  // 4. Update browser URL history state without reloading the page
+  const routeName = targetSectionId.replace('-section', '');
+  window.history.pushState({ sectionId: targetSectionId }, '', `#${routeName}`);
+}
+
+/**
+ * Initializes click handlers for navigation links and sets up browser back/forward buttons
+ */
+function initSPARouter() {
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  // Bind click events to nav links with data-target attributes
+  navLinks.forEach((link) => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const targetSectionId = link.getAttribute('data-target');
+      if (targetSectionId) {
+        navigateToSection(targetSectionId);
+      }
+    });
+  });
+
+  // Handle browser Back/Forward navigation buttons (popstate)
+  window.addEventListener('popstate', (event) => {
+    if (event.state && event.state.sectionId) {
+      navigateToSection(event.state.sectionId);
+    } else {
+      // Default fallback if state is empty (e.g., initial load route or default view)
+      parseInitialRoute();
+    }
+  });
+
+  // Parse initial route on page load based on URL hash
+  parseInitialRoute();
+}
+
+/**
+ * Helper to check URL hash on initial page load (e.g., domain.com/#feed)
+ */
+function parseInitialRoute() {
+  const hash = window.location.hash.replace('#', '');
+  if (hash) {
+    const matchingSection = document.getElementById(`${hash}-section`);
+    if (matchingSection) {
+      navigateToSection(`${hash}-section`);
+      return;
+    }
+  }
+
+  // Default section if no hash or invalid route provided
+  const defaultSection = document.querySelector('.page-section');
+  if (defaultSection) {
+    navigateToSection(defaultSection.id);
+  }
+}
+
+// Automatically bind router once DOM content is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+  initSPARouter();
+});
