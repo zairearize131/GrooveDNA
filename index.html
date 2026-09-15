@@ -10,48 +10,61 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  
   <!-- HEADER & NAVIGATION -->
-  <header class="header">
-    <div class="header-container">
-      <a href="#" class="logo">
-        <span class="logo-icon">⚡</span>
-        <span class="logo-text">Groove<strong>DNA</strong></span>
-      </a>
+<header class="header">
+  <div class="header-container">
+    <a href="#" class="logo">
+      <span class="logo-icon">⚡</span>
+      <span class="logo-text">Groove<strong>DNA</strong></span>
+    </a>
 
-<nav class="nav-links">
-  <a href="#studio" class="nav-link active" data-target="studio-section">Studio</a>
-  <a href="#feed" class="nav-link" data-target="feed-section">Feed</a>
-  <a href="#discover" class="nav-link" data-target="discover-section">Discover</a>
-  <a href="#library" class="nav-link" data-target="library-section">Library</a>
-  <a herf="#profile" class="nav-link" data-target="profile-section">Profile</a>
-</nav>
+    <nav class="nav-links">
+      <a href="#studio" class="nav-link active" data-target="studio-section">Studio</a>
+      <a href="#feed" class="nav-link" data-target="feed-section">Feed</a>
+      <a href="#discover" class="nav-link" data-target="discover-section">Discover</a>
+      <a href="#library" class="nav-link" data-target="library-section">Library</a>
+      <a href="#profile" class="nav-link" data-target="profile-section">Profile</a>
+    </nav>
 
-      <div class="user-actions">
-        <a href="#auth-modal" class="btn secondary" id="btn-signin-nav">Sign In</a>
-        <a href="#auth-modal" class="btn primary" id="btn-signup-nav">Create Account</a>
- 
-  <!-- Views / Sections -->
-      <main>
-        <section id="studio-section" class="page-section">...</section>
-        <section id=feed-section" class="page-section">...</section>
-        <section id=discover-section" class="page-section">...</section>
-        <section id=library-section" class="page-section">...</section>
-        <section id=profile-section" class="page-section">...</section>
-      </main>
-     
-  <!-- User Profile Dropdown (Shown when logged in) -->
-        <div id="user-profile-menu" class="user-profile-menu hidden">
-          <span id="user-email-display" class="user-email">user@example.com</span>
-          <button id="btn-signout" class="btn outline small">Sign Out</button>
-        </div>
+    <div class="user-actions">
+      <a href="#auth-modal" class="btn secondary" id="btn-signin-nav">Sign In</a>
+      <a href="#auth-modal" class="btn primary" id="btn-signup-nav">Create Account</a>
+
+      <!-- User Profile Dropdown -->
+      <div id="user-profile-menu" class="user-profile-menu hidden">
+        <span id="user-email-display" class="user-email">user@example.com</span>
+        <button id="btn-signout" class="btn outline small">Sign Out</button>
       </div>
     </div>
-  </header>
+  </div>
+</header>
 
-  <!-- MAIN APPLICATION CONTENT -->
-  <main class="main-container">
+<!-- MAIN APPLICATION CONTENT -->
+<main class="main-container">
+  <!-- Ensure every page section includes class="app-section page-section" -->
+  <section id="studio-section" class="app-section page-section">
+    <!-- Studio / Beatlab content... -->
+  </section>
+
+  <section id="feed-section" class="app-section page-section" style="display: none;">
+    <!-- Feed content... -->
+  </section>
+
+  <section id="library-section" class="app-section page-section" style="display: none;">
+    <!-- Library content... -->
+  </section>
+
+  <section id="discover-section" class="app-section page-section" style="display: none;">
+    <!-- Discover content... -->
+  </section>
+
+  <section id="profile-section" class="app-section page-section" style="display: none;">
+    <!-- Profile content... -->
+  </section>
+  </main>
     
-    <!-- SECTION 1: GROOVE STUDIO & BEAT LAB WORKSTATION -->
+  <!-- SECTION 1: GROOVE STUDIO & BEAT LAB WORKSTATION -->
     <section id="studio-section" class="page-section">
       <div class="section-header section-heading">
         <div>
