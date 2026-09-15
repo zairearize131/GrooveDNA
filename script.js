@@ -1093,14 +1093,14 @@ function navigateToSection(targetSectionId) {
     section.classList.remove('active');
   });
 
-  // 2. Locate and display the selected target section
+  // 2. Locate and display target section
   const activeSection = document.getElementById(targetSectionId);
   if (activeSection) {
     activeSection.style.display = 'block';
     activeSection.classList.add('active');
   }
 
-  // 3. Sync active state on navigation buttons/links
+  // 3. Highlight current nav button
   navLinks.forEach((link) => {
     const route = link.getAttribute('data-target');
     if (route === targetSectionId) {
@@ -1110,59 +1110,8 @@ function navigateToSection(targetSectionId) {
     }
   });
 
-  // 4. Update browser URL history state without reloading the page
+  // 4. Update URL Hash
   const routeName = targetSectionId.replace('-section', '');
   window.history.pushState({ sectionId: targetSectionId }, '', `#${routeName}`);
-}
-
-/**
- * Initializes click handlers for navigation links and sets up browser back/forward buttons
- */
-function initSPARouter() {
-  const navLinks = document.querySelectorAll('.nav-link');
-
-  // Bind click events to nav links with data-target attributes
-  navLinks.forEach((link) => {
-    link.addEventListener('click', (event) => {
-      event.preventDefault();
-      const targetSectionId = link.getAttribute('data-target');
-      if (targetSectionId) {
-        navigateToSection(targetSectionId);
-      }
-    });
-  });
-
-  // Handle browser Back/Forward navigation buttons (popstate)
-  window.addEventListener('popstate', (event) => {
-    if (event.state && event.state.sectionId) {
-      navigateToSection(event.state.sectionId);
-    } else {
-      // Default fallback if state is empty (e.g., initial load route or default view)
-      parseInitialRoute();
-    }
-  });
-
-  // Parse initial route on page load based on URL hash
-  parseInitialRoute();
-}
-
-/**
- * Helper to check URL hash on initial page load (e.g., domain.com/#feed)
- */
-function parseInitialRoute() {
-  const hash = window.location.hash.replace('#', '');
-  if (hash) {
-    const matchingSection = document.getElementById(`${hash}-section`);
-    if (matchingSection) {
-      navigateToSection(`${hash}-section`);
-      return;
-    }
-  }
-
-  // Default section if no hash or invalid route provided
-  const defaultSection = document.querySelector('.page-section');
-  if (defaultSection) {
-    navigateToSection(defaultSection.id);
-  }
 }
 
