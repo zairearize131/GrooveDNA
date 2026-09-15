@@ -43,7 +43,7 @@
   <main class="main-container">
     
     <!-- SECTION 1: GROOVE STUDIO & BEAT LAB WORKSTATION -->
-    <section id="creation" class="app-section beatlab-section">
+    <section id="creation" class="app-section beatlab-section page-section">
       <div class="section-header section-heading">
         <div>
           <p class="eyebrow">CREATE</p>
@@ -236,7 +236,7 @@
     </section>
 
     <!-- SECTION 2: SOCIAL FEED & COMMUNITY GROOVES -->
-    <section id="feed" class="app-section community-section">
+    <section id="feed" class="app-section community-section page-section" style="display: none;"> 
       <div class="section-header section-heading">
         <div>
           <p class="eyebrow">CONNECT</p>
@@ -415,7 +415,7 @@
       </div>
     </section>
 <!-- SECTION 3: MUSIC LIBRARY & PLAYLISTS -->
-<section id="library" class="app-section library-page">
+<section id="library" class="app-section library-page page-section" style="display: none;">
   <div class="section-header library-header">
     <p class="eyebrow">YOUR MUSIC • YOUR GROOVE</p>
     <h2>Library</h2>
@@ -507,7 +507,7 @@
 </section>
 
     <!-- SECTION 4: MUSIC DISCOVERY & CATALOG -->
-<section id="discover" class="app-section">
+<section id="discover" class="app-section page-section" style="display: none;">
   <!-- SEARCH PANEL -->
   <div class="search-panel">
     <div class="section-heading compact">
@@ -617,7 +617,7 @@
   </footer> 
 
     <!-- SECTION 5: INDIVIDUAL USER PROFILE -->
-    <section id="profile" class="app-section profile-page">
+    <section id="profile" class="app-section profile-page page-section" style="display: none;">
       <div class="section-header">
         <h2>User Profile</h2>
         <p class="section-subtitle">Manage your personal details, avatar, profile track, location settings, and stats.</p>
@@ -732,6 +732,59 @@
         </div>
       </section>
     </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
+<!-- SPA NAVIGATION ROUTER -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const navLinks = document.querySelectorAll('.nav-links .nav-link');
+      const sections = document.querySelectorAll('.app-section');
+
+      function switchPage(targetId) {
+        // 1. Hide all page sections
+        sections.forEach(section => {
+          section.style.display = 'none';
+        });
+
+        // 2. Remove active highlight from all nav buttons
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+        });
+
+        // 3. Display target section if found
+        const targetSection = document.querySelector(targetId);
+        if (targetSection) {
+          targetSection.style.display = 'block';
+        }
+
+        // 4. Highlight current navigation link
+        const activeLink = document.querySelector(`.nav-links a[href="${targetId}"]`);
+        if (activeLink) {
+          activeLink.classList.add('active');
+        }
+      }
+
+      // Add click listener to header navigation links
+      navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          const targetId = link.getAttribute('href');
+          if (targetId && targetId.startsWith('#')) {
+            e.preventDefault();
+            switchPage(targetId);
+            window.location.hash = targetId; // Updates browser URL hash
+          }
+        });
+      });
+
+      // Handle direct URL hash landings (e.g. user opens myapp.com/#profile)
+      if (window.location.hash) {
+        switchPage(window.location.hash);
+      }
+    });
+  </script>
 
   <script src="script.js"></script>
 </body>
