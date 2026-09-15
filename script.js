@@ -12,30 +12,21 @@ function initSupabase() {
     console.error('Supabase CDN library not loaded yet.');
   }
 }
+
+// Global Auth State
+let currentAuthMode = 'signup'; // 'signup' or 'login'
 document.addEventListener('DOMContentLoaded', () => {
   initSupabase();
   initAuthUI();
   initDrumPads();
-  initCommunitySection(); 
-  initLibrarySection();
-  initDiscoverSection();
-  initProfileSession();
+  initCommunity(); 
+  initLibrary();
+  initDiscover();
+  initProfile();
   initSPARouter();
   checkUserSession();
 });
 }
-
-// Global Auth State
-let currentAuthMode = 'signup'; // 'signup' or 'login'
-
-document.addEventListener('DOMContentLoaded', () => {
-  initSupabase();
-  initAuthUI();
-  initDrumPads();
-  initLibrary();
-  initDiscover();
-  checkUserSession();
-});
 
 /* ----------------------------------------------------
  * 1. AUTHENTICATION & MODAL TOGGLE LOGIC
@@ -1163,7 +1154,3 @@ function parseInitialRoute() {
   }
 }
 
-// Automatically bind router once DOM content is fully loaded
-document.addEventListener('DOMContentLoaded', () => {
-  initSPARouter();
-});
