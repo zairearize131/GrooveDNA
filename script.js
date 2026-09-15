@@ -15,6 +15,7 @@ function initSupabase() {
 
 // Global Auth State
 let currentAuthMode = 'signup'; // 'signup' or 'login'
+
 document.addEventListener('DOMContentLoaded', () => {
   initSupabase();
   initAuthUI();
@@ -158,7 +159,7 @@ async function checkUserSession() {
  * ---------------------------------------------------- */
 let isRecordingPattern = false;
 let recordedPattern = [];
-let patternPlaybackInterval = null;
+let activePatternTimeouts = [];
 let patternStartTime = 0;
 
 function initDrumPads() {
@@ -258,7 +259,7 @@ function playSupabaseAudioSample(soundName) {
   });
 }
 
-function playAudioBeep(soundName) {
+function playAudioBeep(soundName = 'kick') {
   try {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return;
@@ -338,8 +339,31 @@ function initBeatLabControls() {
     });
   }
 
-  // Global tracking array for pattern playback timeouts
-let activePatternTimeouts = [];
+  if (drumClearBtn) {
+    drumClearBtn.addEventListener('click', () => {
+      stopRecordedPattern();
+      recordedPattern = [];
+      if (drumPatternStatus) drumPatternStatus.textContent = 'Recorded pattern cleared.';
+    });
+  }
+
+  if (drumPatternPlay) {
+    drumPatternPlay.addEventListener('click', () => {
+      if (recordedPattern.length === 0) {
+        if (drumPatternStatus) drumPatternStatus.textContent = 'No pattern recorded to play.';
+        return;
+      }
+      playRecordedPattern();
+    });
+  }
+
+  if (drumPatternStop) {
+    drumPatternStop.addEventListener('click', () => {
+      stopRecordedPattern();
+      if (drumPatternStatus) drumPatternStatus.textContent = 'Playback stopped.';
+    });
+  }
+}
 
 function playRecordedPattern() {
   const drumPatternStatus = document.getElementById('drumPatternStatus');
@@ -369,7 +393,7 @@ function stopRecordedPattern() {
 let currentAudio = null;
 let currentPlayBtn = null;
 
-function initCommunity();
+function initCommunity() {
   initCommunityAudio();
   initCommunityInteractions();
 }
@@ -417,7 +441,7 @@ function initCommunityAudio() {
 
       // Fallback synthetic audio if Supabase storage file isn't uploaded yet
       if (!audioUrl || audioUrl.includes('undefined')) {
-        audioUrl = `https://nzfzcnusmjboykledznh.supabase.co/storage/v1/object/public/tracks/track_${trackId}.mp3`;
+        audioUrl = `${SUPABASE_URL}/storage/v1/object/public/tracks/track_${trackId}.mp3`;
       }
 
       // Initialize and play new HTML5 Audio object
