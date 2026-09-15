@@ -11,13 +11,16 @@ function initSupabase() {
   } else {
     console.error('Supabase CDN library not loaded yet.');
   }
+}
 document.addEventListener('DOMContentLoaded', () => {
   initSupabase();
   initAuthUI();
   initDrumPads();
-  initChat();
   initCommunitySection(); 
+  initLibrarySection();
+  initDiscoverSection();
   initProfileSession();
+  initSPARouter();
   checkUserSession();
 });
 }
