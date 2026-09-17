@@ -674,6 +674,29 @@
         <input type="file" id="profilePhotoInput" accept="image/*" hidden>
         <input type="file" id="profileCameraInput" accept="image/*" capture="user" hidden>
 
+        <!-- Take Photo Button -->
+<button type="button" class="btn secondary" id="takePhotoBtn">📷 Take Photo</button>
+
+<!-- LIVE CAMERA CAPTURE MODAL -->
+<div id="camera-modal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 2000;">
+  <div class="modal card" style="max-width: 450px; width: 90%; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="margin: 0;">Camera Stream</h3>
+      <button type="button" class="btn ghost small" id="closeCameraBtn" style="font-size: 1.2rem; background: none; border: none; color: var(--text-main); cursor: pointer;">&times;</button>
+    </div>
+
+    <!-- Live Video Element -->
+    <div style="width: 100%; height: 280px; background: #000; border-radius: var(--radius-sm); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+      <video id="cameraStream" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+      <button type="button" class="btn secondary full-width" id="cancelCameraBtn">Cancel</button>
+      <button type="button" class="btn primary full-width" id="captureFrameBtn">Snap Photo</button>
+    </div>
+  </div>
+</div>
+
         <!-- PROFILE HEADING -->
         <div class="profile-heading-area">
           <label for="profileHeading"><strong>Profile Bio / Heading</strong></label>
