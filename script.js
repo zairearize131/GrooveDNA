@@ -943,10 +943,6 @@ const captureFrameBtn = document.getElementById('captureFrameBtn');
 
 let activeMediaStream = null;
 
-// Open Camera Stream
-if (takePhotoBtn) {
-  takePhotoBtn.addEventListener('click', async () => {
-    try {
       // Request access to webcam video track
       activeMediaStream = await navigator.mediaDevices.getUserMedia({
         video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
