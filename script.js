@@ -999,6 +999,75 @@ function initProfileAvatar() {
   }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  const takePhotoBtn = document.getElementById('takePhotoBtn');
+  const closeCameraBtn = document.getElementById('closeCameraBtn');
+  const captureFrameBtn = document.getElementById('captureFrameBtn');
+  const cameraModal = document.getElementById('cameraModal');
+  const cameraVideo = document.getElementById('cameraVideo');
+  const profileAvatarImage = document.getElementById('profileAvatarImage');
+  const profileAvatarPlaceholder = document.getElementById('profileAvatarPlaceholder');
+
+  let mediaStream = null;
+
+  // Function to open camera
+  async function startCamera() {
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' }, 
+        audio: false 
+      });
+      cameraVideo.srcObject = mediaStream;
+      cameraModal.classList.remove('hidden');
+      cameraModal.setAttribute('aria-hidden', 'false');
+    } catch (err) {
+      console.error('Error accessing camera:', err);
+      alert('Could not access camera. Please check permissions.');
+    }
+  }
+
+  // Function to stop stream and close modal ("X" out)
+  function stopCamera() {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(track => track.stop());
+      mediaStream = null;
+    }
+    cameraVideo.srcObject = null;
+    cameraModal.classList.add('hidden');
+    cameraModal.setAttribute('aria-hidden', 'true');
+  }
+
+  // Event Listeners
+  if (takePhotoBtn) {
+    takePhotoBtn.addEventListener('click', startCamera);
+  }
+
+  // Close / Cancel photo capture when "X" button is pressed
+  if (closeCameraBtn) {
+    closeCameraBtn.addEventListener('click', stopCamera);
+  }
+
+  // Optional: Take snapshot logic
+  if (captureFrameBtn) {
+    captureFrameBtn.addEventListener('click', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = cameraVideo.videoWidth || 640;
+      canvas.height = cameraVideo.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+
+      // Display image in profile avatar
+      if (profileAvatarImage) {
+        profileAvatarImage.src = canvas.toDataURL('image/png');
+        profileAvatarImage.hidden = false;
+        if (profileAvatarPlaceholder) profileAvatarPlaceholder.hidden = true;
+      }
+
+      stopCamera();
+    });
+  }
+});
+
 /**
  * Canvas Image Editing Logic (Filters, Zoom, Center Crop)
  */
