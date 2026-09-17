@@ -1361,3 +1361,17 @@ body {
 .app-section:focus {
   outline: none;
 }
+
+/* Photo Editor Modal & Canvas Controls */
+#photo-edit-modal.active {
+  display: flex !important;
+}
+
+.crop-preview-container canvas {
+  cursor: grab;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.crop-preview-container canvas:active {
+  cursor: grabbing;
+}
