@@ -753,7 +753,50 @@
           </div>
         </div>
       </section>
-    </section>
+    </section> 
+
+  <!-- IMAGE EDITING MODAL FOR CAMERA CAPTURE -->
+  <div id="photo-edit-modal" class="modal-backdrop hidden" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 2000;">
+    <div class="modal card" style="max-width: 500px; width: 90%; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        <h3 style="margin: 0; font-size: 1.2rem;">Edit Profile Photo</h3>
+        <button type="button" class="btn ghost small" id="closePhotoEditBtn" style="font-size: 1.2rem; cursor: pointer; background: none; border: none; color: var(--text-main);">&times;</button>
+      </div>
+
+      <!-- Canvas Preview Container -->
+      <div class="crop-preview-container" style="width: 100%; height: 260px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: var(--radius-sm); position: relative;">
+        <canvas id="photoEditCanvas" style="max-width: 100%; max-height: 100%; object-fit: contain;"></canvas>
+      </div>
+
+      <!-- Interactive Controls -->
+      <div class="edit-controls-grid" style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="fader-group" style="margin: 0;">
+          <label for="editColorFilter" style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+            <span>Color Filter (Hue & Saturation)</span>
+            <span id="filterVal">Normal</span>
+          </label>
+          <input type="range" id="editColorFilter" min="0" max="3" step="1" value="0">
+        </div>
+
+        <div class="fader-group" style="margin: 0;">
+          <label for="editZoom" style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+            <span>Zoom / Scale</span>
+            <span id="zoomVal">1.0x</span>
+          </label>
+          <input type="range" id="editZoom" min="0.5" max="3.0" step="0.1" value="1.0">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 4px;">
+          <button type="button" class="btn secondary small full-width" id="cropSquareBtn">✂️ Crop Center Square</button>
+          <button type="button" class="btn secondary small full-width" id="resetEditBtn">↻ Reset</button>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 4px;">
+        <button type="button" class="btn primary full-width" id="saveEditedPhotoBtn">Done</button>
+      </div>
+    </div>
+  </div>
 
 <!-- SPA NAVIGATION ROUTER -->
   <script>
