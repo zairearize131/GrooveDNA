@@ -42,30 +42,8 @@
 
 <!-- MAIN APPLICATION CONTENT -->
 <main class="main-container">
-  <!-- Ensure every page section includes class="app-section page-section" -->
-  <section id="studio-section" class="app-section page-section">
-    <!-- Studio / Beatlab content... -->
-  </section>
-
-  <section id="feed-section" class="app-section page-section" style="display: none;">
-    <!-- Feed content... -->
-  </section>
-
-  <section id="library-section" class="app-section page-section" style="display: none;">
-    <!-- Library content... -->
-  </section>
-
-  <section id="discover-section" class="app-section page-section" style="display: none;">
-    <!-- Discover content... -->
-  </section>
-
-  <section id="profile-section" class="app-section page-section" style="display: none;">
-    <!-- Profile content... -->
-  </section>
-  </main>
-    
-  <!-- SECTION 1: GROOVE STUDIO & BEAT LAB WORKSTATION -->
-    <section id="studio-section" class="page-section">
+    <!-- SECTION 1: GROOVE STUDIO & BEAT LAB WORKSTATION -->
+    <section id="studio" class="app-section page-section">
       <div class="section-header section-heading">
         <div>
           <p class="eyebrow">CREATE</p>
@@ -174,9 +152,7 @@
                   <button class="btn outline small" id="drumPatternStop" type="button">■ Stop</button>
                 </div>
               </div>
-              <div class="drum-step-grid" id="drumStepGrid" style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px;">
-                <!-- Step sequencer grid nodes injected via JS -->
-              </div>
+              <div class="drum-step-grid" id="drumStepGrid" style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px;"></div>
             </div>
           </div>
 
@@ -309,7 +285,7 @@
           </div>
         </article>
 
-        <!-- CREATOR POST (from community.html) -->
+        <!-- CREATOR POST -->
         <article class="post-card panel card feed-item">
           <div class="avatar" aria-hidden="true">
             JG
@@ -376,7 +352,7 @@
           </div>
         </article>
 
-        <!-- WEEKLY CHALLENGE CARD (from community.html) -->
+        <!-- WEEKLY CHALLENGE CARD -->
         <article class="challenge-card panel card">
           <p class="eyebrow">WEEKLY CHALLENGE</p>
           <h3>Flip the Funk</h3>
@@ -396,7 +372,7 @@
 
       </div>
 
-      <!-- SOCIAL MATCH & ACTIVITY GRID (from community.html) -->
+      <!-- SOCIAL MATCH & ACTIVITY GRID -->
       <div class="social-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px;">
         
         <!-- DNA MATCH -->
@@ -436,6 +412,7 @@
 
       </div>
     </section>
+
 <!-- SECTION 3: MUSIC LIBRARY & PLAYLISTS -->
 <section id="library" class="app-section library-page page-section" style="display: none;">
   <div class="section-header library-header">
@@ -587,9 +564,7 @@
     </div>
 
     <!-- SAMPLE GRID -->
-    <div class="sample-grid" id="sampleGrid" aria-live="polite">
-      <!-- Populated dynamically via JavaScript -->
-    </div>
+    <div class="sample-grid" id="sampleGrid" aria-live="polite"></div>
   </div>
 
   <!-- STRETCH YOUR DNA RECOMMENDATIONS -->
@@ -604,39 +579,6 @@
     <div class="horizontal-cards" id="stretchGrid" aria-live="polite"></div>
   </div>
 </section>
-
-  <!-- AUTHENTICATION MODAL (Fixes missing anchor issue) -->
-  <div id="auth-modal" class="modal-backdrop auth-modal-backdrop">
-    <div class="modal auth-container">
-      <a href="#" class="modal-close" id="modal-close-btn" aria-label="Close modal">&times;</a>
-      
-      <h2 id="auth-modal-title">Create Account</h2>
-      <p id="auth-modal-subtitle" class="muted">Join GrooveDNA to save your tracks and collaborate.</p>
-      
-      <form id="auth-form">
-        <div class="form-group auth-email-group">
-          <label for="auth-email">Email Address</label>
-          <input type="email" id="auth-email" required placeholder="you@example.com" />
-        </div>
-        
-        <div class="form-group auth-password-group">
-          <label for="auth-password">Password</label>
-          <input type="password" id="auth-password" required placeholder="••••••••" />
-        </div>
-        
-        <button type="submit" id="auth-submit-btn" class="btn primary auth-submit full-width">Create Account</button>
-        
-        <p class="auth-toggle-copy">
-          <span id="auth-toggle-text">Already have an account?</span> 
-          <a href="#auth-modal" class="auth-toggle" id="auth-toggle-btn">Sign In</a>
-        </p>
-      </form>
-    </div>
-  </div>
-
-  <footer class="footer">
-    <p>&copy; 2026 GrooveDNA Platform. All rights reserved.</p>
-  </footer> 
 
     <!-- SECTION 5: INDIVIDUAL USER PROFILE -->
     <section id="profile" class="app-section profile-page page-section" style="display: none;">
@@ -672,27 +614,26 @@
         </div>
 
         <input type="file" id="profilePhotoInput" accept="image/*" hidden>
-       
 
-<!-- LIVE PHYSICAL CAMERA STREAM MODAL -->
-<div id="camera-modal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 2000;">
-  <div class="modal card" style="max-width: 480px; width: 90%; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 16px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-      <h3 style="margin: 0; font-size: 1.1rem;">Camera Capture</h3>
-      <button type="button" class="btn ghost small" id="closeCameraBtn" style="font-size: 1.2rem; background: none; border: none; color: var(--text-main); cursor: pointer;">&times;</button>
-    </div>
+        <!-- LIVE PHYSICAL CAMERA STREAM MODAL -->
+        <div id="camera-modal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 2000;">
+          <div class="modal card" style="max-width: 480px; width: 90%; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+              <h3 style="margin: 0; font-size: 1.1rem;">Camera Capture</h3>
+              <button type="button" class="btn ghost small" id="closeCameraBtn" style="font-size: 1.2rem; background: none; border: none; color: var(--text-main); cursor: pointer;">&times;</button>
+            </div>
 
-    <!-- Live Hardware Feed -->
-    <div style="width: 100%; height: 280px; background: #000; border-radius: var(--radius-sm); overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
-      <video id="cameraStream" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
-    </div>
+            <!-- Live Hardware Feed -->
+            <div style="width: 100%; height: 280px; background: #000; border-radius: var(--radius-sm); overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
+              <video id="cameraStream" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+            </div>
 
-    <div style="display: flex; gap: 10px;">
-      <button type="button" class="btn secondary full-width" id="cancelCameraBtn">Cancel</button>
-      <button type="button" class="btn primary full-width" id="captureFrameBtn">Snap Photo</button>
-    </div>
-  </div>
-</div>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" class="btn secondary full-width" id="cancelCameraBtn">Cancel</button>
+              <button type="button" class="btn primary full-width" id="captureFrameBtn">Snap Photo</button>
+            </div>
+          </div>
+        </div>
 
         <!-- PROFILE HEADING -->
         <div class="profile-heading-area">
@@ -774,6 +715,36 @@
         </div>
       </section>
     </section> 
+</main>
+
+  <!-- AUTHENTICATION MODAL -->
+  <div id="auth-modal" class="modal-backdrop auth-modal-backdrop">
+    <div class="modal auth-container">
+      <a href="#" class="modal-close" id="modal-close-btn" aria-label="Close modal">&times;</a>
+      
+      <h2 id="auth-modal-title">Create Account</h2>
+      <p id="auth-modal-subtitle" class="muted">Join GrooveDNA to save your tracks and collaborate.</p>
+      
+      <form id="auth-form">
+        <div class="form-group auth-email-group">
+          <label for="auth-email">Email Address</label>
+          <input type="email" id="auth-email" required placeholder="you@example.com" />
+        </div>
+        
+        <div class="form-group auth-password-group">
+          <label for="auth-password">Password</label>
+          <input type="password" id="auth-password" required placeholder="••••••••" />
+        </div>
+        
+        <button type="submit" id="auth-submit-btn" class="btn primary auth-submit full-width">Create Account</button>
+        
+        <p class="auth-toggle-copy">
+          <span id="auth-toggle-text">Already have an account?</span> 
+          <a href="#auth-modal" class="auth-toggle" id="auth-toggle-btn">Sign In</a>
+        </p>
+      </form>
+    </div>
+  </div>
 
   <!-- IMAGE EDITING MODAL FOR CAMERA CAPTURE -->
   <div id="photo-edit-modal" class="modal-backdrop hidden" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 2000;">
@@ -818,55 +789,10 @@
     </div>
   </div>
 
-<!-- SPA NAVIGATION ROUTER -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const navLinks = document.querySelectorAll('.nav-links .nav-link');
-      const sections = document.querySelectorAll('.app-section');
+  <footer class="footer">
+    <p>&copy; 2026 GrooveDNA Platform. All rights reserved.</p>
+  </footer> 
 
-      function switchPage(targetId) {
-        // 1. Hide all page sections
-        sections.forEach(section => {
-          section.style.display = 'none';
-        });
-
-        // 2. Remove active highlight from all nav buttons
-        navLinks.forEach(link => {
-          link.classList.remove('active');
-        });
-
-        // 3. Display target section if found
-        const targetSection = document.querySelector(targetId);
-        if (targetSection) {
-          targetSection.style.display = 'block';
-        }
-
-        // 4. Highlight current navigation link
-        const activeLink = document.querySelector(`.nav-links a[href="${targetId}"]`);
-        if (activeLink) {
-          activeLink.classList.add('active');
-        }
-      }
-
-      // Add click listener to header navigation links
-      navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-          const targetId = link.getAttribute('href');
-          if (targetId && targetId.startsWith('#')) {
-            e.preventDefault();
-            switchPage(targetId);
-            window.location.hash = targetId; // Updates browser URL hash
-          }
-        });
-      });
-
-      // Handle direct URL hash landings (e.g. user opens myapp.com/#profile)
-      if (window.location.hash) {
-        switchPage(window.location.hash);
-      }
-    });
- </script>
-
- <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
