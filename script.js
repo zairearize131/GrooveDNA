@@ -943,21 +943,21 @@ const captureFrameBtn = document.getElementById('captureFrameBtn');
 
 let activeMediaStream = null;
 
-      // Request access to webcam video track
-      activeMediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
-        audio: false
-      });
-      
-      cameraStreamVideo.srcObject = activeMediaStream;
-      cameraModal.style.display = 'flex';
-    } catch (err) {
-      alert('Could not access camera. Please allow camera permissions in your browser.');
-      console.error('Camera Access Error:', err);
-    }
-  });
+     async function startCameraStream() {
+  try {
+    activeMediaStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+      audio: false
+    });
+    
+    if (cameraStreamVideo) cameraStreamVideo.srcObject = activeMediaStream;
+    if (cameraModal) cameraModal.style.display = 'flex';
+  } catch (err) {
+    alert('Could not access camera. Please allow camera permissions in your browser.');
+    console.error('Camera Access Error:', err);
+  }
 }
-
+    
 // Stop Video Stream Helper
 function stopCameraStream() {
   if (activeMediaStream) {
