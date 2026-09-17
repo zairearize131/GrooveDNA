@@ -1342,4 +1342,4 @@ function initSPARouter() {
     const hash = window.location.hash || '#home';
     console.log('Navigated to:', hash);
   });
-}}
+}
