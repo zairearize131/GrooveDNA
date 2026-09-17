@@ -1304,6 +1304,63 @@ body {
   color: var(--text-muted);
 }
 
+/* Camera Modal Overlay */
+.camera-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.camera-modal.hidden {
+  display: none !important;
+}
+
+.camera-container {
+  position: relative;
+  background: var(--bg-card, #1e1e24);
+  padding: 20px;
+  border-radius: var(--radius-md, 12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 90vw;
+  max-height: 90vh;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.camera-container video {
+  width: 100%;
+  max-width: 480px;
+  border-radius: var(--radius-sm, 8px);
+  background: #000;
+}
+
+/* Close "X" Button */
+.camera-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.camera-close-btn:hover {
+  opacity: 0.7;
+}
+
 /* ==========================================================================
    SPA NAVIGATION ROUTER & TAB TRANSITION STYLING
    ========================================================================== */
