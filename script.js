@@ -1278,3 +1278,11 @@ function navigateToSection(targetSectionId) {
   window.history.pushState({ sectionId: targetSectionId }, '', `#${routeName}`);
 }
 
+function initSPARouter() {
+  // 5. Handle SPA view switching / hash routing
+  window.addEventListener('hashchange', () => {
+    const hash = window.location.hash || '#home';
+    console.log('Navigated to:', hash);
+    // Add your section toggling logic here
+  });
+}
