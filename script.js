@@ -933,6 +933,78 @@ function initProfile() {
     let srcWidth = originalImage.width;
     let srcHeight = originalImage.height;
 
+    // WebCam Stream Elements
+const takePhotoBtn = document.getElementById('takePhotoBtn');
+const cameraModal = document.getElementById('camera-modal');
+const cameraStreamVideo = document.getElementById('cameraStream');
+const closeCameraBtn = document.getElementById('closeCameraBtn');
+const cancelCameraBtn = document.getElementById('cancelCameraBtn');
+const captureFrameBtn = document.getElementById('captureFrameBtn');
+
+let activeMediaStream = null;
+
+// Open Camera Stream
+if (takePhotoBtn) {
+  takePhotoBtn.addEventListener('click', async () => {
+    try {
+      // Request access to webcam video track
+      activeMediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+        audio: false
+      });
+      
+      cameraStreamVideo.srcObject = activeMediaStream;
+      cameraModal.style.display = 'flex';
+    } catch (err) {
+      alert('Could not access camera. Please allow camera permissions in your browser.');
+      console.error('Camera Access Error:', err);
+    }
+  });
+}
+
+// Stop Video Stream Helper
+function stopCameraStream() {
+  if (activeMediaStream) {
+    activeMediaStream.getTracks().forEach(track => track.stop());
+    activeMediaStream = null;
+  }
+  if (cameraModal) cameraModal.style.display = 'none';
+}
+
+// Close Modal Event Listeners
+if (closeCameraBtn) closeCameraBtn.addEventListener('click', stopCameraStream);
+if (cancelCameraBtn) cancelCameraBtn.addEventListener('click', stopCameraStream);
+
+// Capture Frame to Canvas Editor
+if (captureFrameBtn) {
+  captureFrameBtn.addEventListener('click', () => {
+    if (!cameraStreamVideo.videoWidth) return;
+
+    // Create offscreen canvas to capture current frame
+    const hiddenCanvas = document.createElement('canvas');
+    hiddenCanvas.width = cameraStreamVideo.videoWidth;
+    hiddenCanvas.height = cameraStreamVideo.videoHeight;
+    const ctx = hiddenCanvas.getContext('2d');
+
+    // Draw frame (mirror horizontally to match preview)
+    ctx.translate(hiddenCanvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(cameraStreamVideo, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
+
+    // Pass snapshot image data URL to the editor canvas
+    const capturedDataUrl = hiddenCanvas.toDataURL('image/png');
+    originalImage = new Image();
+    originalImage.onload = () => {
+      resetEditorState();
+      openPhotoEditor();
+    };
+    originalImage.src = capturedDataUrl;
+
+    // Shut down hardware webcam stream
+    stopCameraStream();
+  });
+}
+
     // Apply Center Square Crop if enabled
     if (isCroppedSquare) {
       const minDim = Math.min(srcWidth, srcHeight);
