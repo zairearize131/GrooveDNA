@@ -671,9 +671,19 @@
           </div>
         </div>
 
-        <input type="file" id="profilePhotoInput" accept="image/*" hidden>
-        <input type="file" id="profileCameraInput" accept="image/*" capture="user" hidden>
+       <!-- CAMERA OVERLAY MODAL -->
+<div id="cameraModal" class="camera-modal hidden" aria-hidden="true">
+  <div class="camera-container">
+    <button type="button" id="closeCameraBtn" class="camera-close-btn" aria-label="Cancel camera">&times;</button>
+    <video id="cameraVideo" autoplay playsinline></video>
+    <button type="button" id="captureFrameBtn" class="btn primary">📸 Take Snapshot</button>
+  </div>
+</div>
 
+<!-- HIDDEN FILE INPUTS -->
+<input type="file" id="profilePhotoInput" accept="image/*" hidden>
+<input type="file" id="profileCameraInput" accept="image/*" capture="user" hidden>
+       
         <!-- PROFILE HEADING -->
         <div class="profile-heading-area">
           <label for="profileHeading"><strong>Profile Bio / Heading</strong></label>
