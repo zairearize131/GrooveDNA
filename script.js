@@ -854,87 +854,15 @@ function initProfile() {
   initProfileMusicSearch();
   initProfileLocation();
 }
+// ==========================================
+// PROFILE PICTURE: CAMERA ACCESS & FILE UPLOAD
+// ==========================================
 
-// Camera Capture & Editing State Variables
-  const cameraInput = document.getElementById('profileCameraInput');
-  const editModal = document.getElementById('photo-edit-modal');
-  const editCanvas = document.getElementById('photoEditCanvas');
-  const closeEditBtn = document.getElementById('closePhotoEditBtn');
-  const editColorFilter = document.getElementById('editColorFilter');
-  const editZoom = document.getElementById('editZoom');
-  const cropSquareBtn = document.getElementById('cropSquareBtn');
-  const resetEditBtn = document.getElementById('resetEditBtn');
-  const saveEditedBtn = document.getElementById('saveEditedPhotoBtn');
-  const filterValText = document.getElementById('filterVal');
-  const zoomValText = document.getElementById('zoomVal');
-
-  let originalImage = new Image();
-  let currentZoom = 1.0;
-  let currentFilterIndex = 0;
-  let isCroppedSquare = false;
-
-  const filters = [
-    { name: 'Normal', filter: 'none' },
-    { name: 'Grayscale', filter: 'grayscale(100%)' },
-    { name: 'Sepia', filter: 'sepia(80%)' },
-    { name: 'Vibrant Synth', filter: 'hue-rotate(90deg) saturate(180%)' }
-  ];
-
-  // Open modal on camera photo selection
-  if (cameraInput) {
-    cameraInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          originalImage = new Image();
-          originalImage.onload = () => {
-            resetEditorState();
-            openPhotoEditor();
-          };
-          originalImage.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  }
-
-  function resetEditorState() {
-    currentZoom = 1.0;
-    currentFilterIndex = 0;
-    isCroppedSquare = false;
-    if (editZoom) editZoom.value = 1.0;
-    if (editColorFilter) editColorFilter.value = 0;
-    if (filterValText) filterValText.textContent = 'Normal';
-    if (zoomValText) zoomValText.textContent = '1.0x';
-  }
-
-  function openPhotoEditor() {
-    if (editModal) {
-      editModal.style.display = 'flex';
-      editModal.classList.add('active');
-    }
-    renderCanvasPreview();
-  }
-
-  function closePhotoEditor() {
-    if (editModal) {
-      editModal.style.display = 'none';
-      editModal.classList.remove('active');
-    }
-  }
-
-  function renderCanvasPreview() {
-    if (!editCanvas || !originalImage.src) return;
-    const ctx = editCanvas.getContext('2d');
-
-    let srcX = 0;
-    let srcY = 0;
-    let srcWidth = originalImage.width;
-    let srcHeight = originalImage.height;
-
-    // WebCam Stream Elements
+// DOM Elements
 const takePhotoBtn = document.getElementById('takePhotoBtn');
+const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+const profileFileInput = document.getElementById('profileFileInput');
+
 const cameraModal = document.getElementById('camera-modal');
 const cameraStreamVideo = document.getElementById('cameraStream');
 const closeCameraBtn = document.getElementById('closeCameraBtn');
@@ -943,52 +871,70 @@ const captureFrameBtn = document.getElementById('captureFrameBtn');
 
 let activeMediaStream = null;
 
-     async function startCameraStream() {
-  try {
-    activeMediaStream = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
-      audio: false
-    });
-    
-    if (cameraStreamVideo) cameraStreamVideo.srcObject = activeMediaStream;
-    if (cameraModal) cameraModal.style.display = 'flex';
-  } catch (err) {
-    alert('Could not access camera. Please allow camera permissions in your browser.');
-    console.error('Camera Access Error:', err);
-  }
-}
-    
-// Stop Video Stream Helper
+// Helper: Stop hardware camera feed tracks
 function stopCameraStream() {
   if (activeMediaStream) {
     activeMediaStream.getTracks().forEach(track => track.stop());
     activeMediaStream = null;
   }
-  if (cameraModal) cameraModal.style.display = 'none';
+  if (cameraStreamVideo) {
+    cameraStreamVideo.srcObject = null;
+  }
+  if (cameraModal) {
+    cameraModal.style.display = 'none';
+  }
 }
 
-// Close Modal Event Listeners
+// 1. "Take Photo" -> Direct hardware camera access for laptops, desktops, tablets, and mobile
+if (takePhotoBtn) {
+  takePhotoBtn.addEventListener('click', async () => {
+    try {
+      // Direct WebRTC request to physical camera hardware
+      activeMediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user' // Accesses primary selfie/user facing physical camera across devices
+        },
+        audio: false
+      });
+
+      if (cameraStreamVideo) {
+        cameraStreamVideo.srcObject = activeMediaStream;
+      }
+      if (cameraModal) {
+        cameraModal.style.display = 'flex';
+      }
+    } catch (err) {
+      alert('Unable to access device camera. Please check camera permissions in your browser settings.');
+      console.error('Physical Camera Access Error:', err);
+    }
+  });
+}
+
+// 2. Modal Close Handlers
 if (closeCameraBtn) closeCameraBtn.addEventListener('click', stopCameraStream);
 if (cancelCameraBtn) cancelCameraBtn.addEventListener('click', stopCameraStream);
 
-// Capture Frame to Canvas Editor
+// 3. Snap Frame from Camera -> Pass to Editor
 if (captureFrameBtn) {
   captureFrameBtn.addEventListener('click', () => {
-    if (!cameraStreamVideo.videoWidth) return;
+    if (!cameraStreamVideo || !cameraStreamVideo.videoWidth) return;
 
-    // Create offscreen canvas to capture current frame
+    // Capture video frame onto canvas
     const hiddenCanvas = document.createElement('canvas');
     hiddenCanvas.width = cameraStreamVideo.videoWidth;
     hiddenCanvas.height = cameraStreamVideo.videoHeight;
     const ctx = hiddenCanvas.getContext('2d');
 
-    // Draw frame (mirror horizontally to match preview)
+    // Draw mirrored video frame
     ctx.translate(hiddenCanvas.width, 0);
     ctx.scale(-1, 1);
     ctx.drawImage(cameraStreamVideo, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
 
-    // Pass snapshot image data URL to the editor canvas
     const capturedDataUrl = hiddenCanvas.toDataURL('image/png');
+
+    // Load photo into canvas editor
     originalImage = new Image();
     originalImage.onload = () => {
       resetEditorState();
@@ -996,95 +942,32 @@ if (captureFrameBtn) {
     };
     originalImage.src = capturedDataUrl;
 
-    // Shut down hardware webcam stream
     stopCameraStream();
   });
 }
 
-    // Apply Center Square Crop if enabled
-    if (isCroppedSquare) {
-      const minDim = Math.min(srcWidth, srcHeight);
-      srcX = (srcWidth - minDim) / 2;
-      srcY = (srcHeight - minDim) / 2;
-      srcWidth = minDim;
-      srcHeight = minDim;
+// 4. "Upload Photo" -> Open file library ONLY
+if (uploadPhotoBtn && profileFileInput) {
+  uploadPhotoBtn.addEventListener('click', () => {
+    profileFileInput.click();
+  });
+
+  profileFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        originalImage = new Image();
+        originalImage.onload = () => {
+          resetEditorState();
+          openPhotoEditor();
+        };
+        originalImage.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
     }
-
-    // Set internal canvas resolution
-    editCanvas.width = srcWidth;
-    editCanvas.height = srcHeight;
-
-    // Clear Canvas
-    ctx.clearRect(0, 0, editCanvas.width, editCanvas.height);
-
-    // Apply Selected Color Filter
-    const activeFilter = filters[currentFilterIndex] || filters[0];
-    ctx.filter = activeFilter.filter;
-
-    // Apply Zoom & Scale transformation
-    ctx.save();
-    ctx.translate(editCanvas.width / 2, editCanvas.height / 2);
-    ctx.scale(currentZoom, currentZoom);
-    ctx.drawImage(
-      originalImage,
-      srcX, srcY, srcWidth, srcHeight,
-      -editCanvas.width / 2, -editCanvas.height / 2, editCanvas.width, editCanvas.height
-    );
-    ctx.restore();
-  }
-
-  // Control Listeners
-  if (editColorFilter) {
-    editColorFilter.addEventListener('input', (e) => {
-      currentFilterIndex = parseInt(e.target.value, 10);
-      if (filterValText) filterValText.textContent = filters[currentFilterIndex].name;
-      renderCanvasPreview();
-    });
-  }
-
-  if (editZoom) {
-    editZoom.addEventListener('input', (e) => {
-      currentZoom = parseFloat(e.target.value);
-      if (zoomValText) zoomValText.textContent = `${currentZoom.toFixed(1)}x`;
-      renderCanvasPreview();
-    });
-  }
-
-  if (cropSquareBtn) {
-    cropSquareBtn.addEventListener('click', () => {
-      isCroppedSquare = !isCroppedSquare;
-      cropSquareBtn.classList.toggle('primary');
-      renderCanvasPreview();
-    });
-  }
-
-  if (resetEditBtn) {
-    resetEditBtn.addEventListener('click', () => {
-      resetEditorState();
-      if (cropSquareBtn) cropSquareBtn.classList.remove('primary');
-      renderCanvasPreview();
-    });
-  }
-
-  if (closeEditBtn) {
-    closeEditBtn.addEventListener('click', closePhotoEditor);
-  }
-
-  // Done button: Export edited image to Profile Picture Icon
-  if (saveEditedBtn) {
-    saveEditedBtn.addEventListener('click', () => {
-      const editedDataUrl = editCanvas.toDataURL('image/png');
-      const avatarImg = document.getElementById('profileAvatarImage');
-      const avatarPlaceholder = document.getElementById('profileAvatarPlaceholder');
-
-      if (avatarImg) {
-        avatarImg.src = editedDataUrl;
-        avatarImg.hidden = false;
-        if (avatarPlaceholder) avatarPlaceholder.hidden = true;
-      }
-      closePhotoEditor();
-    });
-  }
+  });
+} 
 
 /**
  * Avatar photo selection and toggle logic
