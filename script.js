@@ -855,6 +855,169 @@ function initProfile() {
   initProfileLocation();
 }
 
+// Camera Capture & Editing State Variables
+  const cameraInput = document.getElementById('profileCameraInput');
+  const editModal = document.getElementById('photo-edit-modal');
+  const editCanvas = document.getElementById('photoEditCanvas');
+  const closeEditBtn = document.getElementById('closePhotoEditBtn');
+  const editColorFilter = document.getElementById('editColorFilter');
+  const editZoom = document.getElementById('editZoom');
+  const cropSquareBtn = document.getElementById('cropSquareBtn');
+  const resetEditBtn = document.getElementById('resetEditBtn');
+  const saveEditedBtn = document.getElementById('saveEditedPhotoBtn');
+  const filterValText = document.getElementById('filterVal');
+  const zoomValText = document.getElementById('zoomVal');
+
+  let originalImage = new Image();
+  let currentZoom = 1.0;
+  let currentFilterIndex = 0;
+  let isCroppedSquare = false;
+
+  const filters = [
+    { name: 'Normal', filter: 'none' },
+    { name: 'Grayscale', filter: 'grayscale(100%)' },
+    { name: 'Sepia', filter: 'sepia(80%)' },
+    { name: 'Vibrant Synth', filter: 'hue-rotate(90deg) saturate(180%)' }
+  ];
+
+  // Open modal on camera photo selection
+  if (cameraInput) {
+    cameraInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          originalImage = new Image();
+          originalImage.onload = () => {
+            resetEditorState();
+            openPhotoEditor();
+          };
+          originalImage.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  function resetEditorState() {
+    currentZoom = 1.0;
+    currentFilterIndex = 0;
+    isCroppedSquare = false;
+    if (editZoom) editZoom.value = 1.0;
+    if (editColorFilter) editColorFilter.value = 0;
+    if (filterValText) filterValText.textContent = 'Normal';
+    if (zoomValText) zoomValText.textContent = '1.0x';
+  }
+
+  function openPhotoEditor() {
+    if (editModal) {
+      editModal.style.display = 'flex';
+      editModal.classList.add('active');
+    }
+    renderCanvasPreview();
+  }
+
+  function closePhotoEditor() {
+    if (editModal) {
+      editModal.style.display = 'none';
+      editModal.classList.remove('active');
+    }
+  }
+
+  function renderCanvasPreview() {
+    if (!editCanvas || !originalImage.src) return;
+    const ctx = editCanvas.getContext('2d');
+
+    let srcX = 0;
+    let srcY = 0;
+    let srcWidth = originalImage.width;
+    let srcHeight = originalImage.height;
+
+    // Apply Center Square Crop if enabled
+    if (isCroppedSquare) {
+      const minDim = Math.min(srcWidth, srcHeight);
+      srcX = (srcWidth - minDim) / 2;
+      srcY = (srcHeight - minDim) / 2;
+      srcWidth = minDim;
+      srcHeight = minDim;
+    }
+
+    // Set internal canvas resolution
+    editCanvas.width = srcWidth;
+    editCanvas.height = srcHeight;
+
+    // Clear Canvas
+    ctx.clearRect(0, 0, editCanvas.width, editCanvas.height);
+
+    // Apply Selected Color Filter
+    const activeFilter = filters[currentFilterIndex] || filters[0];
+    ctx.filter = activeFilter.filter;
+
+    // Apply Zoom & Scale transformation
+    ctx.save();
+    ctx.translate(editCanvas.width / 2, editCanvas.height / 2);
+    ctx.scale(currentZoom, currentZoom);
+    ctx.drawImage(
+      originalImage,
+      srcX, srcY, srcWidth, srcHeight,
+      -editCanvas.width / 2, -editCanvas.height / 2, editCanvas.width, editCanvas.height
+    );
+    ctx.restore();
+  }
+
+  // Control Listeners
+  if (editColorFilter) {
+    editColorFilter.addEventListener('input', (e) => {
+      currentFilterIndex = parseInt(e.target.value, 10);
+      if (filterValText) filterValText.textContent = filters[currentFilterIndex].name;
+      renderCanvasPreview();
+    });
+  }
+
+  if (editZoom) {
+    editZoom.addEventListener('input', (e) => {
+      currentZoom = parseFloat(e.target.value);
+      if (zoomValText) zoomValText.textContent = `${currentZoom.toFixed(1)}x`;
+      renderCanvasPreview();
+    });
+  }
+
+  if (cropSquareBtn) {
+    cropSquareBtn.addEventListener('click', () => {
+      isCroppedSquare = !isCroppedSquare;
+      cropSquareBtn.classList.toggle('primary');
+      renderCanvasPreview();
+    });
+  }
+
+  if (resetEditBtn) {
+    resetEditBtn.addEventListener('click', () => {
+      resetEditorState();
+      if (cropSquareBtn) cropSquareBtn.classList.remove('primary');
+      renderCanvasPreview();
+    });
+  }
+
+  if (closeEditBtn) {
+    closeEditBtn.addEventListener('click', closePhotoEditor);
+  }
+
+  // Done button: Export edited image to Profile Picture Icon
+  if (saveEditedBtn) {
+    saveEditedBtn.addEventListener('click', () => {
+      const editedDataUrl = editCanvas.toDataURL('image/png');
+      const avatarImg = document.getElementById('profileAvatarImage');
+      const avatarPlaceholder = document.getElementById('profileAvatarPlaceholder');
+
+      if (avatarImg) {
+        avatarImg.src = editedDataUrl;
+        avatarImg.hidden = false;
+        if (avatarPlaceholder) avatarPlaceholder.hidden = true;
+      }
+      closePhotoEditor();
+    });
+  }
+
 /**
  * Avatar photo selection and toggle logic
  */
