@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initProfile();
   initSPARouter();
   checkUserSession();
+  initFreesoundSearch();
 });
 
 /* ----------------------------------------------------
@@ -385,6 +386,36 @@ function stopRecordedPattern() {
   // Clear all pending scheduled notes
   activePatternTimeouts.forEach(id => clearTimeout(id));
   activePatternTimeouts = [];
+}
+
+async function triggerPad(element) {
+  element.classList.add('active');
+  setTimeout(() => element.classList.remove('active'), 120);
+
+  const soundName = element.getAttribute('data-sound') || element.getAttribute('data-drum');
+  const customAudioUrl = element.getAttribute('data-custom-audio-url');
+
+  // Record pattern event if recording state is active
+  if (isRecordingPattern) {
+    const timeOffset = Date.now() - patternStartTime;
+    recordedPattern.push({ sound: soundName, pad: element, time: timeOffset });
+  }
+
+  // If a custom Freesound sample was loaded onto this pad, play it directly!
+  if (customAudioUrl) {
+    const customAudio = new Audio(customAudioUrl);
+    
+    const pitchSlider = document.getElementById('pitch');
+    if (pitchSlider && pitchSlider.value != 0) {
+      const semitones = parseFloat(pitchSlider.value);
+      customAudio.playbackRate = Math.pow(2, semitones / 12);
+    }
+    
+    customAudio.play().catch(e => console.error('Error playing sample:', e));
+  } else {
+    // Play audio track from Supabase Storage default
+    playSupabaseAudioSample(soundName);
+  }
 }
 
 /* ----------------------------------------------------
@@ -815,6 +846,143 @@ async function handleAudioUpload() {
   };
 
   fileInput.click();
+}
+
+/* ----------------------------------------------------
+ * FREESOUND API INTEGRATION FOR GROOVEDNA SAMPLER
+ * ---------------------------------------------------- */
+
+// Replace 'YOUR_FREESOUND_API_KEY' with your actual API key from freesound.org/apiv2/apply/
+const FREESOUND_API_KEY = 'YOUR_FREESOUND_API_KEY';
+const FREESOUND_SEARCH_URL = 'https://freesound.org/apiv2/search/text/';
+
+function initFreesoundSearch() {
+  const searchBtn = document.getElementById('freesoundSearchBtn');
+  const searchInput = document.getElementById('freesoundInput');
+
+  if (searchBtn && searchInput) {
+    searchBtn.addEventListener('click', () => {
+      const query = searchInput.value.trim();
+      if (query) {
+        searchFreesoundSamples(query);
+      }
+    });
+
+    // Allow search on Enter key
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const query = searchInput.value.trim();
+        if (query) searchFreesoundSamples(query);
+      }
+    });
+  }
+}
+
+/**
+ * Queries Freesound API for sounds matching the search string
+ */
+async function searchFreesoundSamples(query) {
+  const resultsContainer = document.getElementById('freesoundResults');
+  if (resultsContainer) {
+    resultsContainer.innerHTML = '<p class="text-muted">Searching Freesound samples...</p>';
+  }
+
+  try {
+    const response = await fetch(
+      `${FREESOUND_SEARCH_URL}?query=${encodeURIComponent(query)}&token=${FREESOUND_API_KEY}&fields=id,name,previews,tags,username`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Freesound API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    renderFreesoundResults(data.results || []);
+  } catch (error) {
+    console.error('Freesound search failed:', error);
+    if (resultsContainer) {
+      resultsContainer.innerHTML = `<p style="color: var(--accent-pink, red);">Failed to load samples. Please verify your API key.</p>`;
+    }
+  }
+}
+
+/**
+ * Renders sample search results with preview and drum pad assignment options
+ */
+function renderFreesoundResults(samples) {
+  const resultsContainer = document.getElementById('freesoundResults');
+  if (!resultsContainer) return;
+
+  if (samples.length === 0) {
+    resultsContainer.innerHTML = '<p class="text-muted">No audio samples found on Freesound.</p>';
+    return;
+  }
+
+  resultsContainer.innerHTML = '';
+
+  samples.forEach(sample => {
+    // High-quality MP3 preview URL provided by Freesound API
+    const audioPreviewUrl = sample.previews['preview-hq-mp3'] || sample.previews['preview-lq-mp3'];
+
+    const card = document.createElement('article');
+    card.className = 'sample-card';
+    card.innerHTML = `
+      <div class="sample-card-header">
+        <span class="genre-tag">Freesound</span>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">by @${sample.username}</span>
+      </div>
+      <div>
+        <h4>${sample.name}</h4>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+        <button class="btn small primary preview-freesound-btn">▶ Preview</button>
+        <button class="btn small secondary load-pad-btn">⚡ Assign to Pad</button>
+      </div>
+    `;
+
+    // Preview button logic
+    const previewBtn = card.querySelector('.preview-freesound-btn');
+    let audioObj = null;
+
+    previewBtn.addEventListener('click', () => {
+      if (audioObj && !audioObj.paused) {
+        audioObj.pause();
+        previewBtn.textContent = '▶ Preview';
+      } else {
+        if (audioObj) {
+          audioObj.play();
+        } else {
+          audioObj = new Audio(audioPreviewUrl);
+          audioObj.play();
+        }
+        previewBtn.textContent = '⏸ Pause';
+
+        audioObj.addEventListener('ended', () => {
+          previewBtn.textContent = '▶ Preview';
+        });
+      }
+    });
+
+    // Assign sample to Drum Pad logic
+    const assignBtn = card.querySelector('.load-pad-btn');
+    assignBtn.addEventListener('click', () => {
+      const targetPadKey = prompt('Enter the pad key to assign this sample to (e.g., Q, W, E, R, A, S, D, F):');
+      if (!targetPadKey) return;
+
+      const keyUpper = targetPadKey.trim().toUpperCase();
+      const targetPad = document.querySelector(`.pad-btn[data-key="${keyUpper}"], .drum-pad[data-key="${keyUpper}"]`);
+
+      if (targetPad) {
+        // Store the Freesound direct audio URL onto the drum pad
+        targetPad.setAttribute('data-custom-audio-url', audioPreviewUrl);
+        alert(`Sample "${sample.name}" assigned to Pad [${keyUpper}]!`);
+      } else {
+        alert(`Pad with key [${keyUpper}] not found.`);
+      }
+    });
+
+    resultsContainer.appendChild(card);
+  });
 }
 
 /* ----------------------------------------------------
