@@ -530,6 +530,40 @@
 
     <!-- SECTION 4: MUSIC DISCOVERY & CATALOG -->
 <section id="discover" class="app-section page-section" style="display: none;">
+ 
+<!-- FREESOUND API SAMPLER SEARCH PANEL -->
+  <div class="search-panel freesound-panel card" style="margin-bottom: 24px; border: 1px solid var(--accent-color, #7000ff);">
+    <div class="section-heading compact">
+      <div>
+        <p class="eyebrow" style="color: var(--accent-pink, #ff007f);">FREESOUND INTEGRATION</p>
+        <h2>Search Freesound Samples</h2>
+        <p class="section-subtitle">
+          Query thousands of community audio samples and map them directly onto your Studio drum pads.
+        </p>
+      </div>
+    </div>
+
+    <!-- FREESOUND SEARCH INPUT & BUTTON -->
+    <div class="search-row" style="display: flex; gap: 10px; margin-top: 12px;">
+      <label class="search-box" for="freesoundInput" style="flex-grow: 1;">
+        <span aria-hidden="true">🔊</span>
+        <input
+          id="freesoundInput"
+          type="search"
+          placeholder="Search Freesound (e.g. 808 kick, vocal chop, funky snare, guitar riff)..."
+          autocomplete="off"
+          aria-label="Search Freesound samples"
+        />
+      </label>
+      <button class="btn primary" id="freesoundSearchBtn" type="button">Search Freesound</button>
+    </div>
+
+    <!-- FREESOUND RESULTS CONTAINER -->
+    <div id="freesoundResults" class="sample-grid" style="margin-top: 20px;" aria-live="polite">
+      <!-- Search results from Freesound API will render here dynamically -->
+    </div>
+  </div>
+  
   <!-- SEARCH PANEL -->
   <div class="search-panel">
     <div class="section-heading compact">
