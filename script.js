@@ -148,6 +148,7 @@ async function checkUserSession() {
     if (btnSignUpNav) btnSignUpNav.classList.add('hidden');
     if (btnSignInNav) btnSignInNav.classList.add('hidden');
     if (userEmailDisplay) userEmailDisplay.textContent = session.user.email;
+    if loadSavedUserAvatar();
   } else {
     if (userMenu) userMenu.classList.add('hidden');
     if (btnSignUpNav) btnSignUpNav.classList.remove('hidden');
@@ -1002,144 +1003,149 @@ function initProfile() {
   initPhotoEditor();
 }
 
-// Camera Hardware Access & Canvas Photo Editor
-function initProfileAvatar() {
-  const takePhotoBtn = document.getElementById('TakePhotoBtn') || document.getElementById('takePhotoBtn');
-  const choosePhotoBtn = document.getElementById('choosePhotoBtn');
-  const createBitmojiBtn = document.getElementById('createBitmojiBtn');
-  const profileFileInput = document.getElementById('profilePhotoInput');
+// ==========================================
+// PROFILE CAMERA & PERSISTENCE MANAGEMENT
+// ==========================================
 
-  const cameraModal = document.getElementById('camera-modal');
-  const cameraStreamVideo = document.getElementById('cameraStream');
-  const closeCameraBtn = document.getElementById('closeCameraBtn');
-  const cancelCameraBtn = document.getElementById('cancelCameraBtn');
-  const captureFrameBtn = document.getElementById('captureFrameBtn');
+const cameraModal = document.getElementById('cameraModal');
+const cameraVideo = document.getElementById('cameraVideo');
+const takePhotoBtn = document.getElementById('takePhotoBtn');
+const closeCameraBtn = document.getElementById('closeCameraBtn');
+const captureFrameBtn = document.getElementById('captureFrameBtn');
 
-  const avatarImg = document.getElementById('profileAvatarImage');
-  const avatarPlaceholder = document.getElementById('profileAvatarPlaceholder');
-  const bitmojiSpan = document.getElementById('profileBitmoji');
-  const showPhotoOpt = document.getElementById('showPhotoOption');
-  const showBitmojiOpt = document.getElementById('showBitmojiOption');
+const profileAvatarImage = document.getElementById('profileAvatarImage');
+const profileAvatarPlaceholder = document.getElementById('profileAvatarPlaceholder');
 
-  let activeMediaStream = null;
+let currentStream = null;
 
-  function stopCameraStream() {
-    if (activeMediaStream) {
-      activeMediaStream.getTracks().forEach(track => track.stop());
-      activeMediaStream = null;
+// 1. OPEN CAMERA STREAM
+if (takePhotoBtn) {
+  takePhotoBtn.addEventListener('click', async () => {
+    try {
+      currentStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' }, 
+        audio: false 
+      });
+      cameraVideo.srcObject = currentStream;
+      cameraModal.classList.remove('hidden');
+      cameraModal.setAttribute('aria-hidden', 'false');
+    } catch (err) {
+      console.error('Camera access error:', err);
+      alert('Unable to access camera. Please check your browser permissions.');
     }
-    if (cameraStreamVideo) {
-      cameraStreamVideo.srcObject = null;
-    }
-    if (cameraModal) {
-      cameraModal.style.display = 'none';
-    }
+  });
+}
+
+// 2. CLOSE CAMERA STREAM
+function stopCamera() {
+  if (currentStream) {
+    currentStream.getTracks().forEach(track => track.stop());
+    currentStream = null;
   }
+  if (cameraVideo) cameraVideo.srcObject = null;
+  if (cameraModal) {
+    cameraModal.classList.add('hidden');
+    cameraModal.setAttribute('aria-hidden', 'true');
+  }
+}
 
-  if (takePhotoBtn) {
-    takePhotoBtn.addEventListener('click', async () => {
-      try {
-        activeMediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
-          audio: false
+if (closeCameraBtn) {
+  closeCameraBtn.addEventListener('click', stopCamera);
+}
+
+// 3. CAPTURE SNAPSHOT & SAVE PROFILE PHOTO
+if (captureFrameBtn) {
+  captureFrameBtn.addEventListener('click', async () => {
+    if (!cameraVideo || !cameraVideo.videoWidth) return;
+
+    // Draw frame to canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = cameraVideo.videoWidth;
+    canvas.height = cameraVideo.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+
+    const imageDataUrl = canvas.toDataURL('image/png');
+
+    // Update DOM display immediately
+    updateAvatarUI(imageDataUrl);
+
+    // Stop camera stream
+    stopCamera();
+
+    // Persist photo for user session
+    await saveUserProfilePhoto(imageDataUrl);
+  });
+}
+
+// 4. UPDATE AVATAR UI
+function updateAvatarUI(photoUrl) {
+  if (profileAvatarImage) {
+    profileAvatarImage.src = photoUrl;
+    profileAvatarImage.hidden = false;
+  }
+  if (profileAvatarPlaceholder) {
+    profileAvatarPlaceholder.hidden = true;
+  }
+}
+
+// 5. SAVE USER PROFILE PHOTO (Supabase + LocalStorage)
+async function saveUserProfilePhoto(photoDataUrl) {
+  // Get active session / user
+  const currentUser = supabase.auth.user ? supabase.auth.user() : null; // Adjust according to Supabase v2 client setup
+  const userKey = currentUser ? currentUser.id : 'guest_user';
+
+  // Save to localStorage as immediate offline cache
+  localStorage.setItem(`groovedna_avatar_${userKey}`, photoDataUrl);
+
+  // If user is authenticated with Supabase, persist to Database
+  if (currentUser) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .upsert({ 
+          id: currentUser.id, 
+          avatar_url: photoDataUrl,
+          updated_at: new Date() 
         });
 
-        if (cameraStreamVideo) {
-          cameraStreamVideo.srcObject = activeMediaStream;
-        }
-        if (cameraModal) {
-          cameraModal.style.display = 'flex';
-        }
-      } catch (err) {
-        alert('Unable to access device camera. Please check camera permissions in your browser settings.');
-        console.error('Camera Access Error:', err);
-      }
-    });
-  }
-
-  if (closeCameraBtn) closeCameraBtn.addEventListener('click', stopCameraStream);
-  if (cancelCameraBtn) cancelCameraBtn.addEventListener('click', stopCameraStream);
-
-  if (captureFrameBtn) {
-    captureFrameBtn.addEventListener('click', () => {
-      if (!cameraStreamVideo || !cameraStreamVideo.videoWidth) return;
-
-      const hiddenCanvas = document.createElement('canvas');
-      hiddenCanvas.width = cameraStreamVideo.videoWidth;
-      hiddenCanvas.height = cameraStreamVideo.videoHeight;
-      const ctx = hiddenCanvas.getContext('2d');
-
-      ctx.translate(hiddenCanvas.width, 0);
-      ctx.scale(-1, 1);
-      ctx.drawImage(cameraStreamVideo, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
-
-      const capturedDataUrl = hiddenCanvas.toDataURL('image/png');
-
-      originalImage = new Image();
-      originalImage.onload = () => {
-        resetEditorState();
-        openPhotoEditor();
-      };
-      originalImage.src = capturedDataUrl;
-
-      stopCameraStream();
-    });
-  }
-
-  if (choosePhotoBtn && profileFileInput) {
-    choosePhotoBtn.addEventListener('click', () => profileFileInput.click());
-    profileFileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          originalImage = new Image();
-          originalImage.onload = () => {
-            resetEditorState();
-            openPhotoEditor();
-          };
-          originalImage.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  }
-
-  if (createBitmojiBtn) {
-    createBitmojiBtn.addEventListener('click', () => {
-      if (showBitmojiOpt) showBitmojiOpt.checked = true;
-      if (showPhotoOpt) showPhotoOpt.checked = false;
-      updateAvatarDisplay();
-    });
-  }
-
-  if (showPhotoOpt && showBitmojiOpt) {
-    showPhotoOpt.addEventListener('change', () => {
-      if (showPhotoOpt.checked) showBitmojiOpt.checked = false;
-      updateAvatarDisplay();
-    });
-    showBitmojiOpt.addEventListener('change', () => {
-      if (showBitmojiOpt.checked) showPhotoOpt.checked = false;
-      updateAvatarDisplay();
-    });
-  }
-
-  function updateAvatarDisplay() {
-    if (showBitmojiOpt && showBitmojiOpt.checked) {
-      if (bitmojiSpan) bitmojiSpan.hidden = false;
-      if (avatarImg) avatarImg.hidden = true;
-      if (avatarPlaceholder) avatarPlaceholder.hidden = true;
-    } else {
-      if (bitmojiSpan) bitmojiSpan.hidden = true;
-      if (avatarImg && avatarImg.src) {
-        avatarImg.hidden = false;
-        if (avatarPlaceholder) avatarPlaceholder.hidden = true;
-      } else if (avatarPlaceholder) {
-        avatarPlaceholder.hidden = false;
-      }
+      if (error) console.error('Supabase profile save error:', error);
+    } catch (err) {
+      console.error('Failed to sync photo to Supabase:', err);
     }
   }
 }
+
+// 6. RESTORE PROFILE PHOTO ON LOGIN / PAGE LOAD
+async function loadUserProfilePhoto() {
+  const currentUser = supabase.auth.user ? supabase.auth.user() : null;
+  const userKey = currentUser ? currentUser.id : 'guest_user';
+
+  // Check localStorage first for instant rendering
+  const cachedAvatar = localStorage.getItem(`groovedna_avatar_${userKey}`);
+  if (cachedAvatar) {
+    updateAvatarUI(cachedAvatar);
+  }
+
+  // Fetch latest profile avatar from Supabase database if logged in
+  if (currentUser) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', currentUser.id)
+      .single();
+
+    if (data && data.avatar_url) {
+      updateAvatarUI(data.avatar_url);
+      localStorage.setItem(`groovedna_avatar_${userKey}`, data.avatar_url);
+    }
+  }
+}
+
+// Auto-load saved avatar on initialization
+document.addEventListener('DOMContentLoaded', () => {
+  loadUserProfilePhoto();
+});
 
 /**
  * Canvas Image Editing Logic (Filters, Zoom, Center Crop)
@@ -1190,24 +1196,74 @@ function initPhotoEditor() {
     });
   }
 
-  if (saveEditedPhotoBtn) {
-    saveEditedPhotoBtn.addEventListener('click', () => {
-      const canvas = document.getElementById('photoEditCanvas');
-      if (!canvas) return;
+  /**
+ * Persists user avatar to local storage and Supabase profiles table
+ */
+async function saveUserAvatarData(imageDataUrl) {
+  let userId = 'guest_user';
 
-      const avatarImg = document.getElementById('profileAvatarImage');
-      const avatarPlaceholder = document.getElementById('profileAvatarPlaceholder');
-      const showPhotoOpt = document.getElementById('showPhotoOption');
+  if (supabaseClient) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session && session.user) {
+      userId = session.user.id;
 
-      if (avatarImg) {
-        avatarImg.src = canvas.toDataURL('image/png');
-        avatarImg.hidden = false;
-        if (avatarPlaceholder) avatarPlaceholder.hidden = true;
-        if (showPhotoOpt) showPhotoOpt.checked = true;
+      // Sync avatar to Supabase profile table
+      try {
+        await supabaseClient
+          .from('profiles')
+          .upsert({ id: userId, avatar_url: imageDataUrl, updated_at: new Date() });
+      } catch (err) {
+        console.error('Failed to sync avatar to Supabase:', err);
       }
+    }
+  }
 
-      if (photoEditModal) photoEditModal.style.display = 'none';
-    });
+  // Cache in browser storage using the user ID
+  localStorage.setItem(`groovedna_avatar_${userId}`, imageDataUrl);
+}
+
+/**
+ * Loads user avatar from local storage or Supabase profile table on login
+ */
+async function loadSavedUserAvatar() {
+  let userId = 'guest_user';
+
+  if (supabaseClient) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session && session.user) {
+      userId = session.user.id;
+
+      // Check Supabase database record
+      const { data } = await supabaseClient
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', userId)
+        .single();
+
+      if (data && data.avatar_url) {
+        applyAvatarToUI(data.avatar_url);
+        localStorage.setItem(`groovedna_avatar_${userId}`, data.avatar_url);
+        return;
+      }
+    }
+  }
+
+  // Fallback to local storage cache
+  const cachedAvatar = localStorage.getItem(`groovedna_avatar_${userId}`);
+  if (cachedAvatar) {
+    applyAvatarToUI(cachedAvatar);
+  }
+}
+
+function applyAvatarToUI(photoUrl) {
+  const avatarImg = document.getElementById('profileAvatarImage');
+  const avatarPlaceholder = document.getElementById('profileAvatarPlaceholder');
+  if (avatarImg) {
+    avatarImg.src = photoUrl;
+    avatarImg.hidden = false;
+  }
+  if (avatarPlaceholder) {
+    avatarPlaceholder.hidden = true;
   }
 }
 
