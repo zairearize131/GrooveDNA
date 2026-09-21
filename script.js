@@ -853,7 +853,7 @@ async function handleAudioUpload() {
  * ---------------------------------------------------- */
 
 // Replace 'YOUR_FREESOUND_API_KEY' with your actual API key from freesound.org/apiv2/apply/
-const FREESOUND_API_KEY = 'USuQhVBqWDFi4yDssTqhY0MpenBtPi2m5MF8bKLX';
+const FREESOUND_API_KEY = ('USuQhVBqWDFi4yDssTqhY0MpenBtPi2m5MF8bKLX');
 const FREESOUND_SEARCH_URL = 'https://freesound.org/apiv2/apply/';
 
 function initFreesoundSearch() {
