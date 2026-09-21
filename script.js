@@ -150,7 +150,7 @@ async function checkUserSession() {
     if (userEmailDisplay) userEmailDisplay.textContent = session.user.email;
 
     // Auto restore profile avatar for logged-in user
-    loadSavedUserAvatar();
+    loadUserProfilePhoto();
   } else {
     if (userMenu) userMenu.classList.add('hidden');
     if (btnSignUpNav) btnSignUpNav.classList.remove('hidden');
@@ -208,13 +208,14 @@ function initDrumPads() {
 
 /**
  * Triggers visual pad activation, records note events, 
- * and plays sample audio from Supabase Storage bucket.
+ * and plays sample audio from Supabase Storage or custom Freesound link.
  */
 async function triggerPad(element) {
   element.classList.add('active');
   setTimeout(() => element.classList.remove('active'), 120);
 
   const soundName = element.getAttribute('data-sound') || element.getAttribute('data-drum');
+  const customAudioUrl = element.getAttribute('data-custom-audio-url');
 
   // Record pattern event if recording state is active
   if (isRecordingPattern) {
@@ -222,8 +223,18 @@ async function triggerPad(element) {
     recordedPattern.push({ sound: soundName, pad: element, time: timeOffset });
   }
 
-  // Play audio track from Supabase Storage
-  playSupabaseAudioSample(soundName);
+  // Play custom sample or default Supabase track
+  if (customAudioUrl) {
+    const customAudio = new Audio(customAudioUrl);
+    const pitchSlider = document.getElementById('pitch');
+    if (pitchSlider && pitchSlider.value != 0) {
+      const semitones = parseFloat(pitchSlider.value);
+      customAudio.playbackRate = Math.pow(2, semitones / 12);
+    }
+    customAudio.play().catch(e => console.error('Error playing sample:', e));
+  } else {
+    playSupabaseAudioSample(soundName);
+  }
 }
 
 /**
@@ -252,7 +263,6 @@ function playSupabaseAudioSample(soundName) {
   // Apply pitch playback rate adjustment if set
   const pitchSlider = document.getElementById('pitch');
   if (pitchSlider && pitchSlider.value != 0) {
-    // Pitch shift formula approximation via playbackRate
     const semitones = parseFloat(pitchSlider.value);
     sampleAudio.playbackRate = Math.pow(2, semitones / 12);
   }
@@ -373,7 +383,6 @@ function playRecordedPattern() {
   const drumPatternStatus = document.getElementById('drumPatternStatus');
   if (drumPatternStatus) drumPatternStatus.textContent = 'Playing recorded pattern...';
 
-  // Clear any ongoing playback before starting a new run
   stopRecordedPattern();
 
   recordedPattern.forEach(note => {
@@ -386,39 +395,8 @@ function playRecordedPattern() {
 }
 
 function stopRecordedPattern() {
-  // Clear all pending scheduled notes
   activePatternTimeouts.forEach(id => clearTimeout(id));
   activePatternTimeouts = [];
-}
-
-async function triggerPad(element) {
-  element.classList.add('active');
-  setTimeout(() => element.classList.remove('active'), 120);
-
-  const soundName = element.getAttribute('data-sound') || element.getAttribute('data-drum');
-  const customAudioUrl = element.getAttribute('data-custom-audio-url');
-
-  // Record pattern event if recording state is active
-  if (isRecordingPattern) {
-    const timeOffset = Date.now() - patternStartTime;
-    recordedPattern.push({ sound: soundName, pad: element, time: timeOffset });
-  }
-
-  // If a custom Freesound sample was loaded onto this pad, play it directly!
-  if (customAudioUrl) {
-    const customAudio = new Audio(customAudioUrl);
-    
-    const pitchSlider = document.getElementById('pitch');
-    if (pitchSlider && pitchSlider.value != 0) {
-      const semitones = parseFloat(pitchSlider.value);
-      customAudio.playbackRate = Math.pow(2, semitones / 12);
-    }
-    
-    customAudio.play().catch(e => console.error('Error playing sample:', e));
-  } else {
-    // Play audio track from Supabase Storage default
-    playSupabaseAudioSample(soundName);
-  }
 }
 
 /* ----------------------------------------------------
@@ -432,19 +410,14 @@ function initCommunity() {
   initCommunityInteractions();
 }
 
-/**
- * Handles fetching public audio file URLs from Supabase Storage bucket ('tracks')
- * and plays/pauses the track on the client.
- */
 function initCommunityAudio() {
   const playButtons = document.querySelectorAll('.mini-play, .btn-play');
 
   playButtons.forEach(button => {
     button.addEventListener('click', async (e) => {
       const btn = e.currentTarget;
-      const trackId = btn.getAttribute('data-id') || '4'; // Default track fallback
+      const trackId = btn.getAttribute('data-id') || '4'; 
       
-      // If clicking the currently playing track button, toggle pause/play
       if (currentAudio && currentPlayBtn === btn) {
         if (currentAudio.paused) {
           currentAudio.play();
@@ -456,13 +429,11 @@ function initCommunityAudio() {
         return;
       }
 
-      // Stop any existing active track
       if (currentAudio) {
         currentAudio.pause();
         if (currentPlayBtn) currentPlayBtn.textContent = '▶';
       }
 
-      // Fetch public media URL from Supabase storage bucket named 'tracks'
       let audioUrl = '';
       if (supabaseClient) {
         const { data } = supabaseClient
@@ -473,28 +444,25 @@ function initCommunityAudio() {
         audioUrl = data?.publicUrl;
       }
 
-      // Fallback synthetic audio if Supabase storage file isn't uploaded yet
       if (!audioUrl || audioUrl.includes('undefined')) {
         audioUrl = `${SUPABASE_URL}/storage/v1/object/public/tracks/track_${trackId}.mp3`;
       }
 
-      // Initialize and play new HTML5 Audio object
       currentAudio = new Audio(audioUrl);
       currentPlayBtn = btn;
       
-      btn.textContent = '⏳'; // Loading state indicator
+      btn.textContent = '⏳';
 
       currentAudio.play().then(() => {
         btn.textContent = '⏸';
       }).catch(err => {
         console.warn('[Supabase Media] Track file not found in storage bucket. Playing synthetic preview note.', err);
-        playAudioBeep(); // Fallback audio sound
+        playAudioBeep();
         btn.textContent = '▶';
         currentAudio = null;
         currentPlayBtn = null;
       });
 
-      // Reset button state when audio finishes
       currentAudio.addEventListener('ended', () => {
         btn.textContent = '▶';
         currentAudio = null;
@@ -504,17 +472,12 @@ function initCommunityAudio() {
   });
 }
 
-/**
- * Handles client-side interactivity for Likes, Follows, and Challenge joins.
- */
 function initCommunityInteractions() {
-  // Like Button Toggle
   const likeBtns = document.querySelectorAll('[data-like]');
   likeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const isPressed = btn.getAttribute('aria-pressed') === 'true';
       const countSpan = btn.querySelector('.like-count') || btn.querySelector('span'); 
-      
       let count = parseInt(countSpan?.textContent || '0', 10);
       
       if (isPressed) {
@@ -527,7 +490,6 @@ function initCommunityInteractions() {
     });
   });
 
-  // Follow Button Toggle
   const followBtns = document.querySelectorAll('[data-follow]');
   followBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -544,7 +506,6 @@ function initCommunityInteractions() {
     });
   });
 
-  // Challenge & DNA Match Actions
   const challengeBtn = document.getElementById('joinChallenge');
   if (challengeBtn) {
     challengeBtn.addEventListener('click', () => {
@@ -572,7 +533,6 @@ function initLibrary() {
   const grooveMoodPlayBtn = document.getElementById('grooveMoodPlayBtn');
   const newPlaylistBtn = document.getElementById('newPlaylist');
 
-  // Library Search Action using Supabase Media Storage / Catalog
   if (librarySearchBtn && librarySearchInput) {
     librarySearchBtn.addEventListener('click', async () => {
       const query = librarySearchInput.value.trim();
@@ -584,7 +544,6 @@ function initLibrary() {
     });
   }
 
-  // Groove of the Mood Actions
   if (grooveMoodBtn) {
     grooveMoodBtn.addEventListener('click', () => {
       const moodSection = document.getElementById('grooveMoodSection');
@@ -609,7 +568,7 @@ function initLibrary() {
 
   if (grooveMoodPlayBtn) {
     grooveMoodPlayBtn.addEventListener('click', () => {
-      playAudioBeep(); // Plays audio feedback using Web Audio API
+      playAudioBeep();
       if (grooveMoodPlayBtn.textContent.includes('Play')) {
         grooveMoodPlayBtn.textContent = '⏸ Pause';
       } else {
@@ -618,7 +577,6 @@ function initLibrary() {
     });
   }
 
-  // Add Playlist Action
   if (newPlaylistBtn) {
     newPlaylistBtn.addEventListener('click', () => {
       createNewPlaylistCard();
@@ -631,7 +589,6 @@ function initLibrary() {
     });
   }
 
-  // Initialize Row Title Saving Logic
   initRowTitleSavers();
 }
 
@@ -686,7 +643,6 @@ async function initDiscover() {
   const discoverMore = document.getElementById('discoverMore');
   const genreFilters = document.querySelectorAll('#genreFilters .filter');
 
-  // Fetch real tracks from Supabase first
   const supabaseTracks = await fetchCatalogFromSupabase();
   if (supabaseTracks && supabaseTracks.length > 0) {
     renderTrackList(supabaseTracks);
@@ -696,14 +652,12 @@ async function initDiscover() {
 
   renderStretchRecommendations();
 
-  // Search Button Action
   if (searchBtn && searchInput) {
     searchBtn.addEventListener('click', () => {
       filterDiscoverCatalog();
     });
   }
 
-  // Genre Filter Buttons
   genreFilters.forEach(button => {
     button.addEventListener('click', () => {
       genreFilters.forEach(btn => btn.classList.remove('active'));
@@ -712,7 +666,6 @@ async function initDiscover() {
     });
   });
 
-  // Refresh Picks Action
   if (discoverMore) {
     discoverMore.addEventListener('click', () => {
       const shuffled = [...sampleCatalog].sort(() => 0.5 - Math.random());
@@ -720,7 +673,6 @@ async function initDiscover() {
     });
   }
 
-  // Audio Upload Action with Supabase Storage Integration
   if (uploadBtn2) {
     uploadBtn2.addEventListener('click', () => {
       handleAudioUpload();
@@ -782,14 +734,12 @@ function renderSamples(samples) {
     sampleGrid.appendChild(card);
   });
 
-  // Attach event handlers to dynamic play buttons
   document.querySelectorAll('.play-sample-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      playAudioBeep(); // Triggers synthesized audio feedback
+      playAudioBeep();
     });
   });
 
-  // Attach event handlers to save buttons
   document.querySelectorAll('.save-sample-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.target.textContent = '♥ Saved';
@@ -855,9 +805,8 @@ async function handleAudioUpload() {
  * FREESOUND API INTEGRATION FOR GROOVEDNA SAMPLER
  * ---------------------------------------------------- */
 
-// Replace 'YOUR_FREESOUND_API_KEY' with your actual API key from freesound.org/apiv2/apply/
-const FREESOUND_API_KEY = ('USuQhVBqWDFi4yDssTqhY0MpenBtPi2m5MF8bKLX');
-const FREESOUND_SEARCH_URL = 'https://freesound.org/apiv2/apply/';
+const FREESOUND_API_KEY = 'USuQhVBqWDFi4yDssTqhY0MpenBtPi2m5MF8bKLX';
+const FREESOUND_SEARCH_URL = 'https://freesound.org/apiv2/search/text/';
 
 function initFreesoundSearch() {
   const searchBtn = document.getElementById('freesoundSearchBtn');
@@ -871,7 +820,6 @@ function initFreesoundSearch() {
       }
     });
 
-    // Allow search on Enter key
     searchInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         const query = searchInput.value.trim();
@@ -881,9 +829,6 @@ function initFreesoundSearch() {
   }
 }
 
-/**
- * Queries Freesound API for sounds matching the search string
- */
 async function searchFreesoundSamples(query) {
   const resultsContainer = document.getElementById('freesoundResults');
   if (resultsContainer) {
@@ -909,9 +854,6 @@ async function searchFreesoundSamples(query) {
   }
 }
 
-/**
- * Renders sample search results with preview and drum pad assignment options
- */
 function renderFreesoundResults(samples) {
   const resultsContainer = document.getElementById('freesoundResults');
   if (!resultsContainer) return;
@@ -924,7 +866,6 @@ function renderFreesoundResults(samples) {
   resultsContainer.innerHTML = '';
 
   samples.forEach(sample => {
-    // High-quality MP3 preview URL provided by Freesound API
     const audioPreviewUrl = sample.previews['preview-hq-mp3'] || sample.previews['preview-lq-mp3'];
 
     const card = document.createElement('article');
@@ -943,7 +884,6 @@ function renderFreesoundResults(samples) {
       </div>
     `;
 
-    // Preview button logic
     const previewBtn = card.querySelector('.preview-freesound-btn');
     let audioObj = null;
 
@@ -966,7 +906,6 @@ function renderFreesoundResults(samples) {
       }
     });
 
-    // Assign sample to Drum Pad logic
     const assignBtn = card.querySelector('.load-pad-btn');
     assignBtn.addEventListener('click', () => {
       const targetPadKey = prompt('Enter the pad key to assign this sample to (e.g., Q, W, E, R, A, S, D, F):');
@@ -976,7 +915,6 @@ function renderFreesoundResults(samples) {
       const targetPad = document.querySelector(`.pad-btn[data-key="${keyUpper}"], .drum-pad[data-key="${keyUpper}"]`);
 
       if (targetPad) {
-        // Store the Freesound direct audio URL onto the drum pad
         targetPad.setAttribute('data-custom-audio-url', audioPreviewUrl);
         alert(`Sample "${sample.name}" assigned to Pad [${keyUpper}]!`);
       } else {
@@ -989,99 +927,102 @@ function renderFreesoundResults(samples) {
 }
 
 /* ----------------------------------------------------
- * 6. INDIVIDUAL USER PROFILE LOGIC & PHOTO CANVAS EDITOR
+ * 6. INDIVIDUAL USER PROFILE LOGIC & CAMERA SYSTEM
  * ---------------------------------------------------- */
 let currentProfileAudio = null;
-let originalImage = null;
-let editorZoom = 1.0;
-let editorFilterIndex = 0;
-const filterNames = ['Normal', 'Grayscale', 'Sepia', 'Vibrant Warm'];
+let currentStream = null;
 
 function initProfile() {
-  initProfileAvatar();
   initProfileHeading();
   initProfileMusicSearch();
   initProfileLocation();
-  initPhotoEditor();
+  initCameraControls();
+  loadUserProfilePhoto();
 }
 
-// ==========================================
-// PROFILE CAMERA & PERSISTENCE MANAGEMENT
-// ==========================================
+/**
+ * Initializes webcam controls and photo capturing logic
+ */
+function initCameraControls() {
+  const cameraModal = document.getElementById('cameraModal');
+  const cameraVideo = document.getElementById('cameraVideo');
+  const takePhotoBtn = document.getElementById('takePhotoBtn');
+  const closeCameraBtn = document.getElementById('closeCameraBtn');
+  const captureFrameBtn = document.getElementById('captureFrameBtn');
 
-const cameraModal = document.getElementById('cameraModal');
-const cameraVideo = document.getElementById('cameraVideo');
-const takePhotoBtn = document.getElementById('takePhotoBtn');
-const closeCameraBtn = document.getElementById('closeCameraBtn');
-const captureFrameBtn = document.getElementById('captureFrameBtn');
+  // Open camera feed
+  if (takePhotoBtn) {
+    takePhotoBtn.addEventListener('click', async () => {
+      try {
+        currentStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'user' }, 
+          audio: false 
+        });
+        if (cameraVideo) {
+          cameraVideo.srcObject = currentStream;
+        }
+        if (cameraModal) {
+          cameraModal.classList.remove('hidden');
+          cameraModal.setAttribute('aria-hidden', 'false');
+        }
+      } catch (err) {
+        console.error('Camera access error:', err);
+        alert('Unable to access camera. Please check device permissions.');
+      }
+    });
+  }
 
-const profileAvatarImage = document.getElementById('profileAvatarImage');
-const profileAvatarPlaceholder = document.getElementById('profileAvatarPlaceholder');
+  // Close camera modal and stop tracks
+  if (closeCameraBtn) {
+    closeCameraBtn.addEventListener('click', stopCamera);
+  }
 
-let currentStream = null;
+  // Take photo snapshot and save to profile
+  if (captureFrameBtn) {
+    captureFrameBtn.addEventListener('click', async () => {
+      if (!cameraVideo || !cameraVideo.videoWidth) return;
 
-// 1. OPEN CAMERA STREAM
-if (takePhotoBtn) {
-  takePhotoBtn.addEventListener('click', async () => {
-    try {
-      currentStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user' }, 
-        audio: false 
-      });
-      cameraVideo.srcObject = currentStream;
-      cameraModal.classList.remove('hidden');
-      cameraModal.setAttribute('aria-hidden', 'false');
-    } catch (err) {
-      console.error('Camera access error:', err);
-      alert('Unable to access camera. Please check your browser permissions.');
-    }
-  });
+      const canvas = document.createElement('canvas');
+      canvas.width = cameraVideo.videoWidth;
+      canvas.height = cameraVideo.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+
+      const imageDataUrl = canvas.toDataURL('image/png');
+
+      // Update current profile avatar UI immediately
+      updateAvatarUI(imageDataUrl);
+
+      // Turn off camera
+      stopCamera();
+
+      // Persist picture across logins
+      await saveUserProfilePhoto(imageDataUrl);
+    });
+  }
 }
 
-// 2. CLOSE CAMERA STREAM
 function stopCamera() {
+  const cameraModal = document.getElementById('cameraModal');
+  const cameraVideo = document.getElementById('cameraVideo');
+
   if (currentStream) {
     currentStream.getTracks().forEach(track => track.stop());
     currentStream = null;
   }
-  if (cameraVideo) cameraVideo.srcObject = null;
+  if (cameraVideo) {
+    cameraVideo.srcObject = null;
+  }
   if (cameraModal) {
     cameraModal.classList.add('hidden');
     cameraModal.setAttribute('aria-hidden', 'true');
   }
 }
 
-if (closeCameraBtn) {
-  closeCameraBtn.addEventListener('click', stopCamera);
-}
-
-// 3. CAPTURE SNAPSHOT & SAVE PROFILE PHOTO
-if (captureFrameBtn) {
-  captureFrameBtn.addEventListener('click', async () => {
-    if (!cameraVideo || !cameraVideo.videoWidth) return;
-
-    // Draw frame to canvas
-    const canvas = document.createElement('canvas');
-    canvas.width = cameraVideo.videoWidth;
-    canvas.height = cameraVideo.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
-
-    const imageDataUrl = canvas.toDataURL('image/png');
-
-    // Update DOM display immediately
-    updateAvatarUI(imageDataUrl);
-
-    // Stop camera stream
-    stopCamera();
-
-    // Persist photo for user session
-    await saveUserProfilePhoto(imageDataUrl);
-  });
-}
-
-// 4. UPDATE AVATAR UI
 function updateAvatarUI(photoUrl) {
+  const profileAvatarImage = document.getElementById('profileAvatarImage');
+  const profileAvatarPlaceholder = document.getElementById('profileAvatarPlaceholder');
+
   if (profileAvatarImage) {
     profileAvatarImage.src = photoUrl;
     profileAvatarImage.hidden = false;
@@ -1091,117 +1032,7 @@ function updateAvatarUI(photoUrl) {
   }
 }
 
-// 5. SAVE USER PROFILE PHOTO (Supabase + LocalStorage)
 async function saveUserProfilePhoto(photoDataUrl) {
-  // Get active session / user
-  const currentUser = supabase.auth.user ? supabase.auth.user() : null; // Adjust according to Supabase v2 client setup
-  const userKey = currentUser ? currentUser.id : 'guest_user';
-
-  // Save to localStorage as immediate offline cache
-  localStorage.setItem(`groovedna_avatar_${userKey}`, photoDataUrl);
-
-  // If user is authenticated with Supabase, persist to Database
-  if (currentUser) {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .upsert({ 
-          id: currentUser.id, 
-          avatar_url: photoDataUrl,
-          updated_at: new Date() 
-        });
-
-      if (error) console.error('Supabase profile save error:', error);
-    } catch (err) {
-      console.error('Failed to sync photo to Supabase:', err);
-    }
-  }
-}
-
-// 6. RESTORE PROFILE PHOTO ON LOGIN / PAGE LOAD
-async function loadUserProfilePhoto() {
-  const currentUser = supabase.auth.user ? supabase.auth.user() : null;
-  const userKey = currentUser ? currentUser.id : 'guest_user';
-
-  // Check localStorage first for instant rendering
-  const cachedAvatar = localStorage.getItem(`groovedna_avatar_${userKey}`);
-  if (cachedAvatar) {
-    updateAvatarUI(cachedAvatar);
-  }
-
-  // Fetch latest profile avatar from Supabase database if logged in
-  if (currentUser) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('avatar_url')
-      .eq('id', currentUser.id)
-      .single();
-
-    if (data && data.avatar_url) {
-      updateAvatarUI(data.avatar_url);
-      localStorage.setItem(`groovedna_avatar_${userKey}`, data.avatar_url);
-    }
-  }
-}
-
-// Auto-load saved avatar on initialization
-document.addEventListener('DOMContentLoaded', () => {
-  loadUserProfilePhoto();
-});
-
-/**
- * Canvas Image Editing Logic (Filters, Zoom, Center Crop)
- */
-function initPhotoEditor() {
-  const photoEditModal = document.getElementById('photo-edit-modal');
-  const closePhotoEditBtn = document.getElementById('closePhotoEditBtn');
-  const editColorFilter = document.getElementById('editColorFilter');
-  const editZoom = document.getElementById('editZoom');
-  const filterValText = document.getElementById('filterVal');
-  const zoomValText = document.getElementById('zoomVal');
-  const cropSquareBtn = document.getElementById('cropSquareBtn');
-  const resetEditBtn = document.getElementById('resetEditBtn');
-  const saveEditedPhotoBtn = document.getElementById('saveEditedPhotoBtn');
-
-  if (closePhotoEditBtn && photoEditModal) {
-    closePhotoEditBtn.addEventListener('click', () => {
-      photoEditModal.style.display = 'none';
-    });
-  }
-
-  if (editColorFilter) {
-    editColorFilter.addEventListener('input', (e) => {
-      editorFilterIndex = parseInt(e.target.value, 10);
-      if (filterValText) filterValText.textContent = filterNames[editorFilterIndex] || 'Normal';
-      renderPhotoCanvas();
-    });
-  }
-
-  if (editZoom) {
-    editZoom.addEventListener('input', (e) => {
-      editorZoom = parseFloat(e.target.value);
-      if (zoomValText) zoomValText.textContent = `${editorZoom.toFixed(1)}x`;
-      renderPhotoCanvas();
-    });
-  }
-
-  if (resetEditBtn) {
-    resetEditBtn.addEventListener('click', () => {
-      resetEditorState();
-      renderPhotoCanvas();
-    });
-  }
-
-  if (cropSquareBtn) {
-    cropSquareBtn.addEventListener('click', () => {
-      cropCenterSquare();
-    });
-  }
-
-  /**
- * Persists user avatar to local storage and Supabase profiles table
- */
-async function saveUserAvatarData(imageDataUrl) {
   let userId = 'guest_user';
 
   if (supabaseClient) {
@@ -1209,25 +1040,26 @@ async function saveUserAvatarData(imageDataUrl) {
     if (session && session.user) {
       userId = session.user.id;
 
-      // Sync avatar to Supabase profile table
+      // Persist into Supabase database table
       try {
         await supabaseClient
           .from('profiles')
-          .upsert({ id: userId, avatar_url: imageDataUrl, updated_at: new Date() });
+          .upsert({ 
+            id: userId, 
+            avatar_url: photoDataUrl,
+            updated_at: new Date() 
+          });
       } catch (err) {
-        console.error('Failed to sync avatar to Supabase:', err);
+        console.error('Failed to sync avatar with Supabase:', err);
       }
     }
   }
 
-  // Cache in browser storage using the user ID
-  localStorage.setItem(`groovedna_avatar_${userId}`, imageDataUrl);
+  // Always save to LocalStorage for offline and persistent session lookup
+  localStorage.setItem(`groovedna_avatar_${userId}`, photoDataUrl);
 }
 
-/**
- * Loads user avatar from local storage or Supabase profile table on login
- */
-async function loadSavedUserAvatar() {
+async function loadUserProfilePhoto() {
   let userId = 'guest_user';
 
   if (supabaseClient) {
@@ -1235,122 +1067,31 @@ async function loadSavedUserAvatar() {
     if (session && session.user) {
       userId = session.user.id;
 
-      // Check Supabase database record
-      const { data } = await supabaseClient
-        .from('profiles')
-        .select('avatar_url')
-        .eq('id', userId)
-        .single();
+      try {
+        const { data } = await supabaseClient
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', userId)
+          .single();
 
-      if (data && data.avatar_url) {
-        applyAvatarToUI(data.avatar_url);
-        localStorage.setItem(`groovedna_avatar_${userId}`, data.avatar_url);
-        return;
+        if (data && data.avatar_url) {
+          updateAvatarUI(data.avatar_url);
+          localStorage.setItem(`groovedna_avatar_${userId}`, data.avatar_url);
+          return;
+        }
+      } catch(e) {
+        console.warn('Unable to load avatar from Supabase:', e);
       }
     }
   }
 
-  // Fallback to local storage cache
+  // Restore cached picture from browser storage
   const cachedAvatar = localStorage.getItem(`groovedna_avatar_${userId}`);
   if (cachedAvatar) {
-    applyAvatarToUI(cachedAvatar);
+    updateAvatarUI(cachedAvatar);
   }
 }
 
-function applyAvatarToUI(photoUrl) {
-  const avatarImg = document.getElementById('profileAvatarImage');
-  const avatarPlaceholder = document.getElementById('profileAvatarPlaceholder');
-  if (avatarImg) {
-    avatarImg.src = photoUrl;
-    avatarImg.hidden = false;
-  }
-  if (avatarPlaceholder) {
-    avatarPlaceholder.hidden = true;
-  }
-}
-
-function resetEditorState() {
-  editorZoom = 1.0;
-  editorFilterIndex = 0;
-  
-  const editZoom = document.getElementById('editZoom');
-  const editColorFilter = document.getElementById('editColorFilter');
-  const filterValText = document.getElementById('filterVal');
-  const zoomValText = document.getElementById('zoomVal');
-
-  if (editZoom) editZoom.value = '1.0';
-  if (editColorFilter) editColorFilter.value = '0';
-  if (filterValText) filterValText.textContent = 'Normal';
-  if (zoomValText) zoomValText.textContent = '1.0x';
-}
-
-function openPhotoEditor() {
-  const photoEditModal = document.getElementById('photo-edit-modal');
-  if (photoEditModal) {
-    photoEditModal.style.display = 'flex';
-    renderPhotoCanvas();
-  }
-}
-
-function renderPhotoCanvas() {
-  const canvas = document.getElementById('photoEditCanvas');
-  if (!canvas || !originalImage) return;
-
-  const ctx = canvas.getContext('2d');
-  canvas.width = originalImage.width;
-  canvas.height = originalImage.height;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  switch (editorFilterIndex) {
-    case 1:
-      ctx.filter = 'grayscale(100%)';
-      break;
-    case 2:
-      ctx.filter = 'sepia(80%)';
-      break;
-    case 3:
-      ctx.filter = 'saturate(180%) contrast(110%)';
-      break;
-    default:
-      ctx.filter = 'none';
-      break;
-  }
-
-  const zoomedWidth = canvas.width * editorZoom;
-  const zoomedHeight = canvas.height * editorZoom;
-  const offsetX = (canvas.width - zoomedWidth) / 2;
-  const offsetY = (canvas.height - zoomedHeight) / 2;
-
-  ctx.drawImage(originalImage, offsetX, offsetY, zoomedWidth, zoomedHeight);
-}
-
-function cropCenterSquare() {
-  const canvas = document.getElementById('photoEditCanvas');
-  if (!canvas) return;
-
-  const side = Math.min(canvas.width, canvas.height);
-  const startX = (canvas.width - side) / 2;
-  const startY = (canvas.height - side) / 2;
-
-  const ctx = canvas.getContext('2d');
-  const squareData = ctx.getImageData(startX, startY, side, side);
-
-  canvas.width = side;
-  canvas.height = side;
-  ctx.putImageData(squareData, 0, 0);
-
-  const croppedImg = new Image();
-  croppedImg.onload = () => {
-    originalImage = croppedImg;
-    resetEditorState();
-  };
-  croppedImg.src = canvas.toDataURL('image/png');
-}
-
-/**
- * Live updates for Profile Heading/Bio
- */
 function initProfileHeading() {
   const headingInput = document.getElementById('profileHeading');
   const headingPreview = document.getElementById('profileHeadingPreview');
@@ -1363,9 +1104,6 @@ function initProfileHeading() {
   }
 }
 
-/**
- * Search and load Profile Anthem using Supabase Storage ('tracks' bucket)
- */
 function initProfileMusicSearch() {
   const addAnthemBtn = document.getElementById('addProfileMusicBtn');
   const anthemSearchSection = document.getElementById('profileMusicSearch');
@@ -1386,7 +1124,7 @@ function initProfileMusicSearch() {
 
     let tracks = [];
 
-    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+    if (supabaseClient) {
       try {
         const { data, error } = await supabaseClient.storage.from('tracks').list();
         if (data && !error) {
@@ -1477,9 +1215,6 @@ function setProfileAnthem(title, url) {
   }
 }
 
-/**
- * Location display and editing toggle
- */
 function initProfileLocation() {
   const editLocationBtn = document.getElementById('editProfileLocationBtn');
   const locationText = document.getElementById('profileLocationText');
@@ -1498,38 +1233,8 @@ function initProfileLocation() {
 }
 
 /* ==========================================================================
- * 7. SINGLE PAGE APPLICATION (SPA) ROUTER & STATE MANAGEMENT
+ * 7. SINGLE PAGE APPLICATION (SPA) ROUTER
  * ========================================================================== */
-
-function navigateToSection(targetSectionId) {
-  const sections = document.querySelectorAll('.page-section');
-  const navLinks = document.querySelectorAll('.nav-link');
-
-  if (!sections.length) return;
-
-  sections.forEach((section) => {
-    section.style.display = 'none';
-    section.classList.remove('active');
-  });
-
-  const activeSection = document.getElementById(targetSectionId);
-  if (activeSection) {
-    activeSection.style.display = 'block';
-    activeSection.classList.add('active');
-  }
-
-  navLinks.forEach((link) => {
-    const route = link.getAttribute('data-target');
-    if (route === targetSectionId) {
-      link.classList.add('active');
-    } else {
-      link.classList.remove('active');
-    }
-  });
-
-  const routeName = targetSectionId.replace('-section', '');
-  window.history.pushState({ sectionId: targetSectionId }, '', `#${routeName}`);
-}
 
 function initSPARouter() {
   window.addEventListener('hashchange', () => {
@@ -1543,10 +1248,7 @@ function initSPARouter() {
  * ========================================================================== */
 
 async function fetchCatalogFromSupabase() {
-  if (typeof supabaseClient === 'undefined' || !supabaseClient) {
-    console.warn('Supabase client not initialized.');
-    return [];
-  }
+  if (!supabaseClient) return [];
 
   try {
     const { data, error } = await supabaseClient
@@ -1578,49 +1280,6 @@ async function searchMusicMedia(query) {
   } catch (err) {
     console.error('Error performing search:', err.message);
     return [];
-  }
-}
-
-async function fetchUserPlaylists() {
-  if (!supabaseClient) return [];
-
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) return [];
-
-  try {
-    const { data, error } = await supabaseClient
-      .from('playlists')
-      .select('*, playlist_tracks(track_id)')
-      .eq('user_id', session.user.id);
-
-    if (error) throw error;
-    return data || [];
-  } catch (err) {
-    console.error('Error fetching user playlists:', err.message);
-    return [];
-  }
-}
-
-async function createNewPlaylist(name) {
-  if (!supabaseClient) return null;
-
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) {
-    alert('Please log in to create a playlist.');
-    return null;
-  }
-
-  try {
-    const { data, error } = await supabaseClient
-      .from('playlists')
-      .insert([{ name: name, user_id: session.user.id }])
-      .select();
-
-    if (error) throw error;
-    return data[0];
-  } catch (err) {
-    console.error('Error creating playlist:', err.message);
-    return null;
   }
 }
 
