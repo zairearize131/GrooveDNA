@@ -1246,50 +1246,66 @@ function initProfileMusicSearch() {
     });
   }
 
-  if (executeSearchBtn && anthemInputElem) {
-    executeSearchBtn.addEventListener('click', () => {
-      const searchQuery = anthemInputElem.value.trim().toLowerCase();
-      if (!searchQuery) return;
-      searchSupabaseMusic(searchQuery, anthemResultsContainer);
+  // 1. Define the search function cleanly with all its logic inside
+async function searchSupabaseMusic(queryText, targetContainer) {
+    if (!targetContainer) return;
+
+    targetContainer.innerHTML = '<div class="profile-empty-state">Searching Supabase media...</div>';
+
+    let tracks = [];
+
+    // Query Supabase Storage if client is present
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+        try {
+            const { data, error } = await supabaseClient.storage.from('tracks').list();
+            if (data && !error) {
+                tracks = data.filter(file => file.name.toLowerCase().includes(queryText.toLowerCase()));
+            }
+        } catch (err) {
+            console.error('Supabase storage search error:', err);
+        }
+    }
+
+    // Fallback demo results if storage list is empty
+    if (tracks.length === 0) {
+        const defaultSamples = ['kick', 'snare', 'synth1', 'synth2', 'bass', 'vocal'];
+        tracks = defaultSamples
+            .filter(s => s.includes(queryText.toLowerCase()))
+            .map(s => ({ name: `${s}.mp3` }));
+    }
+
+    if (tracks.length === 0) {
+        targetContainer.innerHTML = `<div class="profile-empty-state">No track matching "${queryText}"</div>`;
+        return;
+    }
+
+    targetContainer.innerHTML = '';
+    tracks.forEach(track => {
+        const fileName = track.name.replace('.mp3', '');
+        const trackUrl = `${SUPABASE_URL}/storage/v1/object/public/tracks/${track.name}`;
+
+        const card = document.createElement('div');
+        card.className = 'audio-player-mock';
+        card.style.marginBottom = '8px';
+        card.innerHTML = 
+            <span>${fileName}</span>
+            <audio controls src="${trackUrl}"></audio>
+        ;
+        targetContainer.appendChild(card);
     });
-  }
 }
 
-  targetContainer.innerHTML = '<div class="profile-empty-state">Searching Supabase media...</div>';
-
-  let tracks = [];
-
-  // Query Supabase Storage or fallback to default sample names
-  if (supabaseClient) {
-   async function searchSupabaseMusic(query, container) {
-    const { data, error } = await supabaseClient.storage.from('tracks').list(); 
+// 2. Attach the click event listener to invoke the function
+if (executeSearchBtn && anthemInputElem) {
+    executeSearchBtn.addEventListener('click', async () => {
+        const searchQuery = anthemInputElem.value.trim().toLowerCase();
+        if (!searchQuery) return;
+        await searchSupabaseMusic(searchQuery, anthemResultsContainer);
+    });
 }
-    
-  // Fallback demo results if storage list is empty
-  if (tracks.length === 0) {
-    const defaultSamples = ['kick', 'snare', 'synth1', 'synth2', 'bass', 'vocal'];
-    tracks = defaultSamples
-      .filter(s => s.includes(queryText))
-      .map(s => ({ name: `${s}.mp3` }));
-  }
-
-  if (tracks.length === 0) {
-    targetContainer.innerHTML = `<div class="profile-empty-state">No track matching "${queryText}" found.</div>`;
-    return;
-  }
-
-  targetContainer.innerHTML = '';
-  tracks.forEach(track => {
-    const fileName = track.name.replace('.mp3', '');
-    const trackUrl = `${SUPABASE_URL}/storage/v1/object/public/tracks/${track.name}`;
-
-    const card = document.createElement('div');
-    card.className = 'audio-player-mock';
-    card.style.marginBottom = '8px';
-    card.innerHTML = `
       <strong style="text-transform: capitalize; flex-grow: 1;">${fileName}</strong>
       <button class="btn primary small btn-set-anthem">Set as Anthem</button>
-    `;
+    ;
 
     card.querySelector('.btn-set-anthem').addEventListener('click', () => {
       setProfileAnthem(fileName, trackUrl);
@@ -1312,7 +1328,7 @@ function setProfileAnthem(title, url) {
   currentProfileAudio = new Audio(url);
 
   if (currentMusicDiv) {
-    currentMusicDiv.innerHTML = `
+    currentMusicDiv.innerHTML = 
       <div class="audio-player-mock">
         <button class="btn-play" id="btnPlayAnthem">▶ Play</button>
         <div style="flex-grow: 1;">
@@ -1320,7 +1336,7 @@ function setProfileAnthem(title, url) {
           <small style="color: var(--text-muted);">Profile Anthem</small>
         </div>
       </div>
-    `;
+    ;
 
     document.getElementById('btnPlayAnthem').addEventListener('click', (e) => {
       if (currentProfileAudio.paused) {
