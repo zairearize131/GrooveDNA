@@ -1303,10 +1303,10 @@ if (executeSearchBtn && anthemInputElem) {
         await searchSupabaseMusic(searchQuery, anthemResultsContainer);
     });
 }
-      <strong style="text-transform: capitalize; flex-grow: 1;">${fileName}</strong>
-      <button class="btn primary small btn-set-anthem">Set as Anthem</button>
-    ;
-
+      card.innerHTML = `
+    <strong style="text-transform: capitalize; flex-grow: 1;">${fileName}</strong>
+    <button class="btn primary small btn-set-anthem">Set as Anthem</button>
+`;
     card.querySelector('.btn-set-anthem').addEventListener('click', () => {
       setProfileAnthem(fileName, trackUrl);
     });
