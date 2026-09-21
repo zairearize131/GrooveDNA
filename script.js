@@ -601,34 +601,6 @@ function initLibrary() {
   initRowTitleSavers();
 }
 
-// Function to fetch music media authorized via Supabase
-async function searchMusicMedia(query) {
-  if (!supabaseClient) {
-    console.warn('Supabase client not initialized. Querying local fallback for:', query);
-    alert(`Searching media catalog for: "${query}"`);
-    return;
-  }
-
-  try {
-    // Example Supabase Query: Accessing media audio tracks from 'tracks' bucket/table
-    const { data, error } = await supabaseClient
-      .from('tracks')
-      .select('*')
-      .ilike('title', `%${query}%`);
-
-    if (error) throw error;
-
-    if (data && data.length > 0) {
-      alert(`Found ${data.length} track(s) matching "${query}" in Supabase media repository!`);
-    } else {
-      alert(`No tracks found matching "${query}". Try searching for Rock, Funk, or Soul.`);
-    }
-  } catch (err) {
-    console.error('Supabase Media Query Error:', err.message);
-    alert(`Searching catalog for: "${query}"`);
-  }
-}
-
 function createNewPlaylistCard() {
   const name = prompt('Enter a name for your new playlist:', 'My Groove Playlist');
   if (!name) return;
@@ -667,20 +639,27 @@ function initRowTitleSavers() {
 /* ----------------------------------------------------
  * 5. MUSIC DISCOVERY & SOUND CATALOG
  * ---------------------------------------------------- */
+const sampleCatalog = [
+  { id: '1', title: 'Funky Bassline', artist: 'Groove Master', genre: 'Funk', bpm: 120 },
+  { id: '2', title: 'Chill Lo-Fi Beat', artist: 'Aesthetic Vibe', genre: 'Lo-Fi', bpm: 85 },
+  { id: '3', title: 'Synthwave Drive', artist: 'Retro Future', genre: 'Electronic', bpm: 110 }
+];
 
-async function fetchCatalogFromSupabase() {
-    const { data, error } = await supabaseClient.from('tracks').select('*');
-}
-
-function initDiscover() {
+async function initDiscover() {
   const searchInput = document.getElementById('searchInput');
   const searchBtn = document.getElementById('searchBtn');
   const uploadBtn2 = document.getElementById('uploadBtn2');
   const discoverMore = document.getElementById('discoverMore');
   const genreFilters = document.querySelectorAll('#genreFilters .filter');
 
-  // Render initial samples
-  renderSamples(sampleCatalog);
+  // Fetch real tracks from Supabase first
+  const supabaseTracks = await fetchCatalogFromSupabase();
+  if (supabaseTracks && supabaseTracks.length > 0) {
+    renderTrackList(supabaseTracks);
+  } else {
+    renderSamples(sampleCatalog);
+  }
+
   renderStretchRecommendations();
 
   // Search Button Action
@@ -818,7 +797,6 @@ async function handleAudioUpload() {
     if (supabaseClient) {
       try {
         alert(`Uploading "${file.name}" to Supabase storage...`);
-        // Authorized Supabase Storage Upload
         const { data, error } = await supabaseClient
           .storage
           .from('audio-samples')
@@ -995,75 +973,6 @@ function initProfileAvatar() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const takePhotoBtn = document.getElementById('takePhotoBtn');
-  const closeCameraBtn = document.getElementById('closeCameraBtn');
-  const captureFrameBtn = document.getElementById('captureFrameBtn');
-  const cameraModal = document.getElementById('cameraModal');
-  const cameraVideo = document.getElementById('cameraVideo');
-  const profileAvatarImage = document.getElementById('profileAvatarImage');
-  const profileAvatarPlaceholder = document.getElementById('profileAvatarPlaceholder');
-
-  let mediaStream = null;
-
-  // Function to open camera
-  async function startCamera() {
-    try {
-      mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user' }, 
-        audio: false 
-      });
-      cameraVideo.srcObject = mediaStream;
-      cameraModal.classList.remove('hidden');
-      cameraModal.setAttribute('aria-hidden', 'false');
-    } catch (err) {
-      console.error('Error accessing camera:', err);
-      alert('Could not access camera. Please check permissions.');
-    }
-  }
-
-  // Function to stop stream and close modal ("X" out)
-  function stopCamera() {
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(track => track.stop());
-      mediaStream = null;
-    }
-    cameraVideo.srcObject = null;
-    cameraModal.classList.add('hidden');
-    cameraModal.setAttribute('aria-hidden', 'true');
-  }
-
-  // Event Listeners
-  if (takePhotoBtn) {
-    takePhotoBtn.addEventListener('click', startCamera);
-  }
-
-  // Close / Cancel photo capture when "X" button is pressed
-  if (closeCameraBtn) {
-    closeCameraBtn.addEventListener('click', stopCamera);
-  }
-
-  // Optional: Take snapshot logic
-  if (captureFrameBtn) {
-    captureFrameBtn.addEventListener('click', () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = cameraVideo.videoWidth || 640;
-      canvas.height = cameraVideo.videoHeight || 480;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
-
-      // Display image in profile avatar
-      if (profileAvatarImage) {
-        profileAvatarImage.src = canvas.toDataURL('image/png');
-        profileAvatarImage.hidden = false;
-        if (profileAvatarPlaceholder) profileAvatarPlaceholder.hidden = true;
-      }
-
-      stopCamera();
-    });
-  }
-});
-
 /**
  * Canvas Image Editing Logic (Filters, Zoom, Center Crop)
  */
@@ -1167,7 +1076,6 @@ function renderPhotoCanvas() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Apply CSS canvas filters
   switch (editorFilterIndex) {
     case 1:
       ctx.filter = 'grayscale(100%)';
@@ -1206,7 +1114,6 @@ function cropCenterSquare() {
   canvas.height = side;
   ctx.putImageData(squareData, 0, 0);
 
-  // Update working original image reference for zoom/filter sequence
   const croppedImg = new Image();
   croppedImg.onload = () => {
     originalImage = croppedImg;
@@ -1246,62 +1153,64 @@ function initProfileMusicSearch() {
     });
   }
 
-  // 1. Define the search function cleanly with all its logic inside
-async function searchSupabaseMusic(queryText, targetContainer) {
+  async function searchSupabaseMusic(queryText, targetContainer) {
     if (!targetContainer) return;
 
     targetContainer.innerHTML = '<div class="profile-empty-state">Searching Supabase media...</div>';
 
     let tracks = [];
 
-    // Query Supabase Storage if client is present
     if (typeof supabaseClient !== 'undefined' && supabaseClient) {
-        try {
-            const { data, error } = await supabaseClient.storage.from('tracks').list();
-            if (data && !error) {
-                tracks = data.filter(file => file.name.toLowerCase().includes(queryText.toLowerCase()));
-            }
-        } catch (err) {
-            console.error('Supabase storage search error:', err);
+      try {
+        const { data, error } = await supabaseClient.storage.from('tracks').list();
+        if (data && !error) {
+          tracks = data.filter(file => file.name.toLowerCase().includes(queryText.toLowerCase()));
         }
-    }
-
-    // Fallback demo results if storage list is empty
-    if (tracks.length === 0) {
-        const defaultSamples = ['kick', 'snare', 'synth1', 'synth2', 'bass', 'vocal'];
-        tracks = defaultSamples
-            .filter(s => s.includes(queryText.toLowerCase()))
-            .map(s => ({ name: `${s}.mp3` }));
+      } catch (err) {
+        console.error('Supabase storage search error:', err);
+      }
     }
 
     if (tracks.length === 0) {
-        targetContainer.innerHTML = `<div class="profile-empty-state">No track matching "${queryText}"</div>`;
-        return;
+      const defaultSamples = ['kick', 'snare', 'synth1', 'synth2', 'bass', 'vocal'];
+      tracks = defaultSamples
+        .filter(s => s.includes(queryText.toLowerCase()))
+        .map(s => ({ name: `${s}.mp3` }));
+    }
+
+    if (tracks.length === 0) {
+      targetContainer.innerHTML = `<div class="profile-empty-state">No track matching "${queryText}"</div>`;
+      return;
     }
 
     targetContainer.innerHTML = '';
     tracks.forEach(track => {
-        const fileName = track.name.replace('.mp3', '');
-        const trackUrl = `${SUPABASE_URL}/storage/v1/object/public/tracks/${track.name}`;
+      const fileName = track.name.replace('.mp3', '');
+      const trackUrl = `${SUPABASE_URL}/storage/v1/object/public/tracks/${track.name}`;
 
-        const card = document.createElement('div');
-        card.className = 'audio-player-mock';
-        card.style.marginBottom = '8px';
-        card.innerHTML = `
-            <span>${fileName}</span>
-            <audio controls src="${trackUrl}"></audio>
-        `;
-        targetContainer.appendChild(card);
+      const card = document.createElement('div');
+      card.className = 'audio-player-mock';
+      card.style.marginBottom = '8px';
+      card.innerHTML = `
+        <strong style="text-transform: capitalize; flex-grow: 1;">${fileName}</strong>
+        <button class="btn primary small btn-set-anthem">Set as Anthem</button>
+      `;
+
+      card.querySelector('.btn-set-anthem').addEventListener('click', () => {
+        setProfileAnthem(fileName, trackUrl);
+      });
+
+      targetContainer.appendChild(card);
     });
-}
+  }
 
-// 2. Attach the click event listener to invoke the function
-if (executeSearchBtn && anthemInputElem) {
+  if (executeSearchBtn && anthemInputElem) {
     executeSearchBtn.addEventListener('click', async () => {
-        const searchQuery = anthemInputElem.value.trim().toLowerCase();
-        if (!searchQuery) return;
-        await searchSupabaseMusic(searchQuery, anthemResultsContainer);
+      const searchQuery = anthemInputElem.value.trim().toLowerCase();
+      if (!searchQuery) return;
+      await searchSupabaseMusic(searchQuery, anthemResultsContainer);
     });
+  }
 }
 
 function setProfileAnthem(title, url) {
@@ -1341,41 +1250,6 @@ function setProfileAnthem(title, url) {
     }
   }
 }
-  
-function setProfileAnthem(title, url) {
-  const currentMusicDiv = document.getElementById('profileCurrentMusic');
-  const musicSearchDiv = document.getElementById('profileMusicSearch');
-
-  if (musicSearchDiv) musicSearchDiv.hidden = true;
-
-  if (currentProfileAudio) {
-    currentProfileAudio.pause();
-  }
-
-  currentProfileAudio = new Audio(url);
-
-  if (currentMusicDiv) {
-    currentMusicDiv.innerHTML = 
-      <div class="audio-player-mock">
-        <button class="btn-play" id="btnPlayAnthem">▶ Play</button>
-        <div style="flex-grow: 1;">
-          <strong style="text-transform: capitalize; display: block;">${title}</strong>
-          <small style="color: var(--text-muted);">Profile Anthem</small>
-        </div>
-      </div>
-    ;
-
-    document.getElementById('btnPlayAnthem').addEventListener('click', (e) => {
-      if (currentProfileAudio.paused) {
-        currentProfileAudio.play().catch(() => playAudioBeep());
-        e.target.textContent = '⏸ Pause';
-      } else {
-        currentProfileAudio.pause();
-        e.target.textContent = '▶ Play';
-      }
-    });
-  }
-}
 
 /**
  * Location display and editing toggle
@@ -1401,30 +1275,23 @@ function initProfileLocation() {
  * 7. SINGLE PAGE APPLICATION (SPA) ROUTER & STATE MANAGEMENT
  * ========================================================================== */
 
-/**
- * Switch active views/sections in the app
- * @param {string} targetSectionId - The ID of the section element to make active (e.g., 'studio-section', 'feed-section')
- */
 function navigateToSection(targetSectionId) {
   const sections = document.querySelectorAll('.page-section');
   const navLinks = document.querySelectorAll('.nav-link');
 
   if (!sections.length) return;
 
-  // 1. Hide all page sections
   sections.forEach((section) => {
     section.style.display = 'none';
     section.classList.remove('active');
   });
 
-  // 2. Locate and display target section
   const activeSection = document.getElementById(targetSectionId);
   if (activeSection) {
     activeSection.style.display = 'block';
     activeSection.classList.add('active');
   }
 
-  // 3. Highlight current nav button
   navLinks.forEach((link) => {
     const route = link.getAttribute('data-target');
     if (route === targetSectionId) {
@@ -1434,135 +1301,121 @@ function navigateToSection(targetSectionId) {
     }
   });
 
-  // 4. Update URL Hash
   const routeName = targetSectionId.replace('-section', '');
   window.history.pushState({ sectionId: targetSectionId }, '', `#${routeName}`);
 }
 
 function initSPARouter() {
-  // 5. Handle SPA view switching / hash routing
   window.addEventListener('hashchange', () => {
     const hash = window.location.hash || '#home';
     console.log('Navigated to:', hash);
   });
 }
 
-// ==========================================
-// 8. SUPABASE DATABASE QUERY INTEGRATION
-// ==========================================
+/* ==========================================================================
+ * 8. SUPABASE DATABASE QUERY INTEGRATION
+ * ========================================================================== */
 
-// 1. Fetch tracks dynamically from Supabase 'tracks' table
 async function fetchCatalogFromSupabase() {
-    if (typeof supabaseClient === 'undefined' || !supabaseClient) {
-        console.warn('Supabase client not initialized.');
-        return [];
-    }
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+    console.warn('Supabase client not initialized.');
+    return [];
+  }
 
-    try {
-        const { data, error } = await supabaseClient
-            .from('tracks')
-            .select('*')
-            .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await supabaseClient
+      .from('tracks')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        return data || [];
-    } catch (err) {
-        console.error('Error fetching catalog from Supabase:', err.message);
-        return [];
-    }
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error('Error fetching catalog from Supabase:', err.message);
+    return [];
+  }
 }
 
-// 2. Search tracks in Supabase by title, artist, or genre
 async function searchMusicMedia(query) {
-    if (!query || !supabaseClient) return [];
+  if (!query || !supabaseClient) return [];
 
-    try {
-        const { data, error } = await supabaseClient
-            .from('tracks')
-            .select('*')
-            .or(`title.ilike.%${query}%,artist.ilike.%${query}%,genre.ilike.%${query}%`);
+  try {
+    const { data, error } = await supabaseClient
+      .from('tracks')
+      .select('*')
+      .or(`title.ilike.%${query}%,artist.ilike.%${query}%,genre.ilike.%${query}%`);
 
-        if (error) throw error;
+    if (error) throw error;
 
-        // Render search results directly to your catalog container
-        renderTrackList(data);
-        return data;
-    } catch (err) {
-        console.error('Error performing search:', err.message);
-        return [];
-    }
+    renderTrackList(data);
+    return data;
+  } catch (err) {
+    console.error('Error performing search:', err.message);
+    return [];
+  }
 }
 
-// 3. Fetch user playlists from Supabase
 async function fetchUserPlaylists() {
-    if (!supabaseClient) return [];
+  if (!supabaseClient) return [];
 
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return [];
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) return [];
 
-    try {
-        const { data, error } = await supabaseClient
-            .from('playlists')
-            .select('*, playlist_tracks(track_id)')
-            .eq('user_id', session.user.id);
+  try {
+    const { data, error } = await supabaseClient
+      .from('playlists')
+      .select('*, playlist_tracks(track_id)')
+      .eq('user_id', session.user.id);
 
-        if (error) throw error;
-        return data || [];
-    } catch (err) {
-        console.error('Error fetching user playlists:', err.message);
-        return [];
-    }
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error('Error fetching user playlists:', err.message);
+    return [];
+  }
 }
 
-// 4. Create a new playlist in Supabase
 async function createNewPlaylist(name) {
-    if (!supabaseClient) return null;
+  if (!supabaseClient) return null;
 
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) {
-        alert('Please log in to create a playlist.');
-        return null;
-    }
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) {
+    alert('Please log in to create a playlist.');
+    return null;
+  }
 
-    try {
-        const { data, error } = await supabaseClient
-            .from('playlists')
-            .insert([{ name: name, user_id: session.user.id }])
-            .select();
+  try {
+    const { data, error } = await supabaseClient
+      .from('playlists')
+      .insert([{ name: name, user_id: session.user.id }])
+      .select();
 
-        if (error) throw error;
-        return data[0];
-    } catch (err) {
-        console.error('Error creating playlist:', err.message);
-        return null;
-    }
+    if (error) throw error;
+    return data[0];
+  } catch (err) {
+    console.error('Error creating playlist:', err.message);
+    return null;
+  }
 }
 
-// 5. Initialize catalog rendering on load
-async function initDiscover() {
-    const tracks = await fetchCatalogFromSupabase();
-    renderTrackList(tracks);
-}
-
-// Helper to render track items into the UI
 function renderTrackList(tracks) {
-    const catalogContainer = document.querySelector('.track-grid') || document.querySelector('#discoverCatalog');
-    if (!catalogContainer) return;
+  const catalogContainer = document.querySelector('.track-grid') || document.querySelector('#discoverCatalog');
+  if (!catalogContainer) return;
 
-    if (tracks.length === 0) {
-        catalogContainer.innerHTML = '<p class="no-results">No tracks found in the database.</p>';
-        return;
-    }
+  if (tracks.length === 0) {
+    catalogContainer.innerHTML = '<p class="no-results">No tracks found in the database.</p>';
+    return;
+  }
 
-    catalogContainer.innerHTML = tracks.map(track => `
-        <div class="track-card" data-track-id="${track.id}" data-audio-url="${track.audio_url}">
-            <img src="${track.cover_url || 'https://via.placeholder.com/150'}" alt="${track.title} Cover" class="track-cover" />
-            <div class="track-info">
-                <h4>${track.title}</h4>
-                <p>${track.artist}</p>
-                <span class="genre-badge">${track.genre}</span>
-            </div>
-            <button class="play-btn" onclick="playTrack('${track.audio_url}', '${track.title}', '${track.artist}')">▶</button>
-        </div>
-    `).join('');
+  catalogContainer.innerHTML = tracks.map(track => `
+    <div class="track-card" data-track-id="${track.id}" data-audio-url="${track.audio_url}">
+      <img src="${track.cover_url || 'https://via.placeholder.com/150'}" alt="${track.title} Cover" class="track-cover" />
+      <div class="track-info">
+        <h4>${track.title}</h4>
+        <p>${track.artist}</p>
+        <span class="genre-badge">${track.genre}</span>
+      </div>
+      <button class="play-btn" onclick="playTrack('${track.audio_url}', '${track.title}', '${track.artist}')">▶</button>
+    </div>
+  `).join('');
 }
