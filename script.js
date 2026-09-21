@@ -668,6 +668,10 @@ function initRowTitleSavers() {
  * 5. MUSIC DISCOVERY & SOUND CATALOG
  * ---------------------------------------------------- */
 
+async function fetchCatalogFromSupabase() {
+    const { data, error } = await supabaseClient.from('tracks').select('*');
+}
+
 function initDiscover() {
   const searchInput = document.getElementById('searchInput');
   const searchBtn = document.getElementById('searchBtn');
