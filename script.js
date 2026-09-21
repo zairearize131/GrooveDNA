@@ -1303,18 +1303,45 @@ if (executeSearchBtn && anthemInputElem) {
         await searchSupabaseMusic(searchQuery, anthemResultsContainer);
     });
 }
-      card.innerHTML = `
-    <strong style="text-transform: capitalize; flex-grow: 1;">${fileName}</strong>
-    <button class="btn primary small btn-set-anthem">Set as Anthem</button>
-`;
-    card.querySelector('.btn-set-anthem').addEventListener('click', () => {
-      setProfileAnthem(fileName, trackUrl);
-    });
 
-    targetContainer.appendChild(card);
-  });
+function setProfileAnthem(title, url) {
+  const currentMusicDiv = document.getElementById('profileCurrentMusic');
+  const musicSearchDiv = document.getElementById('profileMusicSearch');
+
+  if (musicSearchDiv) musicSearchDiv.hidden = true;
+
+  if (currentProfileAudio) {
+    currentProfileAudio.pause();
+  }
+
+  currentProfileAudio = new Audio(url);
+
+  if (currentMusicDiv) {
+    currentMusicDiv.innerHTML = `
+      <div class="audio-player-mock">
+        <button class="btn-play" id="btnPlayAnthem">▶ Play</button>
+        <div style="flex-grow: 1;">
+          <strong style="text-transform: capitalize; display: block;">${title}</strong>
+          <small style="color: var(--text-muted);">Profile Anthem</small>
+        </div>
+      </div>
+    `;
+
+    const playBtn = document.getElementById('btnPlayAnthem');
+    if (playBtn) {
+      playBtn.addEventListener('click', (e) => {
+        if (currentProfileAudio.paused) {
+          currentProfileAudio.play().catch(() => playAudioBeep());
+          e.target.textContent = '⏸ Pause';
+        } else {
+          currentProfileAudio.pause();
+          e.target.textContent = '▶ Play';
+        }
+      });
+    }
+  }
 }
-
+  
 function setProfileAnthem(title, url) {
   const currentMusicDiv = document.getElementById('profileCurrentMusic');
   const musicSearchDiv = document.getElementById('profileMusicSearch');
