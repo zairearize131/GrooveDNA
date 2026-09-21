@@ -1287,10 +1287,10 @@ async function searchSupabaseMusic(queryText, targetContainer) {
         const card = document.createElement('div');
         card.className = 'audio-player-mock';
         card.style.marginBottom = '8px';
-        card.innerHTML = 
+        card.innerHTML = `
             <span>${fileName}</span>
             <audio controls src="${trackUrl}"></audio>
-        ;
+        `;
         targetContainer.appendChild(card);
     });
 }
