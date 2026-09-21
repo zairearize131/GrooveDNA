@@ -667,14 +667,6 @@ function initRowTitleSavers() {
 /* ----------------------------------------------------
  * 5. MUSIC DISCOVERY & SOUND CATALOG
  * ---------------------------------------------------- */
-// Sample Catalog Data
-const sampleCatalog = [
-  { id: 1, title: 'Neo-Soul Keys', artist: 'GrooveDNA Master', genre: 'Soul', bpm: 88, audioUrl: '#' },
-  { id: 2, title: 'Funk Bassline #4', artist: 'Bootsy Vibes', genre: 'Funk', bpm: 110, audioUrl: '#' },
-  { id: 3, title: 'Vintage Rock Riff', artist: 'Hendrix Sound', genre: 'Rock', bpm: 124, audioUrl: '#' },
-  { id: 4, title: 'Lofi Jazz Chords', artist: 'Chill Beatmaker', genre: 'Jazz', bpm: 80, audioUrl: '#' },
-  { id: 5, title: 'Modern R&B Vocal Hit', artist: 'Aria', genre: 'R&B', bpm: 95, audioUrl: '#' }
-];
 
 function initDiscover() {
   const searchInput = document.getElementById('searchInput');
@@ -1259,9 +1251,6 @@ function initProfileMusicSearch() {
   }
 }
 
-async function searchSupabaseMusic(queryText, targetContainer) {
-  if (!targetContainer) return;
-
   targetContainer.innerHTML = '<div class="profile-empty-state">Searching Supabase media...</div>';
 
   let tracks = [];
@@ -1411,4 +1400,124 @@ function initSPARouter() {
     const hash = window.location.hash || '#home';
     console.log('Navigated to:', hash);
   });
+}
+
+// ==========================================
+// 8. SUPABASE DATABASE QUERY INTEGRATION
+// ==========================================
+
+// 1. Fetch tracks dynamically from Supabase 'tracks' table
+async function fetchCatalogFromSupabase() {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+        console.warn('Supabase client not initialized.');
+        return [];
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('tracks')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
+    } catch (err) {
+        console.error('Error fetching catalog from Supabase:', err.message);
+        return [];
+    }
+}
+
+// 2. Search tracks in Supabase by title, artist, or genre
+async function searchMusicMedia(query) {
+    if (!query || !supabaseClient) return [];
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('tracks')
+            .select('*')
+            .or(`title.ilike.%${query}%,artist.ilike.%${query}%,genre.ilike.%${query}%`);
+
+        if (error) throw error;
+
+        // Render search results directly to your catalog container
+        renderTrackList(data);
+        return data;
+    } catch (err) {
+        console.error('Error performing search:', err.message);
+        return [];
+    }
+}
+
+// 3. Fetch user playlists from Supabase
+async function fetchUserPlaylists() {
+    if (!supabaseClient) return [];
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return [];
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('playlists')
+            .select('*, playlist_tracks(track_id)')
+            .eq('user_id', session.user.id);
+
+        if (error) throw error;
+        return data || [];
+    } catch (err) {
+        console.error('Error fetching user playlists:', err.message);
+        return [];
+    }
+}
+
+// 4. Create a new playlist in Supabase
+async function createNewPlaylist(name) {
+    if (!supabaseClient) return null;
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+        alert('Please log in to create a playlist.');
+        return null;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('playlists')
+            .insert([{ name: name, user_id: session.user.id }])
+            .select();
+
+        if (error) throw error;
+        return data[0];
+    } catch (err) {
+        console.error('Error creating playlist:', err.message);
+        return null;
+    }
+}
+
+// 5. Initialize catalog rendering on load
+async function initDiscover() {
+    const tracks = await fetchCatalogFromSupabase();
+    renderTrackList(tracks);
+}
+
+// Helper to render track items into the UI
+function renderTrackList(tracks) {
+    const catalogContainer = document.querySelector('.track-grid') || document.querySelector('#discoverCatalog');
+    if (!catalogContainer) return;
+
+    if (tracks.length === 0) {
+        catalogContainer.innerHTML = '<p class="no-results">No tracks found in the database.</p>';
+        return;
+    }
+
+    catalogContainer.innerHTML = tracks.map(track => `
+        <div class="track-card" data-track-id="${track.id}" data-audio-url="${track.audio_url}">
+            <img src="${track.cover_url || 'https://via.placeholder.com/150'}" alt="${track.title} Cover" class="track-cover" />
+            <div class="track-info">
+                <h4>${track.title}</h4>
+                <p>${track.artist}</p>
+                <span class="genre-badge">${track.genre}</span>
+            </div>
+            <button class="play-btn" onclick="playTrack('${track.audio_url}', '${track.title}', '${track.artist}')">▶</button>
+        </div>
+    `).join('');
 }
