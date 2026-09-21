@@ -1261,12 +1261,10 @@ function initProfileMusicSearch() {
 
   // Query Supabase Storage or fallback to default sample names
   if (supabaseClient) {
-    const { data, error } = await supabaseClient.storage.from('tracks').list();
-    if (!error && data) {
-      tracks = data.filter(file => file.name.toLowerCase().includes(queryText));
-    }
-  }
-
+   async function searchSupabaseMusic(query, container) {
+    const { data, error } = await supabaseClient.storage.from('tracks').list(); 
+}
+    
   // Fallback demo results if storage list is empty
   if (tracks.length === 0) {
     const defaultSamples = ['kick', 'snare', 'synth1', 'synth2', 'bass', 'vocal'];
