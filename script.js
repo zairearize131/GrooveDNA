@@ -148,7 +148,9 @@ async function checkUserSession() {
     if (btnSignUpNav) btnSignUpNav.classList.add('hidden');
     if (btnSignInNav) btnSignInNav.classList.add('hidden');
     if (userEmailDisplay) userEmailDisplay.textContent = session.user.email;
-    if loadSavedUserAvatar();
+
+    // Auto restore profile avatar for logged-in user
+    loadSavedUserAvatar();
   } else {
     if (userMenu) userMenu.classList.add('hidden');
     if (btnSignUpNav) btnSignUpNav.classList.remove('hidden');
